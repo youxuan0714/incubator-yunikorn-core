@@ -69,5 +69,5 @@ func (f *FairManager) NextAppToSchedule() (string, string) {
 
 func (f *FairManager) UpdateScheduledApp(user string, resources map[string]int64) {
 	heap.Pop(f.apps[user])
-	f.GetTenants().UpdateMinUser(users.NewScoreInfo(user, resources))
+	f.GetTenants().UpdateUser(users.NewScoreInfo(user, resources))
 }

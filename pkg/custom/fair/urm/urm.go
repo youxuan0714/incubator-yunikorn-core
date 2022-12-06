@@ -3,6 +3,7 @@ package urm
 import (
 	"container/heap"
 	"errors"
+	"fmt"
 
 	"github.com/apache/yunikorn-core/pkg/custom/fair/urm/users"
 )
@@ -33,11 +34,11 @@ func (u *UserResourceManager) GetMinResourceUser() string {
 	return s.GetUser()
 }
 
-func (u *UserResourceManager) UpdateMinUser(info *users.ScoreInfo) error {
+func (u *UserResourceManager) UpdateUser(info *users.ScoreInfo) error {
 	s := heap.Pop(u.priority).(*users.Score)
 	if info.GetUser() != s.GetUser() {
 		heap.Push(u.priority, s)
-		return errors.New("user is not same")
+		return errors.New(fmt.Sprintf("score is %s, info is %s", s.GetUser(), info.GetUser()))
 	}
 	s.SumWeight(info.GetResources())
 	heap.Push(u.priority, s)

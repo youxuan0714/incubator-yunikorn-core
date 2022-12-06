@@ -2,9 +2,14 @@ package users
 
 type UsersHeap []*Score
 
-func (h UsersHeap) Len() int           { return len(h) }
-func (h UsersHeap) Less(i, j int) bool { return h[i].GetWeight() < h[j].GetWeight() }
-func (h UsersHeap) Swap(i, j int)      { h[i], h[j] = h[j], h[i] }
+func (h UsersHeap) Len() int { return len(h) }
+func (h UsersHeap) Less(i, j int) bool {
+	if h[i].GetWeight() == h[j].GetWeight() {
+		return h[i].user < h[j].user
+	}
+	return h[i].GetWeight() < h[j].GetWeight()
+}
+func (h UsersHeap) Swap(i, j int) { h[i], h[j] = h[j], h[i] }
 
 func (h *UsersHeap) Push(x interface{}) {
 	*h = append(*h, x.(*Score))

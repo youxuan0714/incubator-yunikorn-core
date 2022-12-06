@@ -18,9 +18,14 @@ func NewAppInfo(id string, t time.Time) *AppInfo {
 
 type AppsHeap []*AppInfo
 
-func (h AppsHeap) Len() int           { return len(h) }
-func (h AppsHeap) Less(i, j int) bool { return h[i].SubmissionTime.Before(h[j].SubmissionTime) }
-func (h AppsHeap) Swap(i, j int)      { h[i], h[j] = h[j], h[i] }
+func (h AppsHeap) Len() int { return len(h) }
+func (h AppsHeap) Less(i, j int) bool {
+	if h[i].SubmissionTime.Equal(h[j].SubmissionTime) {
+		return h[i].ApplicationID < h[j].ApplicationID
+	}
+	return h[i].SubmissionTime.Before(h[j].SubmissionTime)
+}
+func (h AppsHeap) Swap(i, j int) { h[i], h[j] = h[j], h[i] }
 
 func (h *AppsHeap) Push(x interface{}) {
 	*h = append(*h, x.(*AppInfo))
