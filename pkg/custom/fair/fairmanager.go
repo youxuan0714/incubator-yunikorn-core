@@ -27,23 +27,25 @@ func NewFairManager() *FairManager {
 	}
 }
 
+func (f *FairManager) ContinueSchedule() bool {
+	minUser := f.GetTenants().GetMinResourceUser()
+	if h, ok := f.apps[minUser]; !ok {
+		f.apps[minUser] = apps.NewAppsHeap()
+		return false
+	} else {
+		if h.Len() == 0 {
+			return false
+		}
+	}
+	return true
+}
+
 func (f *FairManager) ParseUsersInPartitionConfig(conf configs.PartitionConfig) {
-	q := make([]configs.QueueConfig, 0)
-	q = append(q, conf.Queues...)
 	records := f.GetTenants()
-	for total := len(q); total > 0; {
-		top := q[0]
-		acl, _ := security.NewACL(top.SubmitACL)
-		for user := range acl.GetUsers() {
+	for _, q := range conf.Queues {
+		acl, _ := security.NewACL(q.SubmitACL)
+		for user, _ := range acl.GetUsers() {
 			records.AddUser(user)
-		}
-
-		if len(top.Queues) > 0 {
-			q = append(q, top.Queues...)
-		}
-
-		if len(q) > 1 {
-			q = q[1:]
 		}
 	}
 }
@@ -67,7 +69,8 @@ func (f *FairManager) NextAppToSchedule() (string, string) {
 	return user, target.ApplicationID
 }
 
-func (f *FairManager) UpdateScheduledApp(user string, resources map[string]int64) {
+func (f *FairManager) UpdateScheduledApp(user string, resources map[string]int64, duration uint64) {
 	heap.Pop(f.apps[user])
+	resources["Duration"] = int64(duration)
 	f.GetTenants().UpdateUser(users.NewScoreInfo(user, resources))
 }

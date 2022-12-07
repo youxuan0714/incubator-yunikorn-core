@@ -34,15 +34,21 @@ func ParseNode(n *objects.Node) (string, map[string]int64) {
 	return n.NodeID, resResult
 }
 
-func ParseApp(a *objects.Application) (string, string, map[string]int64) {
+func ParseApp(a *objects.Application) (string, string, map[string]int64, uint64) {
 	resResult := make(map[string]int64)
 	resType := []string{sicommon.CPU, sicommon.Memory, "Duration"}
+	var duration uint64
 	for _, key := range resType {
+		if key == "Duration" {
+			value, _ := strconv.ParseUint(a.GetTag("Duration"), 10, 64)
+			duration = value
+			continue
+		}
 		value, err := strconv.ParseInt(a.GetTag(key), 10, 64)
 		if err != nil {
 			continue
 		}
 		resResult[key] = value
 	}
-	return a.ApplicationID, a.GetUser().User, resResult
+	return a.ApplicationID, a.GetUser().User, resResult, duration
 }

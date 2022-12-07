@@ -50,14 +50,17 @@ func TestParseApp(t *testing.T) {
 		PlaceholderAsk:               &si.Resource{Resources: map[string]*si.Quantity{"first": {Value: 1}}},
 	}
 	app := objects.NewApplication(siApp, user, rmproxy.NewMockedRMProxy(), "myRM")
-	id, username, res := ParseApp(app)
+	id, username, res, duration := ParseApp(app)
 	if id != "appID" {
 		t.Errorf("expected id is %s,got %s", "appID", id)
 	}
 	if username != "testuser" {
 		t.Errorf("expected user is %s,got %s", "appID", username)
 	}
-	expected := map[string]int64{siCommon.CPU: 200, siCommon.Memory: 300, "Duration": 100}
+	if duration != 100 {
+		t.Errorf("duration expect %d,got %d", 100, duration)
+	}
+	expected := map[string]int64{siCommon.CPU: 200, siCommon.Memory: 300}
 	for key, value := range expected {
 		if got, ok := res[key]; !ok {
 			t.Errorf("missing tag %s", key)

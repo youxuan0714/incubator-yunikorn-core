@@ -1254,3 +1254,11 @@ func (sq *Queue) String() string {
 	return fmt.Sprintf("{QueuePath: %s, State: %s, StateTime: %x, MaxResource: %s}",
 		sq.QueuePath, sq.stateMachine.Current(), sq.stateTime, sq.maxResource)
 }
+
+func (sq *Queue) GetHeadRoom() *resources.Resource {
+	var parentHeadRoom *resources.Resource
+	if sq.parent != nil {
+		parentHeadRoom = sq.parent.getHeadRoom()
+	}
+	return sq.internalHeadRoom(parentHeadRoom)
+}
