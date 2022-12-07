@@ -108,6 +108,7 @@ func (pc *PartitionContext) initialPartitionFromConfig(conf configs.PartitionCon
 		return fmt.Errorf("partition cannot be created without root queue")
 	}
 
+	// pc.FairAdmin.ParseUsersInPartitionConfig(conf)
 	// Setup the queue structure: root first it should be the only queue at this level
 	// Add the rest of the queue structure recursively
 	queueConf := conf.Queues[0]

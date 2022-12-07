@@ -24,6 +24,10 @@ func (lb *LBManager) Schedule(id string, res map[string]int64, duration uint64) 
 	lb.Nodes[recommanded].Allocate(id, startTime, res, duration)
 }
 
-func (lb *LBManager) GetMyNextBacth(nodeID string) []string {
+func (lb *LBManager) GetNodeNextBacth(nodeID string) []string {
 	return lb.Nodes[nodeID].NextBatchToSchedule()
+}
+
+func (lb *LBManager) GoToNextBatch(nodeID string) {
+	lb.Nodes[nodeID].GoToNextBatch()
 }

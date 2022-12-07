@@ -20,7 +20,7 @@ func (f *FairManager) GetTenants() *urm.UserResourceManager {
 	return f.tenants
 }
 
-func NewFaireManager() *FairManager {
+func NewFairManager() *FairManager {
 	return &FairManager{
 		tenants: urm.NewURM(),
 		apps:    make(map[string]*apps.AppsHeap, 0),
