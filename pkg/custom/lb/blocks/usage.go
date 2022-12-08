@@ -1,5 +1,10 @@
 package blocks
 
+import (
+	"github.com/apache/yunikorn-core/pkg/log"
+	"go.uber.org/zap"
+)
+
 type NodeUsage struct {
 	TimeStamp uint64
 	UsageInfo map[string]*Usage
@@ -14,18 +19,21 @@ func newNodeUsage(t uint64, usage map[string]*Usage) *NodeUsage {
 
 func (n *NodeUsage) Allocate(res map[string]int64) {
 	for key, value := range res {
-		target := n.UsageInfo[key]
-		target.Allocated += value
-		n.UsageInfo[key] = target
+		if target, ok := n.UsageInfo[key]; !ok {
+			log.Logger().Error("key in nodeUsage Allocate is not existed", zap.String("resrouce", key))
+		} else {
+			target.Allocated += value
+			n.UsageInfo[key] = target
+		}
 	}
 }
 
 func (n *NodeUsage) GetUsages() (usages []float64, min float64) {
 	usages, min = make([]float64, 0), float64(-1)
-	for _, value := range n.UsageInfo {
-		result := float64(value.Allocated) / float64(value.Capacity)
-		if min == -1 || min > result {
-			min = result
+	for index, value := range n.UsageInfo {
+		got := float64(value.Allocated) / float64(value.Capacity)
+		if index == 0 || min > got {
+			min = got
 		}
 		usages = append(usages, float64(value.Allocated)/float64(value.Capacity))
 	}
@@ -47,8 +55,11 @@ func NewUsage(cap, used int64) *Usage {
 func NewNodeUsage(timeStamp uint64, avaliable map[string]int64, capacity map[string]int64) *NodeUsage {
 	infos := make(map[string]*Usage, 0)
 	for key, cap := range capacity {
-		tmp := NewUsage(cap, cap-avaliable[key])
-		infos[key] = tmp
+		if avail, ok := available[key]; !ok {
+			log.Logger().Error("avaiable is not existed", zap.String("resrouce", key))
+		} else {
+			infos[key] = NewUsage(cap, cap-avail)
+		}
 	}
 	return newNodeUsage(timeStamp, infos)
 }

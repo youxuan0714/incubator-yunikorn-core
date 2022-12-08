@@ -27,14 +27,15 @@ func (s *Slot) GetDuration() uint64 {
 
 func (s *Slot) Enough(res map[string]int64, duration uint64) (bool, bool) {
 	r, t := true, true
-	if duration > s.GetDuration() {
-		t = false
-	}
 	for key, value := range res {
 		if got := s.Avaliable[key]; got < value {
 			r = false
-			break
+			return r, t
 		}
+	}
+
+	if duration > s.GetDuration() {
+		t = false
 	}
 	return r, t
 }
@@ -64,23 +65,26 @@ func (s *Slot) AddApp(id string) {
 }
 
 func (s *Slot) Allocate(id string, res map[string]int64, duration uint64, first bool) (*Slot, *Slot) {
-	if r, t := s.Enough(res, duration); !r {
+	var r, t bool
+	if r, t = s.Enough(res, duration); !r {
 		return nil, nil
-	} else {
-		if first {
-			s.AddApp(id)
-		}
-		s2 := s.Clone()
-		for key, value := range res {
-			s.Avaliable[key] -= value
-		}
-		if t {
-			criticalTime := s.GetStartTime() + duration
-			s.EndTime = criticalTime
-			s2.StartTime = criticalTime
-			return s, s2
-		} else {
-			return s, nil
-		}
 	}
+
+	if first {
+		s.AddApp(id)
+	}
+
+	var s2 *Slot
+	if criticalTime := s.GetStartTime() + duration; t {
+		s2 = s.Clone()
+		s.EndTime = criticalTime
+		s2.StartTime = criticalTime
+	} else {
+		s2 = nil
+	}
+
+	for key, value := range res {
+		s.Avaliable[key] -= value
+	}
+	return s, s2
 }

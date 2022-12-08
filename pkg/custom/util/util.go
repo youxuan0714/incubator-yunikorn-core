@@ -7,6 +7,8 @@ import (
 	"github.com/apache/yunikorn-core/pkg/custom/lb"
 	"github.com/apache/yunikorn-core/pkg/scheduler/objects"
 	sicommon "github.com/apache/yunikorn-scheduler-interface/lib/go/common"
+	"github.com/apache/yunikorn-core/pkg/log"
+	"go.uber.org/zap"
 )
 
 var GlobalFairManager *fair.FairManager
@@ -40,15 +42,18 @@ func ParseApp(a *objects.Application) (string, string, map[string]int64, uint64)
 	var duration uint64
 	for _, key := range resType {
 		if key == "Duration" {
-			value, _ := strconv.ParseUint(a.GetTag("Duration"), 10, 64)
-			duration = value
+			if value, err := strconv.ParseUint(a.GetTag("Duration"), 10, 64); err != nil {
+				log.Logger().Warn("Duration parsing fail", zap.String("error", err.Error()))
+			} else {
+				duration = value
+			}
 			continue
 		}
-		value, err := strconv.ParseInt(a.GetTag(key), 10, 64)
-		if err != nil {
-			continue
+		if value, err := strconv.ParseInt(a.GetTag(key), 10, 64); err != nil {
+			log.Logger().Warn("Resource parsing fail", zap.String(key),  zap.String("error", err.Error()))
+		} else {
+			resResult[key] = value
 		}
-		resResult[key] = value
 	}
 	return a.ApplicationID, a.GetUser().User, resResult, duration
 }

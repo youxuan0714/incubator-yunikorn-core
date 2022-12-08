@@ -99,14 +99,18 @@ func (s *Slots) Allocate(id string, startTime uint64, res map[string]int64, exeD
 }
 
 func (s *Slots) BatchApps() []string {
-	tmp := heap.Pop(s).(*Slot)
-	result := tmp.AppsID
-	heap.Push(s, tmp)
-	return result
+	if s.Len() > 1 {
+		tmp := heap.Pop(s).(*Slot)
+		result := tmp.AppsID
+		heap.Push(s, tmp)
+	}
+	return []string{}
 }
 
 func (s *Slots) GotoNextSlot() {
-	heap.Pop(s)
+	if s.Len() > 1 {
+		heap.Pop(s)
+	}
 }
 
 func (s *Slots) GetUsageOfTimeT(t uint64) (result *NodeUsage) {

@@ -9,6 +9,8 @@ import (
 	"github.com/apache/yunikorn-core/pkg/custom/fair/urm/apps"
 	"github.com/apache/yunikorn-core/pkg/custom/fair/urm/users"
 	"github.com/apache/yunikorn-core/pkg/scheduler/objects"
+	"github.com/apache/yunikorn-core/pkg/log"
+	"go.uber.org/zap"
 )
 
 type FairManager struct {
@@ -43,30 +45,45 @@ func (f *FairManager) ContinueSchedule() bool {
 func (f *FairManager) ParseUsersInPartitionConfig(conf configs.PartitionConfig) {
 	records := f.GetTenants()
 	for _, q := range conf.Queues {
-		acl, _ := security.NewACL(q.SubmitACL)
+		acl, err := security.NewACL(q.SubmitACL)
+		if err != nil {
+			log.Logger().Warn("Parsing ACL in fair manager is failed", zap.String("error", user.Error()))
+		}
 		for user, _ := range acl.GetUsers() {
+			log.Logger().Info("User in config", zap.String("user", user))
 			records.AddUser(user)
 		}
 	}
+	log.Logger().Info("Users", zap.Int("number", len(records)))
 }
 
 func (f *FairManager) ParseUserInApp(app *objects.Application) {
 	user := app.GetUser().User
 	f.GetTenants().AddUser(user)
+	log.Logger().Info("Application user", zap.String("user", user))
 	if _, ok := f.apps[user]; !ok {
 		f.apps[user] = apps.NewAppsHeap()
 	}
 
-	h := f.apps[user]
-	heap.Push(h, apps.NewAppInfo(app.ApplicationID, app.SubmissionTime))
+	log.Logger().Info("Add application in fair manager", zap.String("applicationID", app.ApplicationID))
+	heap.Push(f.apps[user], apps.NewAppInfo(app.ApplicationID, app.SubmissionTime))
 }
 
-func (f *FairManager) NextAppToSchedule() (string, string) {
+func (f *FairManager) NextAppToSchedule() (bool, string, string) {
 	user := f.GetTenants().GetMinResourceUser()
-	h := f.apps[user]
+	h, ok := f.apps[user]
+	if !ok {
+		f.apps[user] = apps.NewAppsHeap()
+		return false, "", ""
+	}
+
+	if h.Len() == 0 {
+		return false, "", ""
+	}
+
 	target := heap.Pop(h).(*apps.AppInfo)
 	heap.Push(h, target)
-	return user, target.ApplicationID
+	return true, user, target.ApplicationID
 }
 
 func (f *FairManager) UpdateScheduledApp(user string, resources map[string]int64, duration uint64) {

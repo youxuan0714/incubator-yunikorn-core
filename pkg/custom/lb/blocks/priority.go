@@ -1,5 +1,10 @@
 package blocks
 
+import(
+	"github.com/apache/yunikorn-core/pkg/log"
+	"go.uber.org/zap"
+)
+
 type PriorityInNode struct {
 	NodeID   string
 	Capacity map[string]int64
@@ -19,7 +24,11 @@ func (p *PriorityInNode) NextBatchToSchedule() []string {
 }
 
 func (p *PriorityInNode) GoToNextBatch() {
-	p.Schedule.GotoNextSlot()
+	if p.Schedule.Len() > 1 {
+		p.Schedule.GotoNextSlot()
+	} else {
+		log.Logger().Warn("GoToNextBatch should not be zero")
+	}
 }
 
 func (p *PriorityInNode) GetUsageOfTimeT(t uint64) *NodeUsage {
@@ -32,4 +41,13 @@ func (p *PriorityInNode) Allocate(id string, startTime uint64, res map[string]in
 
 func (p *PriorityInNode) WhenAppCouldBeSchedule(res map[string]int64, exeDuration uint64) uint64 {
 	return p.Schedule.TryAllocate(res, exeDuration)
+}
+
+func (p *PriorityInNode) Enough(res map[string]int64) bool {
+	for key, value := range res {
+		if cap, ok := p.Capacity[key]; !ok || cap < value {
+			return false
+		}
+	}
+	return true
 }

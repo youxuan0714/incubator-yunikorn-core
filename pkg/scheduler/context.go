@@ -138,6 +138,7 @@ func (cc *ClusterContext) schedule() bool {
 				alloc = psc.tryAllocate()
 			}
 		}
+
 		if alloc != nil {
 			metrics.GetSchedulerMetrics().ObserveSchedulingLatency(schedulingStart)
 			if alloc.GetResult() == objects.Replaced {
@@ -165,26 +166,25 @@ func (cc *ClusterContext) customSchedule() bool {
 		}
 		m := customUtil.GetFairManager()
 		lb := customUtil.GetLBManager()
+		appsInList := make([]string, 0)
 		schedulingStart := time.Now()
 		for m.ContinueSchedule() {
 			username, appid := m.NextAppToSchedule()
 			_, _, res, duration := customUtil.ParseApp(psc.GetApplication(appid))
 			lb.Schedule(appid, res, duration)
 			m.UpdateScheduledApp(username, res, duration)
+			appsInList = append(appsInList, appid)
 		}
 		metrics.GetSchedulerMetrics().ObserveSchedulingLatency(schedulingStart)
 		// each node
 		for _, node := range psc.GetNodes() {
 			AllRunning := true
-			appsInList := lb.GetNodeNextBacth(node.NodeID)
+			//appsInList := lb.GetNodeNextBacth(node.NodeID)
 			for _, app := range appsInList {
 				// allocation in app should > 0 and app should not be in accepcted status
 				var alloc *objects.Allocation
-				if instance := psc.GetApplication(app); instance.IsRunning() && len(instance.GetAllAllocations()) > 0 {
-					continue
-				} else {
-					alloc = instance.TryAllocate(psc.GetNode)
-				}
+				instance := psc.GetApplication(app)
+				alloc = instance.TryAllocate(psc.GetNode)
 
 				AllRunning = false
 				if alloc != nil {

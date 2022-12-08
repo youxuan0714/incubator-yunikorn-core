@@ -34,25 +34,32 @@ func NewAppRequest(id string, res map[string]int64, duration uint64) *AppRequest
 
 func (m *MetaData) Recommanded() (string, uint64) {
 	startTimes, nodes := m.StartTimes()
+	candicates := make([]string, 0)
+	candicatesTime := make([])
 	migs := make([]float64, 0)
 	biases := make([]float64, 0)
 	for assignedNodeNum, timeStamp := range startTimes {
+		if !node.Enough(m.App.Res) {
+			continue
+		} else {
+			candicates = append(candicates, nodes[assignedNodeNum])
+			candicatesTime = append(candicatesTime, timeStamp)
+		}
 		statuses := make([]*blocks.NodeUsage, 0)
-		for _, node := range m.Nodes {
+		for nodeNum, node := range m.Nodes {
+			if assignedNodeNum == nodeNum {
+				node.Allocate(m.App.Res)
+				migs = append(migs, MIG(assignedNode))
+			}
 			statuses = append(statuses, node.GetUsageOfTimeT(timeStamp))
 		}
-		assignedNode := statuses[assignedNodeNum]
-		assignedNode.Allocate(m.App.Res)
-		migs = append(migs, MIG(assignedNode))
 		biases = append(biases, MaxBias(statuses))
 	}
 	migs, biases = NormalizedAndWeight(migs, biases)
 	migMinus, migPlus := MaxAndMin(migs)
 	biasMinus, biasPlus := MaxAndMin(biases)
-	plus := []float64{migPlus, biasPlus}
-	minus := []float64{migMinus, biasMinus}
-	target := SMAndRecommded(migs, biases, plus, minus)
-	return nodes[target], startTimes[target]
+	target := SMAndRecommded(migs, biases, []float64{migPlus, biasPlus}, []float64{migMinus, biasMinus})
+	return candicates[target], candicatesTime[target]
 }
 
 func SMAndRecommded(migs, biases, plus, minus []float64) (maxIndex int) {
@@ -99,7 +106,7 @@ func MIG(node *blocks.NodeUsage) float64 {
 	usages, min := node.GetUsages()
 	sum := float64(0)
 	for _, usage := range usages {
-		sum += usage - min
+		sum += (usage - min)
 	}
 	return sum
 }
@@ -116,6 +123,7 @@ func MaxBias(nodes []*blocks.NodeUsage) float64 {
 			average[resourceType] += usage
 		}
 	}
+
 	for i := 0; i < len(average); i++ {
 		average[i] /= float64(len(nodes))
 	}
@@ -127,6 +135,7 @@ func MaxBias(nodes []*blocks.NodeUsage) float64 {
 			sum[resourceType] += math.Pow(usage-average[resourceType], 2)
 		}
 	}
+
 	for i := 0; i < len(sum); i++ {
 		sum[i] = math.Sqrt(sum[i])
 	}
@@ -135,7 +144,7 @@ func MaxBias(nodes []*blocks.NodeUsage) float64 {
 }
 
 func CalculateSM(normalized, aPlus, aMinus []float64) (smPlus float64, smMinus float64) {
-	smPlus, smMinus = 0, 0
+	smPlus, smMinus = float64(0), float64(0)
 	for index, base := range aPlus {
 		smPlus += math.Pow(normalized[index]-base, 2)
 	}
