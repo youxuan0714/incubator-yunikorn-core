@@ -33,7 +33,7 @@ func (u *UserResourceManager) AddUser(name string) {
 
 func (u *UserResourceManager) GetMinResourceUser() string {
 	if u.priority.Len() == 0 {
-		log.Logger().Warn("userheap should not be empty when getting min", zap.String("error", user.Error()))
+		log.Logger().Warn("userheap should not be empty when getting min")
 	}
 	s := heap.Pop(u.priority).(*users.Score)
 	heap.Push(u.priority, s)

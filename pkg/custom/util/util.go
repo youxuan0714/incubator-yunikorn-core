@@ -50,7 +50,7 @@ func ParseApp(a *objects.Application) (string, string, map[string]int64, uint64)
 			continue
 		}
 		if value, err := strconv.ParseInt(a.GetTag(key), 10, 64); err != nil {
-			log.Logger().Warn("Resource parsing fail", zap.String(key),  zap.String("error", err.Error()))
+			log.Logger().Warn("Resource parsing fail", zap.String("key", key),  zap.String("error", err.Error()))
 		} else {
 			resResult[key] = value
 		}

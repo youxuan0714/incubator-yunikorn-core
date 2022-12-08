@@ -35,23 +35,24 @@ func NewAppRequest(id string, res map[string]int64, duration uint64) *AppRequest
 func (m *MetaData) Recommanded() (string, uint64) {
 	startTimes, nodes := m.StartTimes()
 	candicates := make([]string, 0)
-	candicatesTime := make([])
+	candicatesTime := make([]uint64, 0)
 	migs := make([]float64, 0)
 	biases := make([]float64, 0)
 	for assignedNodeNum, timeStamp := range startTimes {
-		if !node.Enough(m.App.Res) {
+		if !m.Nodes[nodes[assignedNodeNum]].Enough(m.App.Res) {
 			continue
 		} else {
 			candicates = append(candicates, nodes[assignedNodeNum])
 			candicatesTime = append(candicatesTime, timeStamp)
 		}
 		statuses := make([]*blocks.NodeUsage, 0)
-		for nodeNum, node := range m.Nodes {
-			if assignedNodeNum == nodeNum {
-				node.Allocate(m.App.Res)
+		for nodeID, node := range m.Nodes {
+			assignedNode := node.GetUsageOfTimeT(timeStamp)
+			if nodes[assignedNodeNum] == nodeID {
+				assignedNode.Allocate(m.App.Res)
 				migs = append(migs, MIG(assignedNode))
 			}
-			statuses = append(statuses, node.GetUsageOfTimeT(timeStamp))
+			statuses = append(statuses, assignedNode)
 		}
 		biases = append(biases, MaxBias(statuses))
 	}

@@ -27,7 +27,7 @@ func (p *PriorityInNode) GoToNextBatch() {
 	if p.Schedule.Len() > 1 {
 		p.Schedule.GotoNextSlot()
 	} else {
-		log.Logger().Warn("GoToNextBatch should not be zero")
+		log.Logger().Warn("GoToNextBatch should not be zero", zap.String("nodeID", p.NodeID))
 	}
 }
 

@@ -103,6 +103,7 @@ func (s *Slots) BatchApps() []string {
 		tmp := heap.Pop(s).(*Slot)
 		result := tmp.AppsID
 		heap.Push(s, tmp)
+		return result
 	}
 	return []string{}
 }

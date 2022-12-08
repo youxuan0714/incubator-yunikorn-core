@@ -166,20 +166,21 @@ func (cc *ClusterContext) customSchedule() bool {
 		}
 		m := customUtil.GetFairManager()
 		lb := customUtil.GetLBManager()
-		appsInList := make([]string, 0)
 		schedulingStart := time.Now()
 		for m.ContinueSchedule() {
-			username, appid := m.NextAppToSchedule()
+			existedApp, username, appid := m.NextAppToSchedule()
+			if !existedApp {
+				break
+			}
 			_, _, res, duration := customUtil.ParseApp(psc.GetApplication(appid))
 			lb.Schedule(appid, res, duration)
 			m.UpdateScheduledApp(username, res, duration)
-			appsInList = append(appsInList, appid)
 		}
 		metrics.GetSchedulerMetrics().ObserveSchedulingLatency(schedulingStart)
 		// each node
 		for _, node := range psc.GetNodes() {
 			AllRunning := true
-			//appsInList := lb.GetNodeNextBacth(node.NodeID)
+			appsInList := lb.GetNodeNextBacth(node.NodeID)
 			for _, app := range appsInList {
 				// allocation in app should > 0 and app should not be in accepcted status
 				var alloc *objects.Allocation

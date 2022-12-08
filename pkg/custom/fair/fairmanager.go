@@ -47,14 +47,13 @@ func (f *FairManager) ParseUsersInPartitionConfig(conf configs.PartitionConfig) 
 	for _, q := range conf.Queues {
 		acl, err := security.NewACL(q.SubmitACL)
 		if err != nil {
-			log.Logger().Warn("Parsing ACL in fair manager is failed", zap.String("error", user.Error()))
+			log.Logger().Warn("Parsing ACL in fair manager is failed", zap.String("error", err.Error()))
 		}
 		for user, _ := range acl.GetUsers() {
 			log.Logger().Info("User in config", zap.String("user", user))
 			records.AddUser(user)
 		}
 	}
-	log.Logger().Info("Users", zap.Int("number", len(records)))
 }
 
 func (f *FairManager) ParseUserInApp(app *objects.Application) {
@@ -87,7 +86,11 @@ func (f *FairManager) NextAppToSchedule() (bool, string, string) {
 }
 
 func (f *FairManager) UpdateScheduledApp(user string, resources map[string]int64, duration uint64) {
-	heap.Pop(f.apps[user])
+	if h, ok := f.apps[user]; !ok {
+		log.Logger().Error("Non existed app update", zap.String("app", user))
+	} else {
+		heap.Pop(h)
+	}
 	resources["Duration"] = int64(duration)
 	f.GetTenants().UpdateUser(users.NewScoreInfo(user, resources))
 }

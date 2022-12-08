@@ -30,9 +30,9 @@ func (n *NodeUsage) Allocate(res map[string]int64) {
 
 func (n *NodeUsage) GetUsages() (usages []float64, min float64) {
 	usages, min = make([]float64, 0), float64(-1)
-	for index, value := range n.UsageInfo {
+	for _, value := range n.UsageInfo {
 		got := float64(value.Allocated) / float64(value.Capacity)
-		if index == 0 || min > got {
+		if min == -1 || min > got {
 			min = got
 		}
 		usages = append(usages, float64(value.Allocated)/float64(value.Capacity))
@@ -52,7 +52,7 @@ func NewUsage(cap, used int64) *Usage {
 	}
 }
 
-func NewNodeUsage(timeStamp uint64, avaliable map[string]int64, capacity map[string]int64) *NodeUsage {
+func NewNodeUsage(timeStamp uint64, available map[string]int64, capacity map[string]int64) *NodeUsage {
 	infos := make(map[string]*Usage, 0)
 	for key, cap := range capacity {
 		if avail, ok := available[key]; !ok {
