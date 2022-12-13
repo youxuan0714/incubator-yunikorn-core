@@ -46,7 +46,7 @@ func TestParseApp(t *testing.T) {
 		QueueName:                    "some.queue",
 		PartitionName:                "AnotherPartition",
 		ExecutionTimeoutMilliSeconds: 0,
-		Tags:                         map[string]string{siCommon.CPU: "200", siCommon.Memory: "300", "Duration": "100"},
+		Tags:                         map[string]string{siCommon.CPU: "200", siCommon.Memory: "300", siCommon.Duration: "100"},
 		PlaceholderAsk:               &si.Resource{Resources: map[string]*si.Quantity{"first": {Value: 1}}},
 	}
 	app := objects.NewApplication(siApp, user, rmproxy.NewMockedRMProxy(), "myRM")

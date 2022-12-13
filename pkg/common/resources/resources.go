@@ -910,3 +910,48 @@ func CalculateAbsUsedCapacity(capacity, used *Resource) *Resource {
 	}
 	return absResource
 }
+
+func MIG(input *Resource) Quantity {
+	tmp := input.Clone()
+	utilizations := NewResource()
+	for _, key := range []string{common.CPU, common.Memory} {
+		utilizations.Resources[key] = tmp.Resources[key]
+	}
+	minUtilization := Min(utilizations)
+	gaps := Quantity(int64(0))
+	for _, utilization := range utilizations.Resources {
+		gap := subVal(utilization, minUtilization)
+		addVal(gaps, gap)
+	}
+	return gaps
+}
+
+func Min(input *Resource) Quantity {
+	var min Quantity
+	assigned := false
+	for _, value := range input.Resources {
+		if !assigned {
+			min = value
+			assigned = true
+		}
+		if min > value {
+			min = value
+		}
+	}
+	return min
+}
+
+func Max(input *Resource) Quantity {
+	var max Quantity
+	assigned := false
+	for _, value := range input.Resources {
+		if !assigned {
+			max = value
+			assigned = true
+		}
+		if max < value {
+			max = value
+		}
+	}
+	return max
+}

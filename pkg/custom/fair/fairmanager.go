@@ -4,12 +4,12 @@ import (
 	"container/heap"
 
 	"github.com/apache/yunikorn-core/pkg/common/configs"
-	"github.com/apache/yunikorn-core/pkg/common/security"
 	"github.com/apache/yunikorn-core/pkg/custom/fair/urm"
 	"github.com/apache/yunikorn-core/pkg/custom/fair/urm/apps"
 	"github.com/apache/yunikorn-core/pkg/custom/fair/urm/users"
-	"github.com/apache/yunikorn-core/pkg/scheduler/objects"
+	customutil "github.com/apache/yunikorn-core/pkg/custom/util"
 	"github.com/apache/yunikorn-core/pkg/log"
+	"github.com/apache/yunikorn-core/pkg/scheduler/objects"
 	"go.uber.org/zap"
 )
 
@@ -44,15 +44,9 @@ func (f *FairManager) ContinueSchedule() bool {
 
 func (f *FairManager) ParseUsersInPartitionConfig(conf configs.PartitionConfig) {
 	records := f.GetTenants()
-	for _, q := range conf.Queues {
-		acl, err := security.NewACL(q.SubmitACL)
-		if err != nil {
-			log.Logger().Warn("Parsing ACL in fair manager is failed", zap.String("error", err.Error()))
-		}
-		for user, _ := range acl.GetUsers() {
-			log.Logger().Info("User in config", zap.String("user", user))
-			records.AddUser(user)
-		}
+	users := customutil.ParseUsersInPartitionConfig(conf)
+	for user, _ := range users {
+		records.AddUser(user)
 	}
 }
 

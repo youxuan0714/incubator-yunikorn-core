@@ -30,7 +30,6 @@ import (
 	"github.com/apache/yunikorn-core/pkg/common"
 	"github.com/apache/yunikorn-core/pkg/common/configs"
 	"github.com/apache/yunikorn-core/pkg/common/resources"
-	customUtil "github.com/apache/yunikorn-core/pkg/custom/util"
 	"github.com/apache/yunikorn-core/pkg/handler"
 	"github.com/apache/yunikorn-core/pkg/log"
 	"github.com/apache/yunikorn-core/pkg/metrics"
@@ -148,60 +147,6 @@ func (cc *ClusterContext) schedule() bool {
 				cc.notifyRMNewAllocation(psc.RmID, alloc)
 			}
 			activity = true
-		}
-	}
-	return activity
-}
-
-func (cc *ClusterContext) customSchedule() bool {
-	activity := false
-	for _, psc := range cc.GetPartitionMapClone() {
-		// if there are no resources in the partition just skip
-		if psc.root.GetMaxResource() == nil {
-			continue
-		}
-		// a stopped partition does not allocate
-		if psc.isStopped() {
-			continue
-		}
-		m := customUtil.GetFairManager()
-		lb := customUtil.GetLBManager()
-		schedulingStart := time.Now()
-		for m.ContinueSchedule() {
-			existedApp, username, appid := m.NextAppToSchedule()
-			if !existedApp {
-				break
-			}
-			_, _, res, duration := customUtil.ParseApp(psc.GetApplication(appid))
-			lb.Schedule(appid, res, duration)
-			m.UpdateScheduledApp(username, res, duration)
-		}
-		metrics.GetSchedulerMetrics().ObserveSchedulingLatency(schedulingStart)
-		// each node
-		for _, node := range psc.GetNodes() {
-			AllRunning := true
-			appsInList := lb.GetNodeNextBacth(node.NodeID)
-			for _, app := range appsInList {
-				// allocation in app should > 0 and app should not be in accepcted status
-				var alloc *objects.Allocation
-				instance := psc.GetApplication(app)
-				alloc = instance.TryAllocate(psc.GetNode)
-
-				AllRunning = false
-				if alloc != nil {
-					if alloc.GetResult() == objects.Replaced {
-						// communicate the removal to the RM
-						cc.notifyRMAllocationReleased(psc.RmID, alloc.GetReleasesClone(), si.TerminationType_PLACEHOLDER_REPLACED, "replacing uuid: "+alloc.GetUUID())
-					} else {
-						cc.notifyRMNewAllocation(psc.RmID, alloc)
-					}
-					activity = true
-				}
-			}
-
-			if AllRunning {
-				lb.GoToNextBatch(node.NodeID)
-			}
 		}
 	}
 	return activity

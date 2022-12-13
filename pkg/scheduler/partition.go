@@ -33,7 +33,6 @@ import (
 	"github.com/apache/yunikorn-core/pkg/common/configs"
 	"github.com/apache/yunikorn-core/pkg/common/resources"
 	"github.com/apache/yunikorn-core/pkg/common/security"
-	customUtil "github.com/apache/yunikorn-core/pkg/custom/util"
 	"github.com/apache/yunikorn-core/pkg/log"
 	"github.com/apache/yunikorn-core/pkg/metrics"
 	"github.com/apache/yunikorn-core/pkg/scheduler/objects"
@@ -109,7 +108,6 @@ func (pc *PartitionContext) initialPartitionFromConfig(conf configs.PartitionCon
 		return fmt.Errorf("partition cannot be created without root queue")
 	}
 
-	customUtil.GetFairManager().ParseUsersInPartitionConfig(conf)
 	// pc.FairAdmin.ParseUsersInPartitionConfig(conf)
 	// Setup the queue structure: root first it should be the only queue at this level
 	// Add the rest of the queue structure recursively
@@ -317,8 +315,6 @@ func (pc *PartitionContext) AddApplication(app *objects.Application) error {
 	if pc.getApplication(appID) != nil {
 		return fmt.Errorf("adding application %s to partition %s, but application already existed", appID, pc.Name)
 	}
-
-	customUtil.GetFairManager().ParseUserInApp(app)
 
 	// Put app under the queue
 	queueName := app.GetQueuePath()
@@ -585,8 +581,6 @@ func (pc *PartitionContext) AddNode(node *objects.Node, existingAllocations []*o
 	if err := pc.addNodeToList(node); err != nil {
 		return err
 	}
-
-	customUtil.GetLBManager().AddNode(customUtil.ParseNode(node))
 
 	// Add allocations that exist on the node when added
 	if len(existingAllocations) > 0 {
