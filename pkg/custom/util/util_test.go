@@ -13,23 +13,24 @@ import (
 
 func TestParseNode(t *testing.T) {
 	nodeName := "test"
-	expectedRes := map[string]int64{"first": 100, "second": 100}
-	totalRes := resources.NewResourceFromMap(map[string]resources.Quantity{"first": 100, "second": 100})
+	expectedRes := map[string]int64{siCommon.CPU: 100, siCommon.Memory: 100}
+	totalRes := resources.NewResourceFromMap(map[string]resources.Quantity{siCommon.CPU: 100, siCommon.Memory: 100})
 	proto := newProto(nodeName, totalRes, nil, map[string]string{})
 	node := objects.NewNode(proto)
 	nodeID, result := ParseNode(node)
 	if nodeID != nodeName {
 		t.Errorf("expected node name: %s, got %s", nodeName, nodeID)
 	}
-	if len(expectedRes) != len(result) {
-		t.Errorf("expected len of res %d, got %d", len(expectedRes), len(result))
+	if len(expectedRes) != len(result.Resources) {
+		t.Errorf("expected len of res %d, got %d", len(expectedRes), len(result.Resources))
 	} else {
 		for key, value := range expectedRes {
-			if got, ok := result[key]; !ok {
+			if got, ok := result.Resources[key]; !ok {
 				t.Errorf("miss key %s", key)
 			} else {
-				if value != got {
-					t.Errorf("expected res %s: %d, got %d", key, value, got)
+				tmp := int64(got)
+				if value != tmp {
+					t.Errorf("expected res %s: %d, got %d", key, value, tmp)
 				}
 			}
 		}
@@ -50,22 +51,19 @@ func TestParseApp(t *testing.T) {
 		PlaceholderAsk:               &si.Resource{Resources: map[string]*si.Quantity{"first": {Value: 1}}},
 	}
 	app := objects.NewApplication(siApp, user, rmproxy.NewMockedRMProxy(), "myRM")
-	id, username, res, duration := ParseApp(app)
+	id, username, res := ParseApp(app)
 	if id != "appID" {
 		t.Errorf("expected id is %s,got %s", "appID", id)
 	}
 	if username != "testuser" {
 		t.Errorf("expected user is %s,got %s", "appID", username)
 	}
-	if duration != 100 {
-		t.Errorf("duration expect %d,got %d", 100, duration)
-	}
-	expected := map[string]int64{siCommon.CPU: 200, siCommon.Memory: 300}
+	expected := map[string]int64{siCommon.CPU: 200, siCommon.Memory: 300, siCommon.Duration: 100}
 	for key, value := range expected {
-		if got, ok := res[key]; !ok {
+		if got, ok := res.Resources[key]; !ok {
 			t.Errorf("missing tag %s", key)
 		} else {
-			if got != value {
+			if int64(got) != value {
 				t.Errorf("tag %s expect %d, got %d", key, value, got)
 			}
 		}

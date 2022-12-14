@@ -4,6 +4,7 @@ import (
 	"strconv"
 
 	"github.com/apache/yunikorn-core/pkg/common/configs"
+	"github.com/apache/yunikorn-core/pkg/common/resources"
 	"github.com/apache/yunikorn-core/pkg/common/security"
 	"github.com/apache/yunikorn-core/pkg/log"
 	"github.com/apache/yunikorn-core/pkg/scheduler/objects"
@@ -11,33 +12,31 @@ import (
 	"go.uber.org/zap"
 )
 
-func ParseNode(n *objects.Node) (string, map[string]int64) {
+// Parse the vcore and memory in node
+func ParseNode(n *objects.Node) (nodeID string, resResult *resources.Resource) {
+	nodeID = n.NodeID
+	resResult = resources.NewResource()
+	resType := []string{sicommon.CPU, sicommon.Memory}
+
 	res := n.GetAvailableResource().Resources
-	resResult := make(map[string]int64, 0)
-	for key, value := range res {
-		resResult[key] = int64(value)
+	for _, targetType := range resType {
+		resResult.Resources[targetType] = res[targetType]
 	}
-	return n.NodeID, resResult
+
+	return
 }
 
-func ParseApp(a *objects.Application) (appID string, username string, resResult map[string]int64, duration uint64) {
+//
+func ParseApp(a *objects.Application) (appID string, username string, resResult *resources.Resource) {
 	appID = a.ApplicationID
 	username = a.GetUser().User
-	resResult = make(map[string]int64, 0)
+	resResult = resources.NewResource()
 	resType := []string{sicommon.CPU, sicommon.Memory, sicommon.Duration}
 	for _, key := range resType {
-		if key == sicommon.Duration {
-			if value, err := strconv.ParseUint(a.GetTag(sicommon.Duration), 10, 64); err != nil {
-				log.Logger().Warn("Duration parsing fail", zap.String("error", err.Error()))
-			} else {
-				duration = value
-			}
-			continue
-		}
 		if value, err := strconv.ParseInt(a.GetTag(key), 10, 64); err != nil {
 			log.Logger().Warn("Resource parsing fail", zap.String("key", key), zap.String("error", err.Error()))
 		} else {
-			resResult[key] = value
+			resResult.Resources[key] = resources.Quantity(value)
 		}
 	}
 	return

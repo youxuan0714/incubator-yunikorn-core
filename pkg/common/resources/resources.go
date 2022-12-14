@@ -911,21 +911,26 @@ func CalculateAbsUsedCapacity(capacity, used *Resource) *Resource {
 	return absResource
 }
 
+// Sum up the gap betweem Minus
 func MIG(input *Resource) Quantity {
+	// Clone utilization
 	tmp := input.Clone()
 	utilizations := NewResource()
 	for _, key := range []string{common.CPU, common.Memory} {
 		utilizations.Resources[key] = tmp.Resources[key]
 	}
+
+	// Find the min utilization and then calculate the sum of resource utilization gaps
 	minUtilization := Min(utilizations)
 	gaps := Quantity(int64(0))
 	for _, utilization := range utilizations.Resources {
 		gap := subVal(utilization, minUtilization)
-		addVal(gaps, gap)
+		gaps = addVal(gaps, gap)
 	}
 	return gaps
 }
 
+// Find max rquantity type in resources
 func Min(input *Resource) Quantity {
 	var min Quantity
 	assigned := false
@@ -941,6 +946,7 @@ func Min(input *Resource) Quantity {
 	return min
 }
 
+// Find min rquantity type in resources
 func Max(input *Resource) Quantity {
 	var max Quantity
 	assigned := false
@@ -954,4 +960,61 @@ func Max(input *Resource) Quantity {
 		}
 	}
 	return max
+}
+
+// Mutiplication among CPU, memory and duration
+func MasterResource(input *Resource) *Resource {
+	UpdatedMasterResource := input.Clone()
+	var masterResource Quantity = Quantity(int64(1))
+	for _, key := range []string{common.CPU, common.Memory, common.Duration} {
+		masterResource = mulValRatio(masterResource, float64(UpdatedMasterResource.Resources[key]))
+	}
+	UpdatedMasterResource.Resources[common.Master] = masterResource
+	return UpdatedMasterResource
+}
+
+func Average(inputs []*Resource) (result *Resource) {
+	resType := []string{common.CPU, common.Memory}
+	result = NewResource()
+	for _, resname := range resType {
+		sum := Quantity(0)
+		for _, r := range inputs {
+			sum = addVal(sum, r.Resources[resname])
+		}
+		average := mulValRatio(sum, float64(len(inputs)))
+		result.Resources[resname] = average
+	}
+	return
+}
+
+func Power(input *Resource, p float64) *Resource {
+	tmp := input.Clone()
+	for key, value := range tmp.Resources {
+		tmp.Resources[key] = power(value, p)
+	}
+	return tmp
+}
+
+func power(value Quantity, p float64) Quantity {
+	// optimise the zero cases (often hit with zero resource)
+	if value == 0 {
+		return 0
+	}
+	result := math.Pow(float64(value), p)
+	// protect against positive integer overflow
+	if result > math.MaxInt64 {
+		log.Logger().Warn("Multiplication result positive overflow",
+			zap.Float64("value", float64(value)),
+			zap.Float64("ratio", p))
+		return math.MaxInt64
+	}
+	// protect against negative integer overflow
+	if result < math.MinInt64 {
+		log.Logger().Warn("Multiplication result negative overflow",
+			zap.Float64("value", float64(value)),
+			zap.Float64("ratio", p))
+		return math.MinInt64
+	}
+	// not wrapped normal case
+	return Quantity(result)
 }

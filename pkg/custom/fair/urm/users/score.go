@@ -29,19 +29,6 @@ func (s *Score) SetWeight(grade int64) {
 	s.weight = grade
 }
 
-func (s *Score) SumWeight(resources map[string]int64) {
-	positive := true
-	var result int64
-	result = 1
-	for _, value := range resources {
-		if value <= 0 {
-			positive = false
-			break
-		}
-		result *= value
-	}
-
-	if positive {
-		s.SetWeight(s.GetWeight() + result)
-	}
+func (s *Score) AddWeight(weight int64) {
+	s.weight += weight
 }

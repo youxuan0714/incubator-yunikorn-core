@@ -6,7 +6,6 @@ import (
 	"github.com/apache/yunikorn-core/pkg/common/configs"
 	"github.com/apache/yunikorn-core/pkg/custom/fair/urm"
 	"github.com/apache/yunikorn-core/pkg/custom/fair/urm/apps"
-	"github.com/apache/yunikorn-core/pkg/custom/fair/urm/users"
 	customutil "github.com/apache/yunikorn-core/pkg/custom/util"
 	"github.com/apache/yunikorn-core/pkg/log"
 	"github.com/apache/yunikorn-core/pkg/scheduler/objects"
@@ -79,12 +78,12 @@ func (f *FairManager) NextAppToSchedule() (bool, string, string) {
 	return true, user, target.ApplicationID
 }
 
-func (f *FairManager) UpdateScheduledApp(user string, resources map[string]int64, duration uint64) {
+func (f *FairManager) UpdateScheduledApp(input *objects.Application) {
+	_, user, res := customutil.ParseApp(input)
 	if h, ok := f.apps[user]; !ok {
 		log.Logger().Error("Non existed app update", zap.String("app", user))
 	} else {
 		heap.Pop(h)
 	}
-	resources["Duration"] = int64(duration)
-	f.GetTenants().UpdateUser(users.NewScoreInfo(user, resources))
+	f.GetTenants().UpdateUser(user, res)
 }

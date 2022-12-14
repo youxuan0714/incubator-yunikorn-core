@@ -5,8 +5,10 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/apache/yunikorn-core/pkg/common/resources"
 	"github.com/apache/yunikorn-core/pkg/custom/fair/urm/users"
 	"github.com/apache/yunikorn-core/pkg/log"
+	sicommon "github.com/apache/yunikorn-scheduler-interface/lib/go/common"
 	"go.uber.org/zap"
 )
 
@@ -40,17 +42,18 @@ func (u *UserResourceManager) GetMinResourceUser() string {
 	return s.GetUser()
 }
 
-func (u *UserResourceManager) UpdateUser(info *users.ScoreInfo) error {
+func (u *UserResourceManager) UpdateUser(user string, info *resources.Resource) error {
 	if u.priority.Len() == 0 {
 		return errors.New("userheap should not be empty when update min")
 	}
 
 	s := heap.Pop(u.priority).(*users.Score)
-	if info.GetUser() != s.GetUser() {
+	if user != s.GetUser() {
 		heap.Push(u.priority, s)
-		return errors.New(fmt.Sprintf("score is %s, info is %s", s.GetUser(), info.GetUser()))
+		return errors.New(fmt.Sprintf("score is %s, info is %s", s.GetUser(), user))
 	}
-	s.SumWeight(info.GetResources())
+	masterResource := resources.MasterResource(info)
+	s.AddWeight(int64(masterResource.Resources[sicommon.Master]))
 	heap.Push(u.priority, s)
 	return nil
 }
