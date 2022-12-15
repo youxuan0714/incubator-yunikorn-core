@@ -25,6 +25,7 @@ func NewNodeResource(Available *resources.Resource) *NodeResource {
 
 func (n *NodeResource) Allocate(appID string, allocateTime time.Time, req *resources.Resource) {
 	releaseTime := allocateTime.Add(time.Second * time.Duration(req.Resources[sicommon.Duration]))
+	delete(req.Resources, sicommon.Duration)
 	heap.Push(n.RequestEvents, NewReleaseEvent(appID, releaseTime, req))
 	heap.Push(n.RequestEvents, NewAllocatedEvent(appID, allocateTime, req))
 }
@@ -35,6 +36,7 @@ func (n *NodeResource) GetUtilization(timeStamp time.Time, request *resources.Re
 	for n.RequestEvents.Len() > 0 {
 		tmp := heap.Pop(n.RequestEvents).(*Event)
 		bk = append(bk, tmp)
+		// when there is t=5 submit, that means the events before t=5 should be handle and calucalte in to temperal resources
 		if timeStamp.Before(tmp.Timestamp) {
 			break
 		} else {
@@ -50,23 +52,18 @@ func (n *NodeResource) GetUtilization(timeStamp time.Time, request *resources.Re
 		heap.Push(n.RequestEvents, element)
 	}
 
-	total := n.Capcity
+	total := n.Capcity //cpu and memory
 	resourceAllocated := resources.Sub(n.Capcity, available)
 	if request != nil {
 		tmp := request.Clone()
 		if _, ok := tmp.Resources[sicommon.Duration]; ok {
 			delete(tmp.Resources, sicommon.Duration)
 		}
+		// cpu and memory, without duration
 		resourceAllocated = resources.Sub(resourceAllocated, tmp)
 	}
-	utilizedResource := make(map[string]resources.Quantity)
 
-	for name := range resourceAllocated.Resources {
-		if total.Resources[name] > 0 {
-			utilizedResource[name] = resources.CalculateAbsUsedCapacity(total, resourceAllocated).Resources[name]
-		}
-	}
-	return &resources.Resource{Resources: utilizedResource}
+	return &resources.Resource{Resources: resources.CalculateAbsUsedCapacity(total, resourceAllocated).Resources}
 }
 
 func (n *NodeResource) WhenCanStart(submitTime time.Time, req *resources.Resource) (ExcessCapicity bool, startTime time.Time) {
@@ -115,6 +112,7 @@ func (n *NodeResource) ClearEventsBaseOnSubmittedTime(submitTime time.Time) {
 				available = resources.Add(available, tmp.AllocatedOrRelease)
 			}
 			n.CurrentTime = tmp.Timestamp
+			n.Available = available
 			continue
 		}
 		heap.Push(n.RequestEvents, tmp)
