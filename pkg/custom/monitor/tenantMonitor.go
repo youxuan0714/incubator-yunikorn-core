@@ -16,11 +16,9 @@ type FairnessMonitor struct {
 	MasterResourceOfTenants map[string]uint64
 }
 
-var TenantMonitor *FairnessMonitor
-
 // Initialize the tenant Monitor
-func init() {
-	TenantMonitor = &FairnessMonitor{
+func NewFairnessMonitor() *FairnessMonitor {
+	return &FairnessMonitor{
 		UnRunningApps:           make(map[string]*objects.Application, 0),
 		MasterResourceOfTenants: make(map[string]uint64, 0),
 	}

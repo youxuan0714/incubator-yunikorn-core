@@ -11,16 +11,10 @@ type NodeUtilizationMonitor struct {
 	nodes map[string]*objects.Node
 }
 
-var UtilizationMonitor *NodeUtilizationMonitor
-
-func init() {
-	UtilizationMonitor = &NodeUtilizationMonitor{
+func NewUtilizationMonitor() *NodeUtilizationMonitor {
+	return &NodeUtilizationMonitor{
 		nodes: make(map[string]*objects.Node, 0),
 	}
-}
-
-func GetUtilizationMonitor() *NodeUtilizationMonitor {
-	return UtilizationMonitor
 }
 
 func (m *NodeUtilizationMonitor) TraceNodes() {

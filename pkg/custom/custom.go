@@ -3,14 +3,19 @@ package custom
 import (
 	"github.com/apache/yunikorn-core/pkg/custom/fair"
 	"github.com/apache/yunikorn-core/pkg/custom/lb"
+	"github.com/apache/yunikorn-core/pkg/custom/monitor"
 )
 
 var GlobalFairManager *fair.FairManager
 var GlobalLBManager *lb.LBManager
+var GlobalFairnessMonitor *monitor.FairnessMonitor
+var GlobalNodeUtilizationMonitor *monitor.NodeUtilizationMonitor
 
 func init() {
 	GlobalFairManager = fair.NewFairManager()
 	GlobalLBManager = lb.NewLBManager()
+	GlobalFairnessMonitor = monitor.NewFairnessMonitor()
+	GlobalNodeUtilizationMonitor = monitor.NewUtilizationMonitor()
 }
 
 func GetFairManager() *fair.FairManager {
@@ -19,4 +24,12 @@ func GetFairManager() *fair.FairManager {
 
 func GetLBManager() *lb.LBManager {
 	return GlobalLBManager
+}
+
+func GetFiarMonitor() *monitor.FairnessMonitor {
+	return GlobalFairnessMonitor
+}
+
+func GetNodeUtilizationMonitor() *monitor.NodeUtilizationMonitor {
+	return GlobalNodeUtilizationMonitor
 }

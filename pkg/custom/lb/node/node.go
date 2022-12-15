@@ -15,19 +15,22 @@ type NodeResource struct {
 }
 
 func NewNodeResource(Available *resources.Resource) *NodeResource {
+	s := Available.Clone()
+	delete(s.Resources, sicommon.Duration)
 	return &NodeResource{
 		RequestEvents: NewEvents(),
-		Available:     Available.Clone(),
-		Capcity:       Available.Clone(),
+		Available:     s.Clone(),
+		Capcity:       s.Clone(),
 		CurrentTime:   time.Now(),
 	}
 }
 
 func (n *NodeResource) Allocate(appID string, allocateTime time.Time, req *resources.Resource) {
 	releaseTime := allocateTime.Add(time.Second * time.Duration(req.Resources[sicommon.Duration]))
-	delete(req.Resources, sicommon.Duration)
-	heap.Push(n.RequestEvents, NewReleaseEvent(appID, releaseTime, req))
-	heap.Push(n.RequestEvents, NewAllocatedEvent(appID, allocateTime, req))
+	s := req.Clone()
+	delete(s.Resources, sicommon.Duration)
+	heap.Push(n.RequestEvents, NewReleaseEvent(appID, releaseTime, s.Clone()))
+	heap.Push(n.RequestEvents, NewAllocatedEvent(appID, allocateTime, s.Clone()))
 }
 
 func (n *NodeResource) GetUtilization(timeStamp time.Time, request *resources.Resource) (utilization *resources.Resource) {
@@ -66,21 +69,25 @@ func (n *NodeResource) GetUtilization(timeStamp time.Time, request *resources.Re
 	return &resources.Resource{Resources: resources.CalculateAbsUsedCapacity(total, resourceAllocated).Resources}
 }
 
-func (n *NodeResource) WhenCanStart(submitTime time.Time, req *resources.Resource) (ExcessCapicity bool, startTime time.Time) {
+func (n *NodeResource) WhenCanStart(submitTime time.Time, req *resources.Resource) (enoughCapicity bool, startTime time.Time) {
+	applicationReq := req.Clone()
+	if _, ok := applicationReq.Resources[sicommon.Duration]; ok {
+		delete(applicationReq.Resources, sicommon.Duration)
+	}
 	startTime = n.CurrentTime
-	if enoughCapicity := resources.StrictlyGreaterThanOrEquals(n.Capcity, req); !enoughCapicity {
+	if enoughCapicity = resources.StrictlyGreaterThanOrEquals(n.Capcity, applicationReq); !enoughCapicity {
 		return
 	} else {
 		enoughCapicity = true
 	}
 
 	// clear outdated event and update
-	n.ClearEventsBaseOnSubmittedTime(submitTime)
+	_ = n.ClearEventsBaseOnSubmittedTime(submitTime)
 
 	bk := make([]*Event, 0)
 	available := n.Available.Clone()
 	startTime = n.CurrentTime
-	for n.RequestEvents.Len() > 0 && !resources.StrictlyGreaterThanOrEquals(available, req) {
+	for n.RequestEvents.Len() > 0 && !resources.StrictlyGreaterThanOrEquals(available, applicationReq) {
 		tmp := heap.Pop(n.RequestEvents).(*Event)
 		bk = append(bk, tmp)
 		if tmp.Allocate {
@@ -101,21 +108,22 @@ func (n *NodeResource) WhenCanStart(submitTime time.Time, req *resources.Resourc
 	return
 }
 
-func (n *NodeResource) ClearEventsBaseOnSubmittedTime(submitTime time.Time) {
+func (n *NodeResource) ClearEventsBaseOnSubmittedTime(submitTime time.Time) *resources.Resource {
 	available := n.Available.Clone()
 	for n.RequestEvents.Len() > 0 {
 		tmp := heap.Pop(n.RequestEvents).(*Event)
-		if tmp.Timestamp.Before(submitTime) || tmp.Timestamp.Equal(submitTime) {
+		if !tmp.Timestamp.After(submitTime) {
 			if tmp.Allocate {
 				available = resources.Sub(available, tmp.AllocatedOrRelease)
 			} else {
 				available = resources.Add(available, tmp.AllocatedOrRelease)
 			}
 			n.CurrentTime = tmp.Timestamp
-			n.Available = available
-			continue
+		} else {
+			heap.Push(n.RequestEvents, tmp)
+			break
 		}
-		heap.Push(n.RequestEvents, tmp)
-		break
 	}
+	n.Available = available
+	return n.Available.Clone()
 }

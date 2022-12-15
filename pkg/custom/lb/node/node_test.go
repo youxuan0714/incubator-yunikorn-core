@@ -9,7 +9,6 @@ import (
 )
 
 func TestNewNodeResource(t *testing.T) {
-
 	cap := resources.NewResource()
 	cap.Resources[sicommon.CPU] = resources.Quantity(100)
 	cap.Resources[sicommon.Memory] = resources.Quantity(100)
@@ -31,9 +30,10 @@ func TestNewNodeResource(t *testing.T) {
 }
 
 func TestAllocate(t *testing.T) {
-	cap := resources.NewResource()
-	cap.Resources[sicommon.CPU] = resources.Quantity(100)
-	cap.Resources[sicommon.Memory] = resources.Quantity(100)
+	cap := resources.NewResourceFromMap(map[string]resources.Quantity{
+		sicommon.CPU:    resources.Quantity(100),
+		sicommon.Memory: resources.Quantity(100),
+	})
 	nr := NewNodeResource(cap)
 	timestamp := nr.CurrentTime
 
@@ -162,6 +162,186 @@ func TestAllocate(t *testing.T) {
 				for _, element := range bk {
 					heap.Push(nr.RequestEvents, element)
 				}
+			}
+		})
+	}
+
+	type outputFormat2 struct {
+		startTime time.Time
+		enough    bool
+	}
+	tests2 := []struct {
+		caseName string
+		input    inputFormat
+		expect   outputFormat2
+	}{
+		{
+			caseName: "Excess the capicity",
+			input: inputFormat{
+				appID:     "test-03",
+				startTime: timestamp,
+				res: resources.NewResourceFromMap(map[string]resources.Quantity{
+					sicommon.CPU:      resources.Quantity(150),
+					sicommon.Memory:   resources.Quantity(25),
+					sicommon.Duration: resources.Quantity(5)}),
+			},
+			expect: outputFormat2{
+				startTime: timestamp,
+				enough:    false,
+			},
+		},
+		{
+			caseName: "Allication at t = 5",
+			input: inputFormat{
+				appID:     "test-03",
+				startTime: timestamp.Add(time.Second * 5),
+				res: resources.NewResourceFromMap(map[string]resources.Quantity{
+					sicommon.CPU:      resources.Quantity(50),
+					sicommon.Memory:   resources.Quantity(25),
+					sicommon.Duration: resources.Quantity(5)}),
+			},
+			expect: outputFormat2{
+				startTime: timestamp.Add(time.Second * 25),
+				enough:    true,
+			},
+		},
+		{
+			caseName: "Allication at t = 25",
+			input: inputFormat{
+				appID:     "test-03",
+				startTime: timestamp.Add(time.Second * 25),
+				res: resources.NewResourceFromMap(map[string]resources.Quantity{
+					sicommon.CPU:      resources.Quantity(50),
+					sicommon.Memory:   resources.Quantity(25),
+					sicommon.Duration: resources.Quantity(5)}),
+			},
+			expect: outputFormat2{
+				startTime: timestamp.Add(time.Second * 25),
+				enough:    true,
+			},
+		},
+		{
+			caseName: "Allication at t = 100",
+			input: inputFormat{
+				appID:     "test-03",
+				startTime: timestamp.Add(time.Second * 100),
+				res: resources.NewResourceFromMap(map[string]resources.Quantity{
+					sicommon.CPU:      resources.Quantity(50),
+					sicommon.Memory:   resources.Quantity(25),
+					sicommon.Duration: resources.Quantity(5)}),
+			},
+			expect: outputFormat2{
+				startTime: timestamp.Add(time.Second * 100),
+				enough:    true,
+			},
+		},
+	}
+	for _, tt := range tests2 {
+		t.Run(tt.caseName, func(t *testing.T) {
+			enough, startTime := nr.WhenCanStart(tt.input.startTime, tt.input.res)
+			if enough != tt.expect.enough {
+				t.Errorf("Node should not acess the req %v which is bigger than capicity %v", tt.input.res.Clone(), nr.Capcity.Clone())
+			} else {
+				if !startTime.Equal(tt.expect.startTime) {
+					t.Errorf("Expect application would start at %v, not %v", tt.expect.startTime, startTime)
+				}
+			}
+		})
+	}
+}
+
+func TestClearEventsBaseOnSubmittedTime(t *testing.T) {
+	timestamp := time.Now()
+	type inputFormat struct {
+		appID     string
+		startTime time.Time
+		res       *resources.Resource
+	}
+	allocations := []inputFormat{
+		inputFormat{
+			appID:     "test-01",
+			startTime: timestamp,
+			res: resources.NewResourceFromMap(map[string]resources.Quantity{
+				sicommon.CPU:      resources.Quantity(50),
+				sicommon.Memory:   resources.Quantity(25),
+				sicommon.Duration: resources.Quantity(25)}),
+		},
+		inputFormat{
+			appID:     "test-02",
+			startTime: timestamp,
+			res: resources.NewResourceFromMap(map[string]resources.Quantity{
+				sicommon.CPU:      resources.Quantity(50),
+				sicommon.Memory:   resources.Quantity(25),
+				sicommon.Duration: resources.Quantity(50)}),
+		}}
+	tests := []struct {
+		caseName      string
+		submittedTime time.Time
+		elementNum    int
+		NewTimestamp  time.Time
+		expectedRes   *resources.Resource
+	}{
+		{
+			caseName:      "t = 0, should handle two allication ask",
+			submittedTime: timestamp,
+			elementNum:    2,
+			NewTimestamp:  timestamp,
+			expectedRes: resources.NewResourceFromMap(map[string]resources.Quantity{
+				sicommon.CPU:    resources.Quantity(0),
+				sicommon.Memory: resources.Quantity(50)}),
+		},
+		{
+			caseName:      "t = 25, should handle two allication ask and a release",
+			submittedTime: timestamp.Add(time.Second * 25),
+			elementNum:    1,
+			NewTimestamp:  timestamp.Add(time.Second * 25),
+			expectedRes: resources.NewResourceFromMap(map[string]resources.Quantity{
+				sicommon.CPU:    resources.Quantity(50),
+				sicommon.Memory: resources.Quantity(75)}),
+		},
+		{
+			caseName:      "t = 100, should handle two allication ask and two release",
+			submittedTime: timestamp.Add(time.Second * 100),
+			elementNum:    0,
+			NewTimestamp:  timestamp.Add(time.Second * 50),
+			expectedRes: resources.NewResourceFromMap(map[string]resources.Quantity{
+				sicommon.CPU:    resources.Quantity(100),
+				sicommon.Memory: resources.Quantity(100)}),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.caseName, func(t *testing.T) {
+			cap := resources.NewResourceFromMap(map[string]resources.Quantity{
+				sicommon.CPU:    resources.Quantity(100),
+				sicommon.Memory: resources.Quantity(100),
+			})
+			nr := NewNodeResource(cap)
+			nr.CurrentTime = timestamp
+			for _, allocation := range allocations {
+				nr.Allocate(allocation.appID, allocation.startTime, allocation.res)
+			}
+			/*
+				if i == 2 || i == 1 {
+					bk := make([]*Event, 0)
+					for nr.RequestEvents.Len() > 0 {
+						tmp := heap.Pop(nr.RequestEvents).(*Event)
+						t.Errorf("%v, %v, %v", tmp.Timestamp, tt.submittedTime, tt.NewTimestamp)
+					}
+					for _, element := range bk {
+						heap.Push(nr.RequestEvents, element)
+					}
+				}
+			*/
+			nr.ClearEventsBaseOnSubmittedTime(tt.submittedTime)
+			if nr.RequestEvents.Len() != tt.elementNum {
+				t.Errorf("element number in %v expect %v, got %v", nr.RequestEvents, tt.elementNum, nr.RequestEvents.Len())
+			}
+			if !nr.CurrentTime.Equal(tt.NewTimestamp) {
+				t.Errorf("timestamp expect %v, got %v", tt.NewTimestamp, nr.CurrentTime)
+			}
+			if !resources.Equals(nr.Available, tt.expectedRes) {
+				t.Errorf("Resource expected %v, got %v", tt.expectedRes, nr.Available)
 			}
 		})
 	}
