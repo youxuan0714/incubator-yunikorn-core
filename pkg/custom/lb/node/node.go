@@ -43,10 +43,11 @@ func (n *NodeResource) GetUtilization(timeStamp time.Time, request *resources.Re
 		if timeStamp.Before(tmp.Timestamp) {
 			break
 		} else {
+			AllocatedOrRelease := tmp.AllocatedOrRelease.Clone()
 			if tmp.Allocate {
-				available = resources.Sub(available, tmp.AllocatedOrRelease)
+				available = resources.Sub(available, AllocatedOrRelease)
 			} else {
-				available = resources.Add(available, tmp.AllocatedOrRelease)
+				available = resources.Add(available, AllocatedOrRelease)
 			}
 		}
 	}
@@ -63,7 +64,7 @@ func (n *NodeResource) GetUtilization(timeStamp time.Time, request *resources.Re
 			delete(tmp.Resources, sicommon.Duration)
 		}
 		// cpu and memory, without duration
-		resourceAllocated = resources.Sub(resourceAllocated, tmp)
+		resourceAllocated = resources.Add(resourceAllocated, tmp)
 	}
 
 	return &resources.Resource{Resources: resources.CalculateAbsUsedCapacity(total, resourceAllocated).Resources}

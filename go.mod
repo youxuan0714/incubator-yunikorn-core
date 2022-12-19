@@ -37,6 +37,7 @@ require (
 	github.com/prometheus/procfs v0.0.8 // indirect
 	github.com/uber/jaeger-client-go v2.25.0+incompatible
 	github.com/uber/jaeger-lib v2.4.0+incompatible
+	github.com/xuri/excelize/v2 v2.6.1 // indirect
 	go.uber.org/atomic v1.5.1 // indirect
 	go.uber.org/multierr v1.4.0 // indirect
 	go.uber.org/zap v1.13.0
@@ -51,6 +52,4 @@ require (
 	honnef.co/go/tools v0.0.1-2020.1.3 // indirect
 )
 
-replace (
-	 github.com/apache/yunikorn-scheduler-interface => ../incubator-yunikorn-scheduler-interface
-)
+replace github.com/apache/yunikorn-scheduler-interface => ../incubator-yunikorn-scheduler-interface

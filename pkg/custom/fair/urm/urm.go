@@ -8,7 +8,6 @@ import (
 	"github.com/apache/yunikorn-core/pkg/common/resources"
 	"github.com/apache/yunikorn-core/pkg/custom/fair/urm/users"
 	"github.com/apache/yunikorn-core/pkg/log"
-	sicommon "github.com/apache/yunikorn-scheduler-interface/lib/go/common"
 	"go.uber.org/zap"
 )
 
@@ -52,8 +51,7 @@ func (u *UserResourceManager) UpdateUser(user string, info *resources.Resource) 
 		heap.Push(u.priority, s)
 		return errors.New(fmt.Sprintf("score is %s, info is %s", s.GetUser(), user))
 	}
-	masterResource := resources.MasterResource(info)
-	s.AddWeight(int64(masterResource.Resources[sicommon.Master]))
+	s.AddWeight(int64(resources.MasterResource(info)))
 	heap.Push(u.priority, s)
 	return nil
 }

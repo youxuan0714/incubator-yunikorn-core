@@ -1656,3 +1656,193 @@ func TestHasNegativeValue(t *testing.T) {
 		})
 	}
 }
+
+func TestMIG(t *testing.T) {
+	tests := []struct {
+		caseName string
+		input    *Resource
+		expect   Quantity
+	}{
+		{
+			"basic",
+			NewResourceFromMap(map[string]Quantity{common.CPU: 20, common.Memory: 50}),
+			Quantity(30),
+		},
+		{
+			"basic-reverse",
+			NewResourceFromMap(map[string]Quantity{common.CPU: 50, common.Memory: 20}),
+			Quantity(30),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.caseName, func(t *testing.T) {
+			if got := MIG(tt.input); tt.expect != got {
+				t.Errorf("MIG expect %v, got %v", tt.expect, got)
+			}
+		})
+	}
+}
+
+func TestMin(t *testing.T) {
+	tests := []struct {
+		caseName string
+		input    *Resource
+		expect   Quantity
+	}{
+		{
+			"basic",
+			NewResourceFromMap(map[string]Quantity{common.CPU: 20, common.Memory: 50}),
+			Quantity(20),
+		},
+		{
+			"basic-reverse",
+			NewResourceFromMap(map[string]Quantity{common.CPU: 60, common.Memory: 30}),
+			Quantity(30),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.caseName, func(t *testing.T) {
+			if got := Min(tt.input); tt.expect != got {
+				t.Errorf("Min resource type in resource expect %v, got %v", tt.expect, got)
+			}
+		})
+	}
+}
+
+func TestMax(t *testing.T) {
+	tests := []struct {
+		caseName string
+		input    *Resource
+		expect   Quantity
+	}{
+		{
+			"basic",
+			NewResourceFromMap(map[string]Quantity{common.CPU: 20, common.Memory: 50}),
+			Quantity(50),
+		},
+		{
+			"basic-reverse",
+			NewResourceFromMap(map[string]Quantity{common.CPU: 60, common.Memory: 30}),
+			Quantity(60),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.caseName, func(t *testing.T) {
+			if got := Max(tt.input); tt.expect != got {
+				t.Errorf("Max resource type in resource expect %v, got %v", tt.expect, got)
+			}
+		})
+	}
+}
+
+func TestMasterResource(t *testing.T) {
+	tests := []struct {
+		caseName string
+		input    *Resource
+		expect   Quantity
+	}{
+		{
+			"basic",
+			NewResourceFromMap(map[string]Quantity{common.CPU: 20, common.Memory: 50, common.Duration: 30}),
+			Quantity(30000),
+		},
+		{
+			"basic-reverse",
+			NewResourceFromMap(map[string]Quantity{common.CPU: 60, common.Memory: 30, common.Duration: 20}),
+			Quantity(36000),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.caseName, func(t *testing.T) {
+			if got := MasterResource(tt.input); tt.expect != got {
+				t.Errorf("master resource expect %v, got %v", tt.expect, got)
+			}
+		})
+	}
+}
+
+func TestAverage(t *testing.T) {
+	tests := []struct {
+		caseName string
+		input    []*Resource
+		expect   *Resource
+	}{
+		{
+			"basic",
+			[]*Resource{
+				NewResourceFromMap(map[string]Quantity{common.CPU: 20, common.Memory: 10}),
+				NewResourceFromMap(map[string]Quantity{common.CPU: 40, common.Memory: 20}),
+				NewResourceFromMap(map[string]Quantity{common.CPU: 60, common.Memory: 30}),
+				NewResourceFromMap(map[string]Quantity{common.CPU: 80, common.Memory: 40}),
+			},
+			NewResourceFromMap(map[string]Quantity{common.CPU: 50, common.Memory: 25}),
+		},
+		{
+			"basic-reverse",
+			[]*Resource{
+				NewResourceFromMap(map[string]Quantity{common.CPU: 60, common.Memory: 30}),
+				NewResourceFromMap(map[string]Quantity{common.CPU: 33, common.Memory: 35}),
+			},
+			NewResourceFromMap(map[string]Quantity{common.CPU: 46, common.Memory: 32}),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.caseName, func(t *testing.T) {
+			if got := Average(tt.input); !Equals(tt.expect, got) {
+				t.Errorf("average expect %v, got %v", tt.expect, got)
+			}
+		})
+	}
+}
+
+func TestPower(t *testing.T) {
+	tests := []struct {
+		caseName    string
+		input       *Resource
+		powerNumber float64
+		expect      *Resource
+	}{
+		{
+			"basic",
+			NewResourceFromMap(map[string]Quantity{common.CPU: 20, common.Memory: 50, common.Duration: 30}),
+			float64(2),
+			NewResourceFromMap(map[string]Quantity{common.CPU: 400, common.Memory: 2500, common.Duration: 900}),
+		},
+		{
+			"basic-reverse",
+			NewResourceFromMap(map[string]Quantity{common.CPU: 60, common.Memory: 30, common.Duration: 20}),
+			float64(2),
+			NewResourceFromMap(map[string]Quantity{common.CPU: 3600, common.Memory: 900, common.Duration: 400}),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.caseName, func(t *testing.T) {
+			if got := Power(tt.input, tt.powerNumber); !Equals(tt.expect, got) {
+				t.Errorf("resource power expect %v, got %v", tt.expect, got)
+			}
+		})
+	}
+}
+
+func TestQuantityPower(t *testing.T) {
+	tests := []struct {
+		caseName    string
+		input       Quantity
+		powerNumber float64
+		expect      Quantity
+	}{
+		{
+			"basic",
+			Quantity(3),
+			float64(2),
+			Quantity(9),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.caseName, func(t *testing.T) {
+			if got := power(tt.input, tt.powerNumber); tt.expect != got {
+				t.Errorf("quantity power expect %v, got %v", tt.expect, tt.input)
+			}
+		})
+	}
+}

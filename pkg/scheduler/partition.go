@@ -33,6 +33,7 @@ import (
 	"github.com/apache/yunikorn-core/pkg/common/configs"
 	"github.com/apache/yunikorn-core/pkg/common/resources"
 	"github.com/apache/yunikorn-core/pkg/common/security"
+	"github.com/apache/yunikorn-core/pkg/custom"
 	"github.com/apache/yunikorn-core/pkg/log"
 	"github.com/apache/yunikorn-core/pkg/metrics"
 	"github.com/apache/yunikorn-core/pkg/scheduler/objects"
@@ -581,6 +582,9 @@ func (pc *PartitionContext) AddNode(node *objects.Node, existingAllocations []*o
 	if err := pc.addNodeToList(node); err != nil {
 		return err
 	}
+
+	custom.GetLBManager().AddNode(node)
+	custom.GetNodeUtilizationMonitor().AddNode(node)
 
 	// Add allocations that exist on the node when added
 	if len(existingAllocations) > 0 {

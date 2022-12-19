@@ -963,14 +963,13 @@ func Max(input *Resource) Quantity {
 }
 
 // Mutiplication among CPU, memory and duration
-func MasterResource(input *Resource) *Resource {
+func MasterResource(input *Resource) Quantity {
 	UpdatedMasterResource := input.Clone()
 	var masterResource Quantity = Quantity(int64(1))
 	for _, key := range []string{common.CPU, common.Memory, common.Duration} {
 		masterResource = mulValRatio(masterResource, float64(UpdatedMasterResource.Resources[key]))
 	}
-	UpdatedMasterResource.Resources[common.Master] = masterResource
-	return UpdatedMasterResource
+	return masterResource
 }
 
 func Average(inputs []*Resource) (result *Resource) {
@@ -981,7 +980,7 @@ func Average(inputs []*Resource) (result *Resource) {
 		for _, r := range inputs {
 			sum = addVal(sum, r.Resources[resname])
 		}
-		average := mulValRatio(sum, float64(len(inputs)))
+		average := mulValRatio(sum, float64(1)/float64(len(inputs)))
 		result.Resources[resname] = average
 	}
 	return

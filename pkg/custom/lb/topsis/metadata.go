@@ -23,25 +23,60 @@ func NewMetaData(appID string, submittedTime time.Time, app *resources.Resource,
 }
 
 func (m *MetaData) Recommanded() (RecommandednodeID string, startTime time.Time) {
-	MIGs := make([]resources.Quantity, 0)
-	standardDeviations := make([]resources.Quantity, 0)
-	startTimeOfNodes := make(map[string]time.Time, 0)
 	// Calculate the starttime of each node which could contains application.
-	for nodeID, n := range m.Nodes {
-		if enough, startTimeOfNode := n.WhenCanStart(m.SubmittedTime, m.AppRequest); enough {
+	startTimeOfNodes := WhenCanStart(m.Nodes, m.SubmittedTime, m.AppRequest.Clone())
+
+	// stand deviation and mig
+	MIGs, standardDeviations, indexOfNodeID := MIGAndStandardDeviation(m.Nodes, startTimeOfNodes, m.AppRequest.Clone())
+
+	//objectNames := []string{"MIG", "Deviation"}
+	// normalized
+	NorMIGs := Normalized(MIGs)
+	NorStandardDeviations := Normalized(standardDeviations)
+	weightedMIGs := Weight(NorMIGs)
+	weightedStandardDeviations := Weight(NorStandardDeviations)
+
+	// A+ and A-
+	APlusMIG := APlus(weightedMIGs)
+	APlusStandardDeviation := APlus(weightedStandardDeviations)
+	AMinusMIG := AMinus(weightedMIGs)
+	AMinusStandardDeviation := AMinus(weightedStandardDeviations)
+
+	// SM+ and SM-
+	weighted := [][]float64{weightedMIGs, weightedStandardDeviations}
+	APlusObjective := []float64{APlusMIG, APlusStandardDeviation}
+	AMinusObjective := []float64{AMinusMIG, AMinusStandardDeviation}
+	SMPlusObject := SM(weighted, APlusObjective)
+	SMMinusObject := SM(weighted, AMinusObjective)
+
+	// RC
+	nodeIndex, _ := IndexOfMaxRC(SMPlusObject, SMMinusObject)
+	RecommandednodeID = indexOfNodeID[nodeIndex]
+	startTime = startTimeOfNodes[RecommandednodeID]
+	return
+}
+
+func WhenCanStart(nodes map[string]*node.NodeResource, submittedTime time.Time, app *resources.Resource) map[string]time.Time {
+	startTimeOfNodes := make(map[string]time.Time, 0)
+	for nodeID, n := range nodes {
+		if enough, startTimeOfNode := n.WhenCanStart(submittedTime, app); enough {
 			startTimeOfNodes[nodeID] = startTimeOfNode
 		}
 	}
+	return startTimeOfNodes
+}
 
-	// stand deviation and mig
+func MIGAndStandardDeviation(nodes map[string]*node.NodeResource, startTimeOfNodes map[string]time.Time, app *resources.Resource) ([]resources.Quantity, []resources.Quantity, []string) {
+	MIGs := make([]resources.Quantity, 0)
+	standardDeviations := make([]resources.Quantity, 0)
 	indexOfNodeID := make([]string, 0)
 	for nodeID, startingTime := range startTimeOfNodes {
 		indexOfNodeID = append(indexOfNodeID, nodeID)
 		utilizationsAtTimeT := make([]*resources.Resource, 0)
-		for currentNodeID, n := range m.Nodes {
+		for currentNodeID, n := range nodes {
 			if currentNodeID == nodeID {
 				// assume that assign application to node and calculate utilization
-				AssignedNodeUtilization := n.GetUtilization(startingTime, m.AppRequest.Clone())
+				AssignedNodeUtilization := n.GetUtilization(startingTime, app)
 				utilizationsAtTimeT = append(utilizationsAtTimeT, AssignedNodeUtilization)
 				MIGs = append(MIGs, resources.MIG(AssignedNodeUtilization))
 			} else {
@@ -61,24 +96,5 @@ func (m *MetaData) Recommanded() (RecommandednodeID string, startTime time.Time)
 		standardDeviation := resources.Max(gapSum)
 		standardDeviations = append(standardDeviations, standardDeviation)
 	}
-
-	objectNames := []string{"MIG", "Deviation"}
-	// normalized
-	NorMIGs := Normalized(MIGs)
-	NorStandardDeviations := Normalized(standardDeviations)
-	weighted := Weight(objectNames, NorMIGs, NorStandardDeviations, float64(2))
-
-	// A+ and A-
-	APlusObjects := APlus(objectNames, weighted)
-	AMinusObjects := AMinus(objectNames, weighted)
-
-	// SM+ and SM-
-	SMPlusObject := SM(objectNames, weighted, APlusObjects)
-	SMMinusObject := SM(objectNames, weighted, AMinusObjects)
-
-	// RC
-	nodeIndex := IndexOfMaxRC(SMPlusObject, SMMinusObject)
-	RecommandednodeID = indexOfNodeID[nodeIndex]
-	startTime = startTimeOfNodes[RecommandednodeID]
-	return
+	return MIGs, standardDeviations, indexOfNodeID
 }

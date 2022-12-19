@@ -5,83 +5,79 @@ import (
 	"math"
 )
 
-func Normalized(q []resources.Quantity) []resources.Quantity {
-	result := make([]resources.Quantity, 0)
+func Normalized(q []resources.Quantity) []float64 {
+	result := make([]float64, 0)
 	sum := float64(0)
 	for _, element := range q {
-		sum += math.Pow(float64(element), float64(2))
+		sum += math.Pow(float64(int64(element)), float64(2))
 	}
 	base := math.Sqrt(sum)
 	for _, element := range q {
 		tmp := float64(int64(element)) / base
-		result = append(result, resources.Quantity(tmp))
-	}
-	return result
-}
-
-func Weight(objectNames []string, migs, deviations []resources.Quantity, w float64) []*resources.Resource {
-	result := make([]*resources.Resource, 0)
-	number := len(migs)
-	for i := 0; i < number; i++ {
-		tmp := resources.NewResource()
-		mig := float64(int64(migs[i])) / w
-		deviation := float64(int64(deviations[i])) / w
-		tmp.Resources[objectNames[0]] = resources.Quantity(mig)
-		tmp.Resources[objectNames[1]] = resources.Quantity(deviation)
 		result = append(result, tmp)
 	}
 	return result
 }
 
-func APlus(objectNames []string, q []*resources.Resource) *resources.Resource {
-	min := q[0].Clone()
+func Weight(normalizedValues []float64) []float64 {
+	result := make([]float64, 0)
+	objectNames := []string{"MIG", "deviation"}
+	w := float64(len(objectNames))
+	for _, value := range normalizedValues {
+		result = append(result, (value / w))
+	}
+	return result
+}
+
+func APlus(q []float64) float64 {
+	min := q[0]
 	for _, element := range q {
-		for _, object := range objectNames {
-			if min.Resources[object] > element.Resources[object] {
-				min.Resources[object] = element.Resources[object]
-			}
+		if min > element {
+			min = element
 		}
 	}
 	return min
 }
 
-func AMinus(objectNames []string, q []*resources.Resource) *resources.Resource {
-	max := q[0].Clone()
+func AMinus(q []float64) float64 {
+	max := q[0]
 	for _, element := range q {
-		for _, object := range objectNames {
-			if max.Resources[object] > element.Resources[object] {
-				max.Resources[object] = element.Resources[object]
-			}
+		if max < element {
+			max = element
 		}
 	}
 	return max
 }
 
-func SM(objectNames []string, weighted []*resources.Resource, AObjects *resources.Resource) []float64 {
-	result := make([]float64, 0)
-	for _, element := range weighted {
-		sum := float64(0)
-		for _, object := range objectNames {
-			tmp := element.Resources[object] - AObjects.Resources[object]
-			power := math.Pow(float64(tmp), float64(2))
-			sum += power
+// This fomula only calculate one of MIG or deviation distance
+// For example, there are n MIGs and n A(+/-), this gomula would caculate
+// If develeoper would add a new objetive, developer
+func SM(weighted [][]float64, AObjects []float64) []float64 {
+	result := make([]float64, len(weighted[0]))
+	for objectiveType, objective := range weighted {
+		objectValue := AObjects[objectiveType]
+		for index, value := range objective {
+			result[index] += math.Pow(value-objectValue, float64(2))
 		}
-		sum = math.Sqrt(sum)
-		result = append(result, sum)
+	}
+	for index, sum := range result {
+		result[index] = math.Sqrt(sum)
 	}
 	return result
 }
 
-func IndexOfMaxRC(SMPlus, SMMinus []float64) int {
-	number := len(SMPlus)
+func IndexOfMaxRC(SMPlus, SMMinus []float64) (int, []float64) {
 	index := 0
-	max := SMMinus[index] / (SMPlus[index] + SMMinus[index])
-	for i := 0; i < number; i++ {
-		tmp := SMMinus[i] / (SMPlus[i] + SMMinus[i])
-		if max < tmp {
+	max := float64(0)
+	debug := make([]float64, 0)
+	for i, value := range SMMinus {
+		base := SMPlus[i] + value
+		tmp := value / base
+		if tmp > max {
 			max = tmp
 			index = i
 		}
+		debug = append(debug, tmp)
 	}
-	return index
+	return index, debug
 }

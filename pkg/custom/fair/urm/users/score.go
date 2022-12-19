@@ -25,10 +25,6 @@ func (s *Score) GetWeight() int64 {
 	return s.weight
 }
 
-func (s *Score) SetWeight(grade int64) {
-	s.weight = grade
-}
-
 func (s *Score) AddWeight(weight int64) {
 	s.weight += weight
 }
