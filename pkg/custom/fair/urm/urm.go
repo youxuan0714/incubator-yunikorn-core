@@ -3,7 +3,6 @@ package urm
 import (
 	"container/heap"
 	"errors"
-	"fmt"
 
 	"github.com/apache/yunikorn-core/pkg/common/resources"
 	"github.com/apache/yunikorn-core/pkg/custom/fair/urm/users"
@@ -47,11 +46,15 @@ func (u *UserResourceManager) UpdateUser(user string, info *resources.Resource) 
 	}
 
 	s := heap.Pop(u.priority).(*users.Score)
-	if user != s.GetUser() {
-		heap.Push(u.priority, s)
-		return errors.New(fmt.Sprintf("score is %s, info is %s", s.GetUser(), user))
-	}
+	/*
+		if user != s.GetUser() {
+			heap.Push(u.priority, s)
+			return errors.New(fmt.Sprintf("score is %s, info is %s", s.GetUser(), user))
+		}
+	*/
+
 	s.AddWeight(int64(resources.MasterResource(info)))
+	log.Logger().Info("wieght", zap.String("user", s.GetUser()), zap.Int64("weight", s.GetWeight()))
 	heap.Push(u.priority, s)
 	return nil
 }

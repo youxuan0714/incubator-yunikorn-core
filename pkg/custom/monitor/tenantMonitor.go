@@ -51,17 +51,13 @@ func (m *FairnessMonitor) RecordUnScheduledApp(app *objects.Application) {
 func (m *FairnessMonitor) UpdateTheTenantMasterResource(app *objects.Application) {
 	appID := app.ApplicationID
 	if _, ok := m.UnRunningApps[appID]; !ok {
-		// Already update this appliction to certain tenant, skip
+		log.Logger().Info("fairness unrecord app", zap.String("app", appID))
 		return
 	}
-
-	if running := app.IsRunning(); running {
-		m.AddMasterResourceToTenant(app.GetUser().User, CalculateMasterResourceOfApplication(app))
-	} else {
-		return
-	}
+	m.AddMasterResourceToTenant(app.GetUser().User, CalculateMasterResourceOfApplication(app))
 
 	log.Logger().Info("fairness print", zap.Any("apps", m.UnRunningApps), zap.Any("tenants", m.MasterResourceOfTenants))
+	return
 }
 
 func (m *FairnessMonitor) Print() {
@@ -94,9 +90,9 @@ func (m *FairnessMonitor) ParseTenantsInPartitionConfig(conf configs.PartitionCo
 
 // Add master resource to specific tenant
 func (m *FairnessMonitor) AddMasterResourceToTenant(user string, masterResource uint64) {
+	log.Logger().Warn("Update master resource who is not paresd in config, add it", zap.String("user", user), zap.Uint64("masterResource", masterResource))
 	if _, ok := m.MasterResourceOfTenants[user]; !ok {
 		m.MasterResourceOfTenants[user] = masterResource
-		log.Logger().Warn("Update master resource who is not paresd in config, add it", zap.String("user", user), zap.Uint64("masterResource", masterResource))
 	} else {
 		m.MasterResourceOfTenants[user] += masterResource
 	}

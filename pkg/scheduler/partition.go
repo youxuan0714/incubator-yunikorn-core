@@ -34,6 +34,7 @@ import (
 	"github.com/apache/yunikorn-core/pkg/common/resources"
 	"github.com/apache/yunikorn-core/pkg/common/security"
 	"github.com/apache/yunikorn-core/pkg/custom"
+	customutil "github.com/apache/yunikorn-core/pkg/custom"
 	"github.com/apache/yunikorn-core/pkg/log"
 	"github.com/apache/yunikorn-core/pkg/metrics"
 	"github.com/apache/yunikorn-core/pkg/scheduler/objects"
@@ -108,7 +109,7 @@ func (pc *PartitionContext) initialPartitionFromConfig(conf configs.PartitionCon
 	if len(conf.Queues) == 0 || conf.Queues[0].Name != configs.RootQueue {
 		return fmt.Errorf("partition cannot be created without root queue")
 	}
-
+	customutil.GetFairManager().ParseUsersInPartitionConfig(conf)
 	// pc.FairAdmin.ParseUsersInPartitionConfig(conf)
 	// Setup the queue structure: root first it should be the only queue at this level
 	// Add the rest of the queue structure recursively
@@ -316,6 +317,9 @@ func (pc *PartitionContext) AddApplication(app *objects.Application) error {
 	if pc.getApplication(appID) != nil {
 		return fmt.Errorf("adding application %s to partition %s, but application already existed", appID, pc.Name)
 	}
+
+	customutil.GetFairManager().ParseUserInApp(app)
+	customutil.GetFairMonitor().RecordUnScheduledApp(app)
 
 	// Put app under the queue
 	queueName := app.GetQueuePath()
