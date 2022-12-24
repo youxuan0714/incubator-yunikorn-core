@@ -896,7 +896,7 @@ func (sa *Application) TrySpecifiedNode(requiredNode string, getNodeFn func(stri
 					zap.String("AllocationResult", alloc.GetResult().String()))
 				return alloc
 			}
-			return newReservedAllocation(Reserved, node.NodeID, request)
+			//return newReservedAllocation(Reserved, node.NodeID, request)
 		}
 	}
 	return nil
@@ -1177,44 +1177,6 @@ func (sa *Application) tryReservedAllocate(headRoom *resources.Resource, nodeIte
 			if alloc != nil {
 				return alloc
 			}
-		}
-	}
-	return nil
-}
-
-func (sa *Application) TryReservedAllocate(nodeID string, getNodeFn func(string) *Node) *Allocation {
-	sa.Lock()
-	defer sa.Unlock()
-	// process all outstanding reservations and pick the first one that fits
-	for _, reserve := range sa.reservations {
-		ask := sa.requests[reserve.askKey]
-		// sanity check and cleanup if needed
-		if ask == nil || ask.GetPendingAskRepeat() == 0 {
-			var unreserveAsk *AllocationAsk
-			// if the ask was not found we need to construct one to unreserve
-			if ask == nil {
-				unreserveAsk = &AllocationAsk{
-					allocationKey: reserve.askKey,
-					applicationID: sa.ApplicationID,
-					allocLog:      make(map[string]*AllocationLogEntry),
-				}
-			} else {
-				unreserveAsk = ask
-			}
-			// remove the reservation as this should not be reserved
-			alloc := newReservedAllocation(Unreserved, reserve.nodeID, unreserveAsk)
-			return alloc
-		}
-
-		// check if this fits in the queue's head room
-		if !sa.queue.GetHeadRoom().FitInMaxUndef(ask.GetAllocatedResource()) {
-			continue
-		}
-
-		// allocation worked fix the result and return
-		if alloc := sa.tryNode(getNodeFn(nodeID), ask); alloc != nil {
-			alloc.SetResult(AllocatedReserved)
-			return alloc
 		}
 	}
 	return nil
@@ -1822,70 +1784,4 @@ func (sa *Application) SetTimedOutPlaceholder(taskGroupName string, timedOut int
 	if _, ok := sa.placeholderData[taskGroupName]; ok {
 		sa.placeholderData[taskGroupName].TimedOut = timedOut
 	}
-}
-
-// tryAllocate will perform a regular allocation of a pending request, includes placeholders.
-func (sa *Application) TryAllocate(getNodeFn func(string) *Node) *Allocation {
-	sa.Lock()
-	defer sa.Unlock()
-	var headRoom *resources.Resource
-	headRoom = sa.queue.GetHeadRoom()
-	// make sure the request are sorted
-	sa.sortRequests(false)
-	// get all the requests from the app sorted in order
-	for _, request := range sa.sortedRequests {
-		// check if there is a replacement possible
-		if sa.canReplace(request) {
-			continue
-		}
-		// resource must fit in headroom otherwise skip the request
-		if !headRoom.FitInMaxUndef(request.GetAllocatedResource()) {
-			// post scheduling events via the event plugin
-			if eventCache := events.GetEventCache(); eventCache != nil {
-				message := fmt.Sprintf("Application %s does not fit into %s queue", request.GetApplicationID(), sa.queuePath)
-				if event, err := events.CreateRequestEventRecord(request.GetAllocationKey(), request.GetApplicationID(), "InsufficientQueueResources", message); err != nil {
-					log.Logger().Warn("Event creation failed",
-						zap.String("event message", message),
-						zap.Error(err))
-				} else {
-					eventCache.AddEvent(event)
-				}
-			}
-			continue
-		}
-
-		requiredNode := request.GetRequiredNode()
-		// does request have any constraint to run on specific node?
-		if requiredNode != "" {
-			// the iterator might not have the node we need as it could be reserved, or we have not added it yet
-			node := getNodeFn(requiredNode)
-			if node == nil {
-				log.Logger().Warn("required node is not found (could be transient)",
-					zap.String("application ID", sa.ApplicationID),
-					zap.String("allocationKey", request.GetAllocationKey()),
-					zap.String("required node", requiredNode))
-				return nil
-			}
-			alloc := sa.tryNode(node, request)
-			if alloc != nil {
-				// check if the node was reserved and we allocated after a release
-				if _, ok := sa.reservations[reservationKey(node, nil, request)]; ok {
-					log.Logger().Debug("allocation on required node after release",
-						zap.String("appID", sa.ApplicationID),
-						zap.String("nodeID", requiredNode),
-						zap.String("allocationKey", request.GetAllocationKey()))
-					alloc.SetResult(AllocatedReserved)
-					return alloc
-				}
-				log.Logger().Debug("allocation on required node is completed",
-					zap.String("nodeID", node.NodeID),
-					zap.String("allocationKey", request.GetAllocationKey()),
-					zap.String("AllocationResult", alloc.GetResult().String()))
-				return alloc
-			}
-			return newReservedAllocation(Reserved, node.NodeID, request)
-		}
-	}
-	// no requests fit, skip to next app
-	return nil
 }

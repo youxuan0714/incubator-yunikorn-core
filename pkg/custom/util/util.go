@@ -13,14 +13,20 @@ import (
 )
 
 // Parse the vcore and memory in node
-func ParseNode(n *objects.Node) (nodeID string, resResult *resources.Resource) {
+func ParseNode(n *objects.Node) (nodeID string, avialble *resources.Resource, cap *resources.Resource) {
 	nodeID = n.NodeID
-	resResult = resources.NewResource()
+	avialble = resources.NewResource()
+	cap = resources.NewResource()
 	resType := []string{sicommon.CPU, sicommon.Memory}
 
 	res := n.GetAvailableResource().Resources
 	for _, targetType := range resType {
-		resResult.Resources[targetType] = res[targetType]
+		avialble.Resources[targetType] = res[targetType]
+	}
+
+	res = n.GetCapacity().Resources
+	for _, targetType := range resType {
+		cap.Resources[targetType] = res[targetType]
 	}
 
 	return

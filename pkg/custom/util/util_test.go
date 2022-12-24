@@ -17,7 +17,7 @@ func TestParseNode(t *testing.T) {
 	totalRes := resources.NewResourceFromMap(map[string]resources.Quantity{siCommon.CPU: 100, siCommon.Memory: 100})
 	proto := newProto(nodeName, totalRes, nil, map[string]string{})
 	node := objects.NewNode(proto)
-	nodeID, result := ParseNode(node)
+	nodeID, result, _ := ParseNode(node)
 	if nodeID != nodeName {
 		t.Errorf("expected node name: %s, got %s", nodeName, nodeID)
 	}

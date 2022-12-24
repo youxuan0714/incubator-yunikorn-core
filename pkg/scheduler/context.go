@@ -146,17 +146,19 @@ func (cc *ClusterContext) schedule() bool {
 		}
 		log.Logger().Info("Start to schedule app", zap.String("appid", appID))
 		app := psc.GetApplication(appID)
-		nodeID, _ := customutil.GetLBManager().Schedule(app, schedulingStart)
+		nodeID, startTime, appID, res := customutil.GetLBManager().Schedule(app, schedulingStart)
 
-		log.Logger().Info("try reservation", zap.String("appid", appID), zap.String("nodeID", nodeID))
-		alloc := app.TryReservedAllocate(nodeID, psc.GetNode)
-		if alloc == nil {
-			log.Logger().Info("No reservation try normal allocate", zap.String("appid", appID), zap.String("nodeID", nodeID))
-			alloc = app.TrySpecifiedNode(nodeID, psc.GetNode)
-		}
-
+		//log.Logger().Info("try reservation", zap.String("appid", appID), zap.String("nodeID", nodeID))
+		/*
+			alloc := app.TryReservedAllocate(nodeID, psc.GetNode)
+			if alloc == nil {
+				log.Logger().Info("No reservation try normal allocate", zap.String("appid", appID), zap.String("nodeID", nodeID))
+				alloc = app.TrySpecifiedNode(nodeID, psc.GetNode)
+			}*/
+		alloc := app.TrySpecifiedNode(nodeID, psc.GetNode)
 		if alloc != nil {
 			log.Logger().Info("success allocate", zap.String("appid", appID), zap.String("nodeID", nodeID), zap.String("user", username))
+			customutil.GetLBManager().Allocate(nodeID, appID, startTime, res.Clone())
 			customutil.GetFairMonitor().UpdateTheTenantMasterResource(app)
 			customutil.GetFairManager().UpdateScheduledApp(app)
 			metrics.GetSchedulerMetrics().ObserveSchedulingLatency(schedulingStart)

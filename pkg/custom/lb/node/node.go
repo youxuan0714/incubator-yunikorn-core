@@ -3,7 +3,9 @@ package node
 import (
 	"container/heap"
 	"github.com/apache/yunikorn-core/pkg/common/resources"
+	"github.com/apache/yunikorn-core/pkg/log"
 	sicommon "github.com/apache/yunikorn-scheduler-interface/lib/go/common"
+	"go.uber.org/zap"
 	"time"
 )
 
@@ -14,13 +16,13 @@ type NodeResource struct {
 	CurrentTime   time.Time
 }
 
-func NewNodeResource(Available *resources.Resource) *NodeResource {
+func NewNodeResource(Available *resources.Resource, cap *resources.Resource) *NodeResource {
 	s := Available.Clone()
 	delete(s.Resources, sicommon.Duration)
 	return &NodeResource{
 		RequestEvents: NewEvents(),
 		Available:     s.Clone(),
-		Capcity:       s.Clone(),
+		Capcity:       cap.Clone(),
 		CurrentTime:   time.Now(),
 	}
 }
@@ -36,6 +38,7 @@ func (n *NodeResource) Allocate(appID string, allocateTime time.Time, req *resou
 func (n *NodeResource) GetUtilization(timeStamp time.Time, request *resources.Resource) (utilization *resources.Resource) {
 	bk := make([]*Event, 0)
 	available := n.Available.Clone()
+	log.Logger().Info("calculate utilization of avaialble", zap.String("avialble", available.String()))
 	for n.RequestEvents.Len() > 0 {
 		tmp := heap.Pop(n.RequestEvents).(*Event)
 		bk = append(bk, tmp)
@@ -45,8 +48,10 @@ func (n *NodeResource) GetUtilization(timeStamp time.Time, request *resources.Re
 		} else {
 			AllocatedOrRelease := tmp.AllocatedOrRelease.Clone()
 			if tmp.Allocate {
+				log.Logger().Info("Allocate", zap.String("allocate", AllocatedOrRelease.String()))
 				available = resources.Sub(available, AllocatedOrRelease)
 			} else {
+				log.Logger().Info("Release", zap.String("release", AllocatedOrRelease.String()))
 				available = resources.Add(available, AllocatedOrRelease)
 			}
 		}
@@ -56,8 +61,9 @@ func (n *NodeResource) GetUtilization(timeStamp time.Time, request *resources.Re
 		heap.Push(n.RequestEvents, element)
 	}
 
-	total := n.Capcity //cpu and memory
-	resourceAllocated := resources.Sub(n.Capcity, available)
+	total := n.Capcity.Clone() //cpu and memory
+	log.Logger().Info("calculate utilization", zap.String("cap", total.String()), zap.String("avialble", available.String()))
+	resourceAllocated := resources.Sub(total, available)
 	if request != nil {
 		tmp := request.Clone()
 		if _, ok := tmp.Resources[sicommon.Duration]; ok {
