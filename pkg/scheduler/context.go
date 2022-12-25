@@ -127,48 +127,39 @@ func (cc *ClusterContext) schedule() bool {
 		if psc.isStopped() {
 			continue
 		}
-		// try reservations first
-		schedulingStart := time.Now()
-		/*
-			alloc := psc.tryReservedAllocate()
-			if alloc == nil {
-				// placeholder replacement second
-				alloc = psc.tryPlaceholderAllocate()
-				// nothing reserved that can be allocated try normal allocate
-				if alloc == nil {
-					alloc = psc.tryAllocate()
-				}
-			}
-		*/
-		scheduled, username, appID := customutil.GetFairManager().NextAppToSchedule()
-		if !scheduled {
-			continue
-		}
-		log.Logger().Info("Start to schedule app", zap.String("appid", appID))
-		app := psc.GetApplication(appID)
-		nodeID, startTime, appID, res := customutil.GetLBManager().Schedule(app, schedulingStart)
 
-		//log.Logger().Info("try reservation", zap.String("appid", appID), zap.String("nodeID", nodeID))
-		/*
-			alloc := app.TryReservedAllocate(nodeID, psc.GetNode)
-			if alloc == nil {
-				log.Logger().Info("No reservation try normal allocate", zap.String("appid", appID), zap.String("nodeID", nodeID))
-				alloc = app.TrySpecifiedNode(nodeID, psc.GetNode)
-			}*/
-		alloc := app.TrySpecifiedNode(nodeID, psc.GetNode)
-		if alloc != nil {
-			log.Logger().Info("success allocate", zap.String("appid", appID), zap.String("nodeID", nodeID), zap.String("user", username))
-			customutil.GetLBManager().Allocate(nodeID, appID, startTime, res.Clone())
-			customutil.GetFairMonitor().UpdateTheTenantMasterResource(app)
+		schedulingStart := time.Now()
+		scheduled, username, tenantAppID := customutil.GetFairManager().NextAppToSchedule()
+		if scheduled {
+			log.Logger().Info("Start to schedule app", zap.String("appid", tenantAppID), zap.String("user", username))
+			app := psc.GetApplication(tenantAppID)
+			nodeID, startTime, tenantAppID, res := customutil.GetLBManager().Schedule(app, schedulingStart)
+			customutil.GetPlanManager().AssignAppToNode(tenantAppID, nodeID)
+			customutil.GetLBManager().Allocate(nodeID, tenantAppID, startTime, res.Clone())
 			customutil.GetFairManager().UpdateScheduledApp(app)
-			metrics.GetSchedulerMetrics().ObserveSchedulingLatency(schedulingStart)
-			if alloc.GetResult() == objects.Replaced {
-				// communicate the removal to the RM
-				cc.notifyRMAllocationReleased(psc.RmID, alloc.GetReleasesClone(), si.TerminationType_PLACEHOLDER_REPLACED, "replacing uuid: "+alloc.GetUUID())
-			} else {
-				cc.notifyRMNewAllocation(psc.RmID, alloc)
+			continue
+			//customutil.GetFairMonitor().UpdateTheTenantMasterResource(app)
+		}
+
+		metrics.GetSchedulerMetrics().ObserveSchedulingLatency(schedulingStart)
+
+		for nodeID, appIDs := range customutil.GetPlanManager().GetNodes() {
+			for index, appID := range appIDs {
+				if alloc := psc.GetApplication(appID).TrySpecifiedNode(nodeID, psc.GetNode); alloc != nil {
+					log.Logger().Info("success allocate", zap.String("appid", appID), zap.String("nodeID", nodeID))
+					if alloc.GetResult() == objects.Replaced {
+						// communicate the removal to the RM
+						cc.notifyRMAllocationReleased(psc.RmID, alloc.GetReleasesClone(), si.TerminationType_PLACEHOLDER_REPLACED, "replacing uuid: "+alloc.GetUUID())
+					} else {
+						cc.notifyRMNewAllocation(psc.RmID, alloc)
+					}
+					activity = true
+				} else {
+					customutil.GetPlanManager().UpdateNodes(nodeID, index)
+					break
+				}
+				customutil.GetPlanManager().CompletedApps(nodeID, index)
 			}
-			activity = true
 		}
 	}
 	return activity

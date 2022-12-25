@@ -49,16 +49,17 @@ func (f *FairManager) ParseUsersInPartitionConfig(conf configs.PartitionConfig) 
 	}
 }
 
-func (f *FairManager) ParseUserInApp(app *objects.Application) {
-	user := app.GetUser().User
+func (f *FairManager) ParseUserInApp(input *objects.Application) {
+	appID, user, _ := customutil.ParseApp(input)
 	f.GetTenants().AddUser(user)
-	log.Logger().Info("Application user", zap.String("user", user))
 	if _, ok := f.apps[user]; !ok {
 		f.apps[user] = apps.NewAppsHeap()
 	}
 
-	log.Logger().Info("Add application in fair manager", zap.String("applicationID", app.ApplicationID))
-	heap.Push(f.apps[user], apps.NewAppInfo(app.ApplicationID, app.SubmissionTime))
+	h := f.apps[user]
+	info := apps.NewAppInfo(appID, input.SubmissionTime)
+	heap.Push(h, info)
+	log.Logger().Info("Add application in fair manager", zap.String("user", user), zap.String("applicationID", appID), zap.Int("heap", h.Len()))
 }
 
 func (f *FairManager) NextAppToSchedule() (bool, string, string) {
@@ -76,19 +77,20 @@ func (f *FairManager) NextAppToSchedule() (bool, string, string) {
 	}
 
 	target := heap.Pop(h).(*apps.AppInfo)
-	log.Logger().Info("User has apps", zap.String("user", user), zap.String("appid", target.ApplicationID))
 	heap.Push(h, target)
+	log.Logger().Info("User has apps", zap.String("user", user), zap.String("appid", target.ApplicationID), zap.Int("heap", h.Len()))
 	return true, user, target.ApplicationID
 }
 
 func (f *FairManager) UpdateScheduledApp(input *objects.Application) {
-	_, user, res := customutil.ParseApp(input)
+	appID, user, res := customutil.ParseApp(input)
+	log.Logger().Info("Update scheduled app", zap.String("app", appID), zap.String("user", user))
 	if h, ok := f.apps[user]; !ok {
-		log.Logger().Error("Non existed app update", zap.String("app", user))
+		log.Logger().Error("Non existed app update", zap.String("app", appID), zap.String("user", user))
 	} else {
+		log.Logger().Info("Update scheduled app", zap.Int("heap", h.Len()))
 		heap.Pop(h)
 	}
-	log.Logger().Info("Update scheduled app", zap.String("user", user))
 	f.GetTenants().UpdateUser(user, res)
 	log.Logger().Info("Next min user", zap.String("user", f.GetTenants().GetMinResourceUser()))
 }
