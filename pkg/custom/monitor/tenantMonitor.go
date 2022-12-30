@@ -11,20 +11,19 @@ import (
 	sicommon "github.com/apache/yunikorn-scheduler-interface/lib/go/common"
 	excel "github.com/xuri/excelize/v2"
 	"go.uber.org/zap"
-	"os"
-)
-
-const (
-	tenantsfiltpath = "/tmp/tenants.xlsx"
-	fairness        = "tenants"
+	"sort"
+	"time"
 )
 
 type FairnessMonitor struct {
 	UnRunningApps           map[string]*objects.Application
 	MasterResourceOfTenants map[string]uint64
-	id                      map[string]string
-	count                   uint64
-	file                    *excel.File
+	id                      map[string]string               // tenant id in excel A, B, C
+	file                    *excel.File                     // excel
+	Infos                   map[string]*MasterResourceInfos // tenant -> event
+	eventsTimestampsUnique  map[uint64]bool
+	eventsTimestamps        []uint64
+	startTime               time.Time
 }
 
 // Initialize the tenant Monitor
@@ -35,8 +34,10 @@ func NewFairnessMonitor() *FairnessMonitor {
 		UnRunningApps:           make(map[string]*objects.Application, 0),
 		MasterResourceOfTenants: make(map[string]uint64, 0),
 		id:                      make(map[string]string),
-		count:                   0,
 		file:                    file,
+		eventsTimestampsUnique:  make(map[uint64]bool),
+		eventsTimestamps:        make([]uint64, 0),
+		Infos:                   make(map[string]*MasterResourceInfos),
 	}
 }
 
@@ -54,38 +55,24 @@ func (m *FairnessMonitor) UpdateTheTenantMasterResource(app *objects.Application
 		log.Logger().Info("fairness unrecord app", zap.String("app", appID))
 		return
 	}
-	m.AddMasterResourceToTenant(app.GetUser().User, CalculateMasterResourceOfApplication(app))
 
-	log.Logger().Info("fairness print", zap.Any("apps", m.UnRunningApps), zap.Any("tenants", m.MasterResourceOfTenants))
+	user := app.GetUser().User
+	masterResource := CalculateMasterResourceOfApplication(app)
+	// events: global
+	currentTime := time.Now()
+	duration := SubTimeAndTranslateToUint64(currentTime, m.startTime)
+	m.AddEventTimeStamp(duration)
+
+	// events: person
+	if _, ok := m.Infos[user]; !ok {
+		m.Infos[user] = NewMasterResourceInfos()
+	}
+	h := m.Infos[user]
+	h.AddInfo(NewAddMasterResourceInfo(user, duration, masterResource))
+	// stream
+	m.AddMasterResourceToTenant(user, masterResource)
+	log.Logger().Info("fairness print", zap.Any("apps", app.ApplicationID), zap.Any("tenants", m.MasterResourceOfTenants))
 	return
-}
-
-func (m *FairnessMonitor) Print() {
-	for username, masterRersource := range m.MasterResourceOfTenants {
-		idLetter := m.id[username]
-		m.file.SetCellValue(fairness, fmt.Sprintf("%s%d", idLetter, m.count), masterRersource)
-	}
-	m.count++
-	if m.count%100 == 0 {
-		_ = os.Remove(tenantsfiltpath)
-		if err := m.file.SaveAs(tenantsfiltpath); err != nil {
-			log.Logger().Info("fairness file save fail", zap.Any("error", err))
-		}
-	}
-}
-
-// Analyze the partition config and get the tenants
-func (m *FairnessMonitor) ParseTenantsInPartitionConfig(conf configs.PartitionConfig) {
-	users := customutil.ParseUsersInPartitionConfig(conf)
-	for userNameInConfig, _ := range users {
-		if _, ok := m.MasterResourceOfTenants[userNameInConfig]; !ok {
-			m.id[userNameInConfig] = excelCol[len(m.MasterResourceOfTenants)]
-			m.MasterResourceOfTenants[userNameInConfig] = uint64(0)
-
-			idLetter := m.id[userNameInConfig]
-			m.file.SetCellValue(fairness, fmt.Sprintf("%s%d", idLetter, 1), userNameInConfig)
-		}
-	}
 }
 
 // Add master resource to specific tenant
@@ -96,6 +83,59 @@ func (m *FairnessMonitor) AddMasterResourceToTenant(user string, masterResource 
 	} else {
 		m.MasterResourceOfTenants[user] += masterResource
 	}
+}
+
+// Analyze the partition config and get the tenants
+func (m *FairnessMonitor) ParseTenantsInPartitionConfig(conf configs.PartitionConfig) {
+	users := customutil.ParseUsersInPartitionConfig(conf)
+	m.startTime = time.Now()
+	for userNameInConfig, _ := range users {
+		if _, ok := m.MasterResourceOfTenants[userNameInConfig]; !ok {
+			// 1. update excel id, excel id From A,B,C -> 0, 1, 2
+			// 2. add master resource event of users
+			// 3. update stream master resource
+			m.id[userNameInConfig] = excelCol[len(m.MasterResourceOfTenants)]
+			m.MasterResourceOfTenants[userNameInConfig] = uint64(0)
+			// write tenant id in B1, C1, D1 ...
+			idLetter := m.id[userNameInConfig]
+			m.file.SetCellValue(fairness, fmt.Sprintf("%s%d", idLetter, 1), userNameInConfig)
+		}
+	}
+}
+
+// Save excel file
+func (m *FairnessMonitor) SaveFile() {
+	DeleteExistedFile(tenantsfiltpath)
+	// setting timestamps
+	// Write timestamps in A2,A3,A4...
+	// If tenants has a related value, such as B3. When A3 is writed, B3 will be writed too.
+	sort.Slice(m.eventsTimestamps, func(i, j int) bool { return m.eventsTimestamps[i] < m.eventsTimestamps[j] })
+	currentMasterResource := make(map[string]uint64)
+	for username, _ := range m.MasterResourceOfTenants {
+		currentMasterResource[username] = uint64(0)
+	}
+
+	for index, timestamp := range m.eventsTimestamps {
+		placeNum := uint64(index + 2)
+		m.file.SetCellValue(fairness, fmt.Sprintf("%s%d", TimeStampLetter, placeNum), timestamp)
+		for username, events := range m.Infos {
+			idLetter := m.id[username]
+			if masterResource, existed := events.MasterResourceAtTime(timestamp); existed {
+				currentMasterResource[username] += masterResource
+				m.file.SetCellValue(fairness, fmt.Sprintf("%s%d", idLetter, placeNum), currentMasterResource[username])
+			} else {
+				continue
+			}
+		}
+	}
+}
+
+func (m *FairnessMonitor) AddEventTimeStamp(timestamp uint64) {
+	if _, ok := m.eventsTimestampsUnique[timestamp]; ok {
+		return
+	}
+	m.eventsTimestampsUnique[timestamp] = true
+	m.eventsTimestamps = append(m.eventsTimestamps, timestamp)
 }
 
 // Calulate master resource of a application
@@ -114,4 +154,44 @@ func CalculateMasterResourceOfApplication(app *objects.Application) uint64 {
 		log.Logger().Warn("tenant monitor fail parsing memory", zap.Any("err message", err))
 	}
 	return duration * cpu * memory
+}
+
+type AddMasterResourceInfo struct {
+	TenantID       string
+	TimeStamp      uint64
+	MasterResource uint64
+}
+
+func NewAddMasterResourceInfo(id string, d, masterResource uint64) *AddMasterResourceInfo {
+	return &AddMasterResourceInfo{
+		TenantID:       id,
+		TimeStamp:      d,
+		MasterResource: masterResource,
+	}
+}
+
+type MasterResourceInfos struct {
+	timestamps map[uint64]uint64
+}
+
+func NewMasterResourceInfos() *MasterResourceInfos {
+	return &MasterResourceInfos{
+		timestamps: make(map[uint64]uint64),
+	}
+}
+
+func (m *MasterResourceInfos) AddInfo(a *AddMasterResourceInfo) {
+	if _, ok := m.timestamps[a.TimeStamp]; !ok {
+		m.timestamps[a.TimeStamp] = a.MasterResource
+	} else {
+		m.timestamps[a.TimeStamp] += a.MasterResource
+	}
+}
+
+func (m *MasterResourceInfos) MasterResourceAtTime(timestamp uint64) (uint64, bool) {
+	if value, ok := m.timestamps[timestamp]; !ok {
+		return 0, false
+	} else {
+		return value, true
+	}
 }

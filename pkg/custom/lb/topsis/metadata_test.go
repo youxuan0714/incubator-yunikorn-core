@@ -11,20 +11,25 @@ import (
 
 func TestWhenCanStart(t *testing.T) {
 	timestamp := time.Now()
+	cap := resources.NewResourceFromMap(map[string]resources.Quantity{
+		sicommon.CPU:    resources.Quantity(100),
+		sicommon.Memory: resources.Quantity(100)})
+	nodes := make(map[string]*node.NodeResource, 0)
+	// create nodes
+	for i := 0; i < 4; i++ {
+		tmp := node.NewNodeResource(cap.Clone(), cap.Clone())
+		tmp.CurrentTime = timestamp
+		nodes[fmt.Sprintf("node-%d", i)] = tmp
+	}
+
 	app := resources.NewResourceFromMap(map[string]resources.Quantity{
 		sicommon.CPU:      resources.Quantity(100),
 		sicommon.Memory:   resources.Quantity(100),
 		sicommon.Duration: resources.Quantity(100)})
-	nodes := make(map[string]*node.NodeResource, 0)
 	for i := 0; i < 4; i++ {
-		tmp := node.NewNodeResource(resources.NewResourceFromMap(map[string]resources.Quantity{
-			sicommon.CPU:    resources.Quantity(100),
-			sicommon.Memory: resources.Quantity(100)}))
-		tmp.CurrentTime = timestamp
 		if i%2 == 0 {
-			tmp.Allocate("test", timestamp, app)
+			nodes[fmt.Sprintf("node-%d", i)].Allocate("test", timestamp, app)
 		}
-		nodes[fmt.Sprintf("node-%d", i)] = tmp
 	}
 
 	index := 0

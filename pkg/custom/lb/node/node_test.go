@@ -12,7 +12,7 @@ func TestNewNodeResource(t *testing.T) {
 	cap := resources.NewResource()
 	cap.Resources[sicommon.CPU] = resources.Quantity(100)
 	cap.Resources[sicommon.Memory] = resources.Quantity(100)
-	nr := NewNodeResource(cap)
+	nr := NewNodeResource(cap.Clone(), cap.Clone())
 	if nr.RequestEvents.Len() > 0 {
 		t.Error("length should be zero")
 	}
@@ -34,7 +34,7 @@ func TestAllocateAndWhenCanStart(t *testing.T) {
 		sicommon.CPU:    resources.Quantity(100),
 		sicommon.Memory: resources.Quantity(100),
 	})
-	nr := NewNodeResource(cap)
+	nr := NewNodeResource(cap.Clone(), cap.Clone())
 	timestamp := nr.CurrentTime
 
 	type inputFormat struct {
@@ -317,7 +317,7 @@ func TestClearEventsBaseOnSubmittedTime(t *testing.T) {
 				sicommon.CPU:    resources.Quantity(100),
 				sicommon.Memory: resources.Quantity(100),
 			})
-			nr := NewNodeResource(cap)
+			nr := NewNodeResource(cap.Clone(), cap.Clone())
 			nr.CurrentTime = timestamp
 			for _, allocation := range allocations {
 				nr.Allocate(allocation.appID, allocation.startTime, allocation.res)
@@ -349,10 +349,11 @@ func TestClearEventsBaseOnSubmittedTime(t *testing.T) {
 }
 
 func TestGetUtilizationWithApp(t *testing.T) {
-	nr := NewNodeResource(resources.NewResourceFromMap(map[string]resources.Quantity{
+	cap := resources.NewResourceFromMap(map[string]resources.Quantity{
 		sicommon.CPU:    resources.Quantity(200),
 		sicommon.Memory: resources.Quantity(200),
-	}))
+	})
+	nr := NewNodeResource(cap.Clone(), cap.Clone())
 	timestamp := nr.CurrentTime
 	utilization := nr.GetUtilization(timestamp, nil)
 	expect := resources.NewResourceFromMap(map[string]resources.Quantity{
@@ -400,10 +401,11 @@ func TestGetUtilizationWithApp(t *testing.T) {
 }
 
 func TestGetUtilization(t *testing.T) {
-	nr := NewNodeResource(resources.NewResourceFromMap(map[string]resources.Quantity{
+	cap := resources.NewResourceFromMap(map[string]resources.Quantity{
 		sicommon.CPU:    resources.Quantity(100),
 		sicommon.Memory: resources.Quantity(100),
-	}))
+	})
+	nr := NewNodeResource(cap.Clone(), cap.Clone())
 	timestamp := nr.CurrentTime
 	type inputFormat struct {
 		appID     string
@@ -442,13 +444,6 @@ func TestGetUtilization(t *testing.T) {
 		inputFormat{
 			appID:     "t=25",
 			startTime: timestamp.Add(time.Second * 25),
-			res: resources.NewResourceFromMap(map[string]resources.Quantity{
-				sicommon.CPU:    resources.Quantity(20),
-				sicommon.Memory: resources.Quantity(27)}),
-		},
-		inputFormat{
-			appID:     "t=27",
-			startTime: timestamp.Add(time.Second * 27),
 			res: resources.NewResourceFromMap(map[string]resources.Quantity{
 				sicommon.CPU:    resources.Quantity(20),
 				sicommon.Memory: resources.Quantity(27)}),
