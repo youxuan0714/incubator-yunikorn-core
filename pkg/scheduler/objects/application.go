@@ -20,7 +20,7 @@ package objects
 
 import (
 	"fmt"
-	"math"
+	//"math"
 	"strings"
 	"sync"
 	"time"
@@ -34,7 +34,7 @@ import (
 	"github.com/apache/yunikorn-core/pkg/events"
 	"github.com/apache/yunikorn-core/pkg/handler"
 	"github.com/apache/yunikorn-core/pkg/log"
-	"github.com/apache/yunikorn-core/pkg/metrics"
+	//"github.com/apache/yunikorn-core/pkg/metrics"
 	"github.com/apache/yunikorn-core/pkg/rmproxy/rmevent"
 	siCommon "github.com/apache/yunikorn-scheduler-interface/lib/go/common"
 	"github.com/apache/yunikorn-scheduler-interface/lib/go/si"
@@ -959,7 +959,7 @@ func (sa *Application) tryAllocate(headRoom *resources.Resource, nodeIterator fu
 					zap.String("AllocationResult", alloc.GetResult().String()))
 				return alloc
 			}
-			return newReservedAllocation(Reserved, node.NodeID, request)
+			//return newReservedAllocation(Reserved, node.NodeID, request)
 		}
 
 		iterator := nodeIterator()
@@ -1241,12 +1241,13 @@ func (sa *Application) tryNodesNoReserve(ask *AllocationAsk, iterator NodeIterat
 // Try all the nodes for a request. The result is an allocation or reservation of a node.
 // New allocations can only be reserved after a delay.
 func (sa *Application) tryNodes(ask *AllocationAsk, iterator NodeIterator) *Allocation {
-	var nodeToReserve *Node
-	scoreReserved := math.Inf(1)
+	//var nodeToReserve *Node
+	//scoreReserved := math.Inf(1)
 	// check if the ask is reserved or not
 	allocKey := ask.GetAllocationKey()
-	reservedAsks := sa.GetAskReservations(allocKey)
-	allowReserve := len(reservedAsks) < int(ask.GetPendingAskRepeat())
+	//reservedAsks := sa.GetAskReservations(allocKey)
+	//allowReserve := len(reservedAsks) < int(ask.GetPendingAskRepeat())
+
 	for iterator.HasNext() {
 		node := iterator.Next()
 		if node == nil {
@@ -1264,71 +1265,76 @@ func (sa *Application) tryNodes(ask *AllocationAsk, iterator NodeIterator) *Allo
 		if !node.FitInNode(ask.GetAllocatedResource()) {
 			continue
 		}
-		tryNodeStart := time.Now()
+		//tryNodeStart := time.Now()
 		alloc := sa.tryNode(node, ask)
-		// allocation worked so return
-		if alloc != nil {
-			metrics.GetSchedulerMetrics().ObserveTryNodeLatency(tryNodeStart)
-			// check if the node was reserved for this ask: if it is set the result and return
-			// NOTE: this is a safeguard as reserved nodes should never be part of the iterator
-			// but we have no locking
-			if _, ok := sa.reservations[reservationKey(node, nil, ask)]; ok {
-				log.Logger().Debug("allocate found reserved ask during non reserved allocate",
-					zap.String("appID", sa.ApplicationID),
-					zap.String("nodeID", node.NodeID),
-					zap.String("allocationKey", allocKey))
-				alloc.SetResult(AllocatedReserved)
+		return alloc
+		/*
+			// allocation worked so return
+			if alloc != nil {
+				metrics.GetSchedulerMetrics().ObserveTryNodeLatency(tryNodeStart)
+				// check if the node was reserved for this ask: if it is set the result and return
+				// NOTE: this is a safeguard as reserved nodes should never be part of the iterator
+				// but we have no locking
+				if _, ok := sa.reservations[reservationKey(node, nil, ask)]; ok {
+					log.Logger().Debug("allocate found reserved ask during non reserved allocate",
+						zap.String("appID", sa.ApplicationID),
+						zap.String("nodeID", node.NodeID),
+						zap.String("allocationKey", allocKey))
+					alloc.SetResult(AllocatedReserved)
+					return alloc
+				}
+				// we could also have a different node reserved for this ask if it has pick one of
+				// the reserved nodes to unreserve (first one in the list)
+				if len(reservedAsks) > 0 {
+					nodeID := strings.TrimSuffix(reservedAsks[0], "|"+allocKey)
+					log.Logger().Debug("allocate picking reserved ask during non reserved allocate",
+						zap.String("appID", sa.ApplicationID),
+						zap.String("nodeID", nodeID),
+						zap.String("allocationKey", allocKey))
+					alloc.SetResult(AllocatedReserved)
+					alloc.SetReservedNodeID(nodeID)
+					return alloc
+				}
+				// nothing reserved just return this as a normal alloc
 				return alloc
 			}
-			// we could also have a different node reserved for this ask if it has pick one of
-			// the reserved nodes to unreserve (first one in the list)
-			if len(reservedAsks) > 0 {
-				nodeID := strings.TrimSuffix(reservedAsks[0], "|"+allocKey)
-				log.Logger().Debug("allocate picking reserved ask during non reserved allocate",
-					zap.String("appID", sa.ApplicationID),
-					zap.String("nodeID", nodeID),
-					zap.String("allocationKey", allocKey))
-				alloc.SetResult(AllocatedReserved)
-				alloc.SetReservedNodeID(nodeID)
-				return alloc
+			// nothing allocated should we look at a reservation?
+			// TODO make this smarter a hardcoded delay is not the right thing
+			askAge := time.Since(ask.GetCreateTime())
+			if allowReserve && askAge > reservationDelay {
+				log.Logger().Debug("app reservation check",
+					zap.String("allocationKey", allocKey),
+					zap.Time("createTime", ask.GetCreateTime()),
+					zap.Duration("askAge", askAge),
+					zap.Duration("reservationDelay", reservationDelay))
+				score := ask.GetAllocatedResource().FitInScore(node.GetAvailableResource())
+				// Record the so-far best node to reserve
+				if score < scoreReserved {
+					scoreReserved = score
+					nodeToReserve = node
+				}
 			}
-			// nothing reserved just return this as a normal alloc
-			return alloc
-		}
-		// nothing allocated should we look at a reservation?
-		// TODO make this smarter a hardcoded delay is not the right thing
-		askAge := time.Since(ask.GetCreateTime())
-		if allowReserve && askAge > reservationDelay {
-			log.Logger().Debug("app reservation check",
-				zap.String("allocationKey", allocKey),
-				zap.Time("createTime", ask.GetCreateTime()),
-				zap.Duration("askAge", askAge),
-				zap.Duration("reservationDelay", reservationDelay))
-			score := ask.GetAllocatedResource().FitInScore(node.GetAvailableResource())
-			// Record the so-far best node to reserve
-			if score < scoreReserved {
-				scoreReserved = score
-				nodeToReserve = node
-			}
-		}
+		*/
 	}
 	// we have not allocated yet, check if we should reserve
 	// NOTE: the node should not be reserved as the iterator filters them but we do not lock the nodes
-	if nodeToReserve != nil && !nodeToReserve.IsReserved() {
-		log.Logger().Debug("found candidate node for app reservation",
-			zap.String("appID", sa.ApplicationID),
-			zap.String("nodeID", nodeToReserve.NodeID),
-			zap.String("allocationKey", allocKey),
-			zap.Int("reservations", len(reservedAsks)),
-			zap.Int32("pendingRepeats", ask.GetPendingAskRepeat()))
-		// skip the node if conditions can not be satisfied
-		if !nodeToReserve.preReserveConditions(ask) {
-			return nil
+	/*
+		if nodeToReserve != nil && !nodeToReserve.IsReserved() {
+			log.Logger().Debug("found candidate node for app reservation",
+				zap.String("appID", sa.ApplicationID),
+				zap.String("nodeID", nodeToReserve.NodeID),
+				zap.String("allocationKey", allocKey),
+				zap.Int("reservations", len(reservedAsks)),
+				zap.Int32("pendingRepeats", ask.GetPendingAskRepeat()))
+			// skip the node if conditions can not be satisfied
+			if !nodeToReserve.preReserveConditions(ask) {
+				return nil
+			}
+			// return reservation allocation and mark it as a reservation
+			alloc := newReservedAllocation(Reserved, nodeToReserve.NodeID, ask)
+			return alloc
 		}
-		// return reservation allocation and mark it as a reservation
-		alloc := newReservedAllocation(Reserved, nodeToReserve.NodeID, ask)
-		return alloc
-	}
+	*/
 	// ask does not fit, skip to next ask
 	return nil
 }

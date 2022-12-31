@@ -45,6 +45,7 @@ func (m *NodeUtilizationMonitor) SetStartTime(t time.Time) {
 
 func (m *NodeUtilizationMonitor) Allocate(nodeID string, allocatedTime time.Time, req *resources.Resource) {
 	if n, ok := m.nodes[nodeID]; ok {
+		log.Logger().Info("utilization count", zap.Uint64("count", m.count))
 		releaseTime := allocatedTime.Add(time.Second * time.Duration(req.Resources[sicommon.Duration]))
 		d1 := SubTimeAndTranslateToUint64(allocatedTime, m.startTime)
 		m.AddGlobalEventsTime(d1)
@@ -84,7 +85,10 @@ func (m *NodeUtilizationMonitor) Save() {
 		nodesRes := make([]*resources.Resource, 0)
 		for nodeID, nodeRes := range m.nodes {
 			_ = nodeRes.AllocateResource(timestamp)
-			utilization := resources.CalculateAbsUsedCapacity(nodeRes.cap, resources.Sub(nodeRes.cap, nodeRes.avaialble))
+			cap := nodeRes.cap.Clone()
+			allocated := resources.Sub(nodeRes.cap.Clone(), nodeRes.avaialble.Clone())
+			log.Logger().Info("uitilization trace", zap.Any("cap", cap), zap.Any("allocated", allocated))
+			utilization := resources.CalculateAbsUsedCapacity(cap, allocated)
 			nodesRes = append(nodesRes, utilization.Clone())
 			// mig
 			idLetter := m.id[nodeID]
@@ -106,6 +110,8 @@ func (m *NodeUtilizationMonitor) Save() {
 	_ = os.Remove(utilizationfiltpath)
 	if err := m.file.SaveAs(utilizationfiltpath); err != nil {
 		log.Logger().Warn("save utilzation file fail", zap.String("err", err.Error()))
+	} else {
+		log.Logger().Info("uitilization file saved!")
 	}
 }
 
@@ -123,16 +129,18 @@ func NewNodeResource(avaialble, cap *resources.Resource) *NodeResource {
 }
 
 func (n *NodeResource) Allocate(allocated, release uint64, req *resources.Resource) {
+	reqWithoutDuration := req.Clone()
+	delete(reqWithoutDuration.Resources, sicommon.Duration)
 	if _, ok := n.events[allocated]; !ok {
-		n.events[allocated] = resources.Sub(nil, req.Clone())
+		n.events[allocated] = resources.Sub(nil, reqWithoutDuration.Clone())
 	} else {
-		n.events[allocated] = resources.Sub(n.events[allocated], req.Clone())
+		n.events[allocated] = resources.Sub(n.events[allocated], reqWithoutDuration.Clone())
 	}
 
 	if _, ok := n.events[release]; !ok {
-		n.events[release] = req.Clone()
+		n.events[release] = reqWithoutDuration.Clone()
 	} else {
-		n.events[release] = resources.Add(n.events[allocated], req.Clone())
+		n.events[release] = resources.Add(n.events[allocated], reqWithoutDuration.Clone())
 	}
 	return
 }
