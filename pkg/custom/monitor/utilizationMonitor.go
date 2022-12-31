@@ -4,8 +4,11 @@ import (
 	"fmt"
 	"github.com/apache/yunikorn-core/pkg/common/resources"
 	"github.com/apache/yunikorn-core/pkg/custom/util"
+	"github.com/apache/yunikorn-core/pkg/log"
 	"github.com/apache/yunikorn-core/pkg/scheduler/objects"
 	sicommon "github.com/apache/yunikorn-scheduler-interface/lib/go/common"
+	"go.uber.org/zap"
+	"os"
 	"sort"
 	"time"
 
@@ -19,6 +22,7 @@ type NodeUtilizationMonitor struct {
 	GlobalEvent       []uint64
 	startTime         time.Time
 	file              *excel.File
+	count             uint64
 }
 
 func NewUtilizationMonitor() *NodeUtilizationMonitor {
@@ -30,6 +34,8 @@ func NewUtilizationMonitor() *NodeUtilizationMonitor {
 		GlobalEvent:       make([]uint64, 0),
 		id:                make(map[string]string),
 		file:              file,
+		startTime:         time.Now(),
+		count:             uint64(0),
 	}
 }
 
@@ -45,6 +51,10 @@ func (m *NodeUtilizationMonitor) Allocate(nodeID string, allocatedTime time.Time
 		d2 := SubTimeAndTranslateToUint64(releaseTime, m.startTime)
 		m.AddGlobalEventsTime(d2)
 		n.Allocate(d1, d2, req)
+		m.count++
+		if m.count == appNum {
+			m.Save()
+		}
 	}
 }
 
@@ -92,6 +102,10 @@ func (m *NodeUtilizationMonitor) Save() {
 		gapSum = resources.Power(gapSum, float64(0.5))
 		standardDeviation := resources.Max(gapSum)
 		m.file.SetCellValue(migsheet, fmt.Sprintf("%s%d", bias, placeNum), int64(standardDeviation))
+	}
+	_ = os.Remove(utilizationfiltpath)
+	if err := m.file.SaveAs(utilizationfiltpath); err != nil {
+		log.Logger().Warn("save utilzation file fail", zap.String("err", err.Error()))
 	}
 }
 

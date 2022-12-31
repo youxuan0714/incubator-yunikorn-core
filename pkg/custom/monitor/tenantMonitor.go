@@ -11,6 +11,7 @@ import (
 	sicommon "github.com/apache/yunikorn-scheduler-interface/lib/go/common"
 	excel "github.com/xuri/excelize/v2"
 	"go.uber.org/zap"
+	"os"
 	"sort"
 	"time"
 )
@@ -24,6 +25,7 @@ type FairnessMonitor struct {
 	eventsTimestampsUnique  map[uint64]bool
 	eventsTimestamps        []uint64
 	startTime               time.Time
+	count                   uint64
 }
 
 // Initialize the tenant Monitor
@@ -38,6 +40,7 @@ func NewFairnessMonitor() *FairnessMonitor {
 		eventsTimestampsUnique:  make(map[uint64]bool),
 		eventsTimestamps:        make([]uint64, 0),
 		Infos:                   make(map[string]*MasterResourceInfos),
+		count:                   uint64(0),
 	}
 }
 
@@ -62,6 +65,10 @@ func (m *FairnessMonitor) UpdateTheTenantMasterResource(app *objects.Application
 	currentTime := time.Now()
 	duration := SubTimeAndTranslateToUint64(currentTime, m.startTime)
 	m.AddEventTimeStamp(duration)
+	m.count++
+	if m.count == appNum {
+		m.Save()
+	}
 
 	// events: person
 	if _, ok := m.Infos[user]; !ok {
@@ -104,7 +111,7 @@ func (m *FairnessMonitor) ParseTenantsInPartitionConfig(conf configs.PartitionCo
 }
 
 // Save excel file
-func (m *FairnessMonitor) SaveFile() {
+func (m *FairnessMonitor) Save() {
 	DeleteExistedFile(tenantsfiltpath)
 	// setting timestamps
 	// Write timestamps in A2,A3,A4...
@@ -127,6 +134,10 @@ func (m *FairnessMonitor) SaveFile() {
 				continue
 			}
 		}
+	}
+	_ = os.Remove(tenantsfiltpath)
+	if err := m.file.SaveAs(tenantsfiltpath); err != nil {
+		log.Logger().Warn("save tenants file fail", zap.String("err", err.Error()))
 	}
 }
 

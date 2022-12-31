@@ -31,6 +31,7 @@ import (
 	"github.com/apache/yunikorn-core/pkg/common/configs"
 	"github.com/apache/yunikorn-core/pkg/common/resources"
 	customutil "github.com/apache/yunikorn-core/pkg/custom"
+	"github.com/apache/yunikorn-core/pkg/custom/util"
 	"github.com/apache/yunikorn-core/pkg/handler"
 	"github.com/apache/yunikorn-core/pkg/log"
 	"github.com/apache/yunikorn-core/pkg/metrics"
@@ -137,6 +138,7 @@ func (cc *ClusterContext) customschedule() bool {
 			customutil.GetLBManager().Allocate(nodeID, tenantAppID, startTime, res.Clone())
 			customutil.GetFairManager().UpdateScheduledApp(app)
 			customutil.GetFairMonitor().UpdateTheTenantMasterResource(app)
+			customutil.GetNodeUtilizationMonitor().Allocate(nodeID, startTime, res.Clone())
 			continue
 		}
 		metrics.GetSchedulerMetrics().ObserveSchedulingLatency(schedulingStart)
@@ -175,16 +177,25 @@ func (cc *ClusterContext) schedule() bool {
 		}
 
 		schedulingStart := time.Now()
-		alloc := psc.tryReservedAllocate()
-		if alloc == nil {
-			// placeholder replacement second
-			alloc = psc.tryPlaceholderAllocate()
-			// nothing reserved that can be allocated try normal allocate
+		/*
+			alloc := psc.tryReservedAllocate()
 			if alloc == nil {
-				alloc = psc.tryAllocate()
+				// placeholder replacement second
+				alloc = psc.tryPlaceholderAllocate()
+				// nothing reserved that can be allocated try normal allocate
+				if alloc == nil {
+					alloc = psc.tryAllocate()
+				}
 			}
-		}
+		*/
+		alloc := psc.tryAllocate()
 		if alloc != nil {
+			appID := alloc.GetApplicationID()
+			nodeID := alloc.GetNodeID()
+			app := psc.GetApplication(appID)
+			_, _, res := util.ParseApp(app)
+			customutil.GetFairMonitor().UpdateTheTenantMasterResource(app)
+			customutil.GetNodeUtilizationMonitor().Allocate(nodeID, time.Now(), res.Clone())
 			metrics.GetSchedulerMetrics().ObserveSchedulingLatency(schedulingStart)
 			if alloc.GetResult() == objects.Replaced {
 				// communicate the removal to the RM
