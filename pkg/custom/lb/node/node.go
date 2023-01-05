@@ -13,6 +13,7 @@ type NodeResource struct {
 	RequestEvents *Events
 	Available     *resources.Resource
 	Capcity       *resources.Resource
+	MaxAvialable  *resources.Resource
 	CurrentTime   time.Time
 }
 
@@ -22,6 +23,7 @@ func NewNodeResource(Available *resources.Resource, cap *resources.Resource) *No
 	return &NodeResource{
 		RequestEvents: NewEvents(),
 		Available:     s.Clone(),
+		MaxAvialable:  s.Clone(),
 		Capcity:       cap.Clone(),
 		CurrentTime:   time.Now(),
 	}
@@ -33,6 +35,7 @@ func (n *NodeResource) Allocate(appID string, allocateTime time.Time, req *resou
 	delete(s.Resources, sicommon.Duration)
 	heap.Push(n.RequestEvents, NewReleaseEvent(appID, releaseTime, s.Clone()))
 	heap.Push(n.RequestEvents, NewAllocatedEvent(appID, allocateTime, s.Clone()))
+	log.Logger().Info("Current events heap", zap.Int("length", n.RequestEvents.Len()))
 }
 
 func (n *NodeResource) GetUtilization(timeStamp time.Time, request *resources.Resource) (utilization *resources.Resource) {
@@ -40,20 +43,20 @@ func (n *NodeResource) GetUtilization(timeStamp time.Time, request *resources.Re
 	available := n.Available.Clone()
 	log.Logger().Info("calculate utilization of avaialble", zap.String("avialble", available.String()))
 	for n.RequestEvents.Len() > 0 {
-		tmp := heap.Pop(n.RequestEvents).(*Event)
-		bk = append(bk, tmp)
+		event := heap.Pop(n.RequestEvents).(*Event)
+		bk = append(bk, event)
 		// when there is t=5 submit, that means the events before t=5 should be handle and calucalte in to temperal resources
-		if timeStamp.Before(tmp.Timestamp) {
-			break
-		} else {
-			AllocatedOrRelease := tmp.AllocatedOrRelease.Clone()
-			if tmp.Allocate {
-				log.Logger().Info("Allocate", zap.String("allocate", AllocatedOrRelease.String()))
+		if !event.Timestamp.After(timeStamp) {
+			AllocatedOrRelease := event.AllocatedOrRelease.Clone()
+			if event.Allocate {
+				log.Logger().Info("Allocate", zap.Any("timestamp", event.Timestamp), zap.String("allocate", AllocatedOrRelease.String()))
 				available = resources.Sub(available, AllocatedOrRelease)
 			} else {
-				log.Logger().Info("Release", zap.String("release", AllocatedOrRelease.String()))
+				log.Logger().Info("Release", zap.Any("timestamp", event.Timestamp), zap.String("release", AllocatedOrRelease.String()))
 				available = resources.Add(available, AllocatedOrRelease)
 			}
+		} else {
+			break
 		}
 	}
 
@@ -76,61 +79,65 @@ func (n *NodeResource) GetUtilization(timeStamp time.Time, request *resources.Re
 	return &resources.Resource{Resources: resources.CalculateAbsUsedCapacity(total, resourceAllocated).Resources}
 }
 
-func (n *NodeResource) WhenCanStart(submitTime time.Time, req *resources.Resource) (enoughCapicity bool, startTime time.Time) {
+func (n *NodeResource) WhenCanStart(submitTime time.Time, req *resources.Resource) (bool, time.Time) {
+	log.Logger().Info("find when can start", zap.Any("submit", submitTime), zap.String("request", req.String()))
 	applicationReq := req.Clone()
-	if _, ok := applicationReq.Resources[sicommon.Duration]; ok {
-		delete(applicationReq.Resources, sicommon.Duration)
-	}
-	startTime = n.CurrentTime
-	if enoughCapicity = resources.StrictlyGreaterThanOrEquals(n.Capcity, applicationReq); !enoughCapicity {
-		return
-	} else {
-		enoughCapicity = true
+	delete(applicationReq.Resources, sicommon.Duration)
+
+	if enoughCapicity := resources.StrictlyGreaterThanOrEquals(n.MaxAvialable, applicationReq); !enoughCapicity {
+		log.Logger().Info("not enough cap", zap.String("max avial", n.MaxAvialable.String()), zap.String("app", applicationReq.String()))
+		return enoughCapicity, submitTime
 	}
 
 	// clear outdated event and update
-	_ = n.ClearEventsBaseOnSubmittedTime(submitTime)
-
+	var startTime time.Time
 	bk := make([]*Event, 0)
 	available := n.Available.Clone()
-	startTime = n.CurrentTime
-	for n.RequestEvents.Len() > 0 && !resources.StrictlyGreaterThanOrEquals(available, applicationReq) {
-		tmp := heap.Pop(n.RequestEvents).(*Event)
-		bk = append(bk, tmp)
-		if tmp.Allocate {
-			available = resources.Sub(available, tmp.AllocatedOrRelease)
+	for n.RequestEvents.Len() > 0 {
+		log.Logger().Info("events length", zap.Int("events", n.RequestEvents.Len()))
+		event := heap.Pop(n.RequestEvents).(*Event)
+		if event.Timestamp.Equal(submitTime) || event.Timestamp.Before(submitTime) {
+			bk = append(bk, event)
+			if event.Allocate {
+				available = resources.Sub(available, event.AllocatedOrRelease)
+				log.Logger().Info("skip: when could start Sub", zap.Int("events", n.RequestEvents.Len()), zap.String("avialable", available.String()))
+			} else {
+				available = resources.Add(available, event.AllocatedOrRelease)
+				log.Logger().Info("skip: When could start Add", zap.Int("events", n.RequestEvents.Len()), zap.String("avialable", available.String()))
+			}
 		} else {
-			available = resources.Add(available, tmp.AllocatedOrRelease)
+			heap.Push(n.RequestEvents, event)
+			break
 		}
-		startTime = tmp.Timestamp
 	}
 
-	if startTime.Before(submitTime) {
-		startTime = submitTime
+	startTime = submitTime
+	for !resources.StrictlyGreaterThanOrEquals(available, applicationReq) {
+		log.Logger().Info("events length", zap.Int("events", n.RequestEvents.Len()))
+		if n.RequestEvents.Len() > 0 {
+			event := heap.Pop(n.RequestEvents).(*Event)
+			bk = append(bk, event)
+			startTime = event.Timestamp
+			if event.Allocate {
+				available = resources.Sub(available, event.AllocatedOrRelease)
+				log.Logger().Info("When could start Sub", zap.Int("events", n.RequestEvents.Len()), zap.String("avialable", available.String()))
+			} else {
+				available = resources.Add(available, event.AllocatedOrRelease)
+				log.Logger().Info("When could start Add", zap.Int("events", n.RequestEvents.Len()), zap.String("avialable", available.String()))
+			}
+		} else if n.RequestEvents.Len() == 0 {
+			for _, element := range bk {
+				heap.Push(n.RequestEvents, element)
+			}
+			log.Logger().Info("not enough cap", zap.String("max avial", n.MaxAvialable.String()), zap.String("avail", available.String()))
+			return false, submitTime
+		}
 	}
 
 	for _, element := range bk {
 		heap.Push(n.RequestEvents, element)
 	}
-	return
-}
 
-func (n *NodeResource) ClearEventsBaseOnSubmittedTime(submitTime time.Time) *resources.Resource {
-	available := n.Available.Clone()
-	for n.RequestEvents.Len() > 0 {
-		tmp := heap.Pop(n.RequestEvents).(*Event)
-		if !tmp.Timestamp.After(submitTime) {
-			if tmp.Allocate {
-				available = resources.Sub(available, tmp.AllocatedOrRelease)
-			} else {
-				available = resources.Add(available, tmp.AllocatedOrRelease)
-			}
-			n.CurrentTime = tmp.Timestamp
-		} else {
-			heap.Push(n.RequestEvents, tmp)
-			break
-		}
-	}
-	n.Available = available
-	return n.Available.Clone()
+	log.Logger().Info("Can start at", zap.Any("startTime", startTime))
+	return true, startTime
 }

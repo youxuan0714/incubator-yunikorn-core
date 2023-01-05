@@ -1,7 +1,6 @@
 package topsis
 
 import (
-	"fmt"
 	"github.com/apache/yunikorn-core/pkg/common/resources"
 	"github.com/apache/yunikorn-core/pkg/custom/lb/node"
 	sicommon "github.com/apache/yunikorn-scheduler-interface/lib/go/common"
@@ -14,46 +13,44 @@ func TestWhenCanStart(t *testing.T) {
 	cap := resources.NewResourceFromMap(map[string]resources.Quantity{
 		sicommon.CPU:    resources.Quantity(100),
 		sicommon.Memory: resources.Quantity(100)})
-	nodes := make(map[string]*node.NodeResource, 0)
-	// create nodes
-	for i := 0; i < 4; i++ {
-		tmp := node.NewNodeResource(cap.Clone(), cap.Clone())
-		tmp.CurrentTime = timestamp
-		nodes[fmt.Sprintf("node-%d", i)] = tmp
-	}
-
 	app := resources.NewResourceFromMap(map[string]resources.Quantity{
 		sicommon.CPU:      resources.Quantity(100),
 		sicommon.Memory:   resources.Quantity(100),
 		sicommon.Duration: resources.Quantity(100)})
-	for i := 0; i < 4; i++ {
-		if i%2 == 0 {
-			nodes[fmt.Sprintf("node-%d", i)].Allocate("test", timestamp, app)
+
+	nodes := map[string]*node.NodeResource{
+		"node-1": node.NewNodeResource(cap.Clone(), cap.Clone()),
+		"node-2": node.NewNodeResource(cap.Clone(), cap.Clone()),
+		"node-3": node.NewNodeResource(cap.Clone(), cap.Clone()),
+		"node-4": node.NewNodeResource(cap.Clone(), cap.Clone()),
+	}
+	nodes["node-2"].Allocate("test", timestamp, app.Clone())
+	nodes["node-4"].Allocate("test", timestamp, app.Clone())
+
+	expect := map[string]time.Time{
+		"node-1": timestamp,
+		"node-2": timestamp.Add(time.Second * 100),
+		"node-3": timestamp,
+		"node-4": timestamp.Add(time.Second * 100),
+	}
+
+	startTimes := WhenCanStart(nodes, timestamp, app.Clone())
+	for nodeID, startTime := range startTimes {
+		if !expect[nodeID].Equal(startTime) {
+			t.Errorf("%s expect %v, got %v", nodeID, expect[nodeID], startTime)
 		}
 	}
 
-	index := 0
-	startTimes := WhenCanStart(nodes, timestamp, app)
-	for nodeID, startTime := range startTimes {
-		if index%2 == 0 {
-			expect := timestamp.Add(time.Duration(time.Second * 100))
-			if !startTime.Equal(expect) {
-				t.Errorf("%s expect %v, got %v", nodeID, expect, startTime)
-			}
-		} else {
-			expect := timestamp
-			if !expect.Equal(startTime) {
-				t.Errorf("%s same expect %v, got %v", nodeID, expect, startTime)
-			}
-		}
-		index++
+	expect = map[string]time.Time{
+		"node-1": timestamp.Add(time.Second * 100),
+		"node-2": timestamp.Add(time.Second * 100),
+		"node-3": timestamp.Add(time.Second * 100),
+		"node-4": timestamp.Add(time.Second * 100),
 	}
 	startTimes = WhenCanStart(nodes, timestamp.Add(time.Second*100), app)
-	index = 0
 	for nodeID, startTime := range startTimes {
-		if expect := timestamp.Add(time.Duration(time.Second * 100)); !expect.Equal(startTime) {
-			t.Errorf("%s same expect %v, got %v", nodeID, expect, startTime)
+		if !expect[nodeID].Equal(startTime) {
+			t.Errorf("%s expect %v, got %v", nodeID, expect[nodeID], startTime)
 		}
-		index++
 	}
 }

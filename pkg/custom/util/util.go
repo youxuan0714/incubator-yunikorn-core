@@ -40,7 +40,7 @@ func ParseApp(a *objects.Application) (appID string, username string, resResult 
 	resType := []string{sicommon.CPU, sicommon.Memory, sicommon.Duration}
 	for _, key := range resType {
 		if value, err := strconv.ParseInt(a.GetTag(key), 10, 64); err != nil {
-			log.Logger().Warn("Resource parsing fail", zap.String("key", key), zap.String("error", err.Error()))
+			log.Logger().Info("Resource parsing fail", zap.String("key", key), zap.String("error", err.Error()))
 		} else {
 			resResult.Resources[key] = resources.Quantity(value)
 		}
@@ -53,7 +53,7 @@ func ParseUsersInPartitionConfig(conf configs.PartitionConfig) map[string]bool {
 	for _, q := range conf.Queues {
 		acl, err := security.NewACL(q.SubmitACL)
 		if err != nil {
-			log.Logger().Warn("Parsing ACL in fair manager is failed", zap.String("error", err.Error()))
+			log.Logger().Info("Parsing ACL in fair manager is failed", zap.String("error", err.Error()))
 		}
 		for user, _ := range acl.GetUsers() {
 			log.Logger().Info("User in config", zap.String("user", user))

@@ -97,6 +97,7 @@ func newPartitionContext(conf configs.PartitionConfig, rmID string, cc *ClusterC
 		nodes:                 objects.NewNodeCollection(conf.Name),
 	}
 	pc.partitionManager = newPartitionManager(pc, cc)
+	customutil.GetFairMonitor().ParseTenantsInPartitionConfig(conf)
 	if err := pc.initialPartitionFromConfig(conf); err != nil {
 		return nil, err
 	}

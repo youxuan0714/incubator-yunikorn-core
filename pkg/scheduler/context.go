@@ -31,7 +31,7 @@ import (
 	"github.com/apache/yunikorn-core/pkg/common/configs"
 	"github.com/apache/yunikorn-core/pkg/common/resources"
 	customutil "github.com/apache/yunikorn-core/pkg/custom"
-	"github.com/apache/yunikorn-core/pkg/custom/util"
+	//"github.com/apache/yunikorn-core/pkg/custom/util"
 	"github.com/apache/yunikorn-core/pkg/handler"
 	"github.com/apache/yunikorn-core/pkg/log"
 	"github.com/apache/yunikorn-core/pkg/metrics"
@@ -116,6 +116,7 @@ func (cc *ClusterContext) setEventHandler(rmHandler handler.EventHandler) {
 // Process each partition in the scheduler, walk over each queue and app to check if anything can be scheduled.
 // This can be forked into a go routine per partition if needed to increase parallel allocations.
 // Returns true if an allocation was able to be scheduled.
+
 func (cc *ClusterContext) customschedule() bool {
 	// schedule each partition defined in the cluster
 	for _, psc := range cc.GetPartitionMapClone() {
@@ -138,7 +139,7 @@ func (cc *ClusterContext) customschedule() bool {
 			customutil.GetLBManager().Allocate(nodeID, tenantAppID, startTime, res.Clone())
 			customutil.GetFairManager().UpdateScheduledApp(app)
 			customutil.GetFairMonitor().UpdateTheTenantMasterResource(app)
-			customutil.GetNodeUtilizationMonitor().Allocate(nodeID, startTime, res.Clone())
+			//customutil.GetNodeUtilizationMonitor().Allocate(nodeID, startTime, res.Clone())
 			continue
 		}
 		metrics.GetSchedulerMetrics().ObserveSchedulingLatency(schedulingStart)
@@ -164,7 +165,7 @@ func (cc *ClusterContext) customschedule() bool {
 	return true
 }
 
-func (cc *ClusterContext) schedule() bool {
+func (cc *ClusterContext) scheduleWithRecord() bool {
 	activity := false
 	for _, psc := range cc.GetPartitionMapClone() {
 		// if there are no resources in the partition just skip
@@ -177,25 +178,47 @@ func (cc *ClusterContext) schedule() bool {
 		}
 
 		schedulingStart := time.Now()
-		/*
-			alloc := psc.tryReservedAllocate()
-			if alloc == nil {
-				// placeholder replacement second
-				alloc = psc.tryPlaceholderAllocate()
-				// nothing reserved that can be allocated try normal allocate
-				if alloc == nil {
-				alloc = psc.tryAllocate()
-				}
-			}
-		*/
-		alloc := psc.tryAllocate()
-		if alloc != nil {
-			appID := alloc.GetApplicationID()
-			nodeID := alloc.GetNodeID()
-			app := psc.GetApplication(appID)
-			_, _, res := util.ParseApp(app)
+		if alloc := psc.tryAllocate(); alloc != nil {
+			metrics.GetSchedulerMetrics().ObserveSchedulingLatency(schedulingStart)
+			app := psc.GetApplication(alloc.GetApplicationID())
+			//_, _, res := util.ParseApp(app)
 			customutil.GetFairMonitor().UpdateTheTenantMasterResource(app)
-			customutil.GetNodeUtilizationMonitor().Allocate(nodeID, time.Now(), res.Clone())
+			//customutil.GetNodeUtilizationMonitor().Allocate(alloc.GetNodeID(), time.Now(), res.Clone())
+			if alloc.GetResult() == objects.Replaced {
+				// communicate the removal to the RM
+				cc.notifyRMAllocationReleased(psc.RmID, alloc.GetReleasesClone(), si.TerminationType_PLACEHOLDER_REPLACED, "replacing uuid: "+alloc.GetUUID())
+			} else {
+				cc.notifyRMNewAllocation(psc.RmID, alloc)
+			}
+			activity = true
+		}
+	}
+	return activity
+}
+
+func (cc *ClusterContext) schedule() bool {
+	activity := false
+	for _, psc := range cc.GetPartitionMapClone() {
+		// if there are no resources in the partition just skip
+		if psc.root.GetMaxResource() == nil {
+			continue
+		}
+		// a stopped partition does not allocate
+		if psc.isStopped() {
+			continue
+		}
+		// try reservations first
+		schedulingStart := time.Now()
+		alloc := psc.tryReservedAllocate()
+		if alloc == nil {
+			// placeholder replacement second
+			alloc = psc.tryPlaceholderAllocate()
+			// nothing reserved that can be allocated try normal allocate
+			if alloc == nil {
+				alloc = psc.tryAllocate()
+			}
+		}
+		if alloc != nil {
 			metrics.GetSchedulerMetrics().ObserveSchedulingLatency(schedulingStart)
 			if alloc.GetResult() == objects.Replaced {
 				// communicate the removal to the RM

@@ -23,6 +23,7 @@ type NodeUtilizationMonitor struct {
 	startTime         time.Time
 	file              *excel.File
 	count             uint64
+	First             bool
 }
 
 func NewUtilizationMonitor() *NodeUtilizationMonitor {
@@ -36,6 +37,7 @@ func NewUtilizationMonitor() *NodeUtilizationMonitor {
 		file:              file,
 		startTime:         time.Now(),
 		count:             uint64(0),
+		First:             false,
 	}
 }
 
@@ -45,6 +47,9 @@ func (m *NodeUtilizationMonitor) SetStartTime(t time.Time) {
 
 func (m *NodeUtilizationMonitor) Allocate(nodeID string, allocatedTime time.Time, req *resources.Resource) {
 	if n, ok := m.nodes[nodeID]; ok {
+		if !m.First {
+			m.startTime = allocatedTime
+		}
 		log.Logger().Info("utilization count", zap.Uint64("count", m.count))
 		releaseTime := allocatedTime.Add(time.Second * time.Duration(req.Resources[sicommon.Duration]))
 		d1 := SubTimeAndTranslateToUint64(allocatedTime, m.startTime)

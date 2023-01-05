@@ -26,6 +26,7 @@ type FairnessMonitor struct {
 	eventsTimestamps        []uint64
 	startTime               time.Time
 	count                   uint64
+	First                   bool
 }
 
 // Initialize the tenant Monitor
@@ -41,6 +42,7 @@ func NewFairnessMonitor() *FairnessMonitor {
 		eventsTimestamps:        make([]uint64, 0),
 		Infos:                   make(map[string]*MasterResourceInfos),
 		count:                   uint64(0),
+		First:                   false,
 	}
 }
 
@@ -63,7 +65,12 @@ func (m *FairnessMonitor) UpdateTheTenantMasterResource(app *objects.Application
 	masterResource := CalculateMasterResourceOfApplication(app)
 	// events: global
 	currentTime := time.Now()
-	duration := SubTimeAndTranslateToUint64(currentTime, m.startTime)
+	if !m.First {
+		m.startTime = currentTime
+		m.First = true
+	}
+	duration := SubTimeAndTranslateToMiliSecondUint64(currentTime, m.startTime)
+	log.Logger().Info("Add duration to excel", zap.Uint64("duration", duration))
 	m.AddEventTimeStamp(duration)
 	m.count++
 	if m.count == appNum {
@@ -105,6 +112,7 @@ func (m *FairnessMonitor) ParseTenantsInPartitionConfig(conf configs.PartitionCo
 			m.MasterResourceOfTenants[userNameInConfig] = uint64(0)
 			// write tenant id in B1, C1, D1 ...
 			idLetter := m.id[userNameInConfig]
+			log.Logger().Info("Set tenant ID", zap.String("tenant ID", idLetter), zap.String("next idLetter", excelCol[len(m.MasterResourceOfTenants)]))
 			m.file.SetCellValue(fairness, fmt.Sprintf("%s%d", idLetter, 1), userNameInConfig)
 		}
 	}
@@ -112,6 +120,7 @@ func (m *FairnessMonitor) ParseTenantsInPartitionConfig(conf configs.PartitionCo
 
 // Save excel file
 func (m *FairnessMonitor) Save() {
+	var cellName string
 	DeleteExistedFile(tenantsfiltpath)
 	// setting timestamps
 	// Write timestamps in A2,A3,A4...
@@ -122,22 +131,31 @@ func (m *FairnessMonitor) Save() {
 		currentMasterResource[username] = uint64(0)
 	}
 
+	log.Logger().Info("Save file", zap.Int("Number of eventsTimesstamps", len(m.eventsTimestamps)))
 	for index, timestamp := range m.eventsTimestamps {
+		// A is timestamp.
+		// B,C,D and so on is tenant master resource
 		placeNum := uint64(index + 2)
-		m.file.SetCellValue(fairness, fmt.Sprintf("%s%d", TimeStampLetter, placeNum), timestamp)
+		cellName = fmt.Sprintf("%s%d", TimeStampLetter, placeNum)
+		log.Logger().Info("specific timestamp", zap.String("cellName", cellName), zap.Uint64("timestamp", timestamp))
+		m.file.SetCellValue(fairness, cellName, timestamp)
 		for username, events := range m.Infos {
 			idLetter := m.id[username]
+			cellName = fmt.Sprintf("%s%d", idLetter, placeNum)
 			if masterResource, existed := events.MasterResourceAtTime(timestamp); existed {
 				currentMasterResource[username] += masterResource
-				m.file.SetCellValue(fairness, fmt.Sprintf("%s%d", idLetter, placeNum), currentMasterResource[username])
-			} else {
-				continue
+				log.Logger().Info("add master resource in tenants trace", zap.String("tenant", username), zap.Uint64("new master resource", masterResource))
 			}
+			masterResource := currentMasterResource[username]
+			log.Logger().Info("master resource of specific timestamp", zap.Uint64("timestamp", timestamp), zap.String("tenant", username), zap.String("cellName", cellName), zap.Uint64("master resource", masterResource))
+			m.file.SetCellValue(fairness, cellName, masterResource)
 		}
 	}
 	_ = os.Remove(tenantsfiltpath)
 	if err := m.file.SaveAs(tenantsfiltpath); err != nil {
 		log.Logger().Warn("save tenants file fail", zap.String("err", err.Error()))
+	} else {
+		log.Logger().Info("save tenant file sucess")
 	}
 }
 
