@@ -31,7 +31,7 @@ import (
 	"github.com/apache/yunikorn-core/pkg/common/configs"
 	"github.com/apache/yunikorn-core/pkg/common/resources"
 	customutil "github.com/apache/yunikorn-core/pkg/custom"
-	//"github.com/apache/yunikorn-core/pkg/custom/util"
+	"github.com/apache/yunikorn-core/pkg/custom/util"
 	"github.com/apache/yunikorn-core/pkg/handler"
 	"github.com/apache/yunikorn-core/pkg/log"
 	"github.com/apache/yunikorn-core/pkg/metrics"
@@ -179,11 +179,12 @@ func (cc *ClusterContext) scheduleWithRecord() bool {
 
 		schedulingStart := time.Now()
 		if alloc := psc.tryAllocate(); alloc != nil {
+			log.Logger().Info("alloacte time", zap.Any("allocate timestamp", schedulingStart))
 			metrics.GetSchedulerMetrics().ObserveSchedulingLatency(schedulingStart)
 			app := psc.GetApplication(alloc.GetApplicationID())
-			//_, _, res := util.ParseApp(app)
-			customutil.GetFairMonitor().UpdateTheTenantMasterResource(app)
-			//customutil.GetNodeUtilizationMonitor().Allocate(alloc.GetNodeID(), time.Now(), res.Clone())
+			_, _, res := util.ParseApp(app)
+			//customutil.GetFairMonitor().UpdateTheTenantMasterResource(app)
+			customutil.GetNodeUtilizationMonitor().Allocate(alloc.GetNodeID(), schedulingStart, res.Clone())
 			if alloc.GetResult() == objects.Replaced {
 				// communicate the removal to the RM
 				cc.notifyRMAllocationReleased(psc.RmID, alloc.GetReleasesClone(), si.TerminationType_PLACEHOLDER_REPLACED, "replacing uuid: "+alloc.GetUUID())

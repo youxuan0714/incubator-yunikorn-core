@@ -1370,6 +1370,7 @@ func (sa *Application) tryNode(node *Node, ask *AllocationAsk) *Allocation {
 		// all is OK, last update for the app
 		sa.addAllocationInternal(alloc)
 		// return allocation
+		log.Logger().Info("resource utilization when assign app", zap.String("app res", alloc.GetAllocatedResource().String()), zap.String("nodeID", node.NodeID), zap.String("uitilization", node.GetUtilizedResource().String()))
 		return alloc
 	}
 	return nil

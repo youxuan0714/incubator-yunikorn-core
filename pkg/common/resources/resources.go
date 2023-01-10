@@ -930,6 +930,36 @@ func MIG(input *Resource) Quantity {
 	return gaps
 }
 
+func GetMIGFromNodeUtilization(input *Resource) int64 {
+	return int64(MIG(input.Clone()))
+}
+
+func GetDeviationFromNodes(nodes []*Resource, average *Resource) float64 {
+	resTypes := []string{common.CPU, common.Memory}
+	deviations := map[string]float64{
+		common.CPU:    0.0,
+		common.Memory: 0.0,
+	}
+
+	for _, resType := range resTypes {
+		base := int64(average.Resources[resType])
+		for _, node := range nodes {
+			resOnNode := int64(node.Resources[resType])
+			log.Logger().Info("deviation sub", zap.Int64("node res", resOnNode), zap.Int64("average", base))
+			tmp := float64(resOnNode) - float64(base)
+			deviations[resType] += math.Pow(tmp, float64(2))
+		}
+
+		deviations[resType] = math.Sqrt(deviations[resType])
+		log.Logger().Info("deviation", zap.String("type", resType), zap.Float64("result", deviations[resType]))
+	}
+
+	if deviations[common.CPU] >= deviations[common.Memory] {
+		return deviations[common.CPU]
+	}
+	return deviations[common.Memory]
+}
+
 // Find max rquantity type in resources
 func Min(input *Resource) Quantity {
 	var min Quantity

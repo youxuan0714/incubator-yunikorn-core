@@ -49,13 +49,17 @@ func (m *NodeUtilizationMonitor) Allocate(nodeID string, allocatedTime time.Time
 	if n, ok := m.nodes[nodeID]; ok {
 		if !m.First {
 			m.startTime = allocatedTime
+			m.First = true
+			log.Logger().Info("utilization start time", zap.Any("utilization starttime", m.startTime))
 		}
-		log.Logger().Info("utilization count", zap.Uint64("count", m.count))
 		releaseTime := allocatedTime.Add(time.Second * time.Duration(req.Resources[sicommon.Duration]))
-		d1 := SubTimeAndTranslateToUint64(allocatedTime, m.startTime)
+		d1 := SubTimeAndTranslateToSeoncd(allocatedTime, m.startTime)
+		d2 := SubTimeAndTranslateToSeoncd(releaseTime, m.startTime)
+		log.Logger().Info("utilization count", zap.Uint64("count", m.count), zap.Uint64("allocate uint", d1), zap.Uint64("release uint", d2))
+
 		m.AddGlobalEventsTime(d1)
-		d2 := SubTimeAndTranslateToUint64(releaseTime, m.startTime)
 		m.AddGlobalEventsTime(d2)
+
 		n.Allocate(d1, d2, req)
 		m.count++
 		if m.count == appNum {
@@ -70,7 +74,9 @@ func (m *NodeUtilizationMonitor) AddNode(n *objects.Node) {
 		m.id[nodeID] = excelColForUtilization[len(m.nodes)]
 		m.nodes[nodeID] = NewNodeResource(avial, cap)
 		idLetter := m.id[nodeID]
-		m.file.SetCellValue(migsheet, fmt.Sprintf("%s%d", idLetter, 1), nodeID)
+		cellName := fmt.Sprintf("%s%d", idLetter, 1)
+		log.Logger().Info("node get id", zap.String("nodeID", idLetter), zap.String("cellName", cellName))
+		m.file.SetCellValue(migsheet, cellName, nodeID)
 	}
 }
 
@@ -86,31 +92,29 @@ func (m *NodeUtilizationMonitor) Save() {
 	sort.Slice(m.GlobalEvent, func(i, j int) bool { return m.GlobalEvent[i] < m.GlobalEvent[j] })
 	for index, timestamp := range m.GlobalEvent {
 		placeNum := uint64(index + 2)
-		m.file.SetCellValue(fairness, fmt.Sprintf("%s%d", timestampLetterOfUitlization, placeNum), timestamp)
+		timestampCellName := fmt.Sprintf("%s%d", timestampLetterOfUitlization, placeNum)
+		log.Logger().Info("timestamp cell info", zap.String("timestampCellName", timestampCellName), zap.Uint64("timestamp", timestamp))
+		m.file.SetCellValue(fairness, timestampCellName, timestamp)
 		nodesRes := make([]*resources.Resource, 0)
 		for nodeID, nodeRes := range m.nodes {
 			_ = nodeRes.AllocateResource(timestamp)
 			cap := nodeRes.cap.Clone()
 			allocated := resources.Sub(nodeRes.cap.Clone(), nodeRes.avaialble.Clone())
-			log.Logger().Info("uitilization trace", zap.Any("cap", cap), zap.Any("allocated", allocated))
 			utilization := resources.CalculateAbsUsedCapacity(cap, allocated)
+			log.Logger().Info("uitilization trace", zap.String("utilization", utilization.String()), zap.String("cap", cap.String()), zap.String("allocated", allocated.String()))
 			nodesRes = append(nodesRes, utilization.Clone())
 			// mig
 			idLetter := m.id[nodeID]
-			m.file.SetCellValue(migsheet, fmt.Sprintf("%s%d", idLetter, placeNum), int64(resources.MIG(utilization)))
+			cellName := fmt.Sprintf("%s%d", idLetter, placeNum)
+			mig := int64(resources.MIG(utilization))
+			log.Logger().Info("mig", zap.String("celName", cellName), zap.Int64("mig", mig))
+			m.file.SetCellValue(migsheet, cellName, mig)
 		}
 		average := resources.Average(nodesRes)
-		gapSum := resources.NewResource()
-		// sum += (utilization - average utilization)^2
-		for _, n := range nodesRes {
-			gap := resources.Sub(n, average)
-			powerGap := resources.Power(gap, float64(2))
-			gapSum = resources.Add(gapSum, powerGap)
-		}
-		// Max deviation = Max(SQRT(sum including cpu and memory))
-		gapSum = resources.Power(gapSum, float64(0.5))
-		standardDeviation := resources.Max(gapSum)
-		m.file.SetCellValue(migsheet, fmt.Sprintf("%s%d", bias, placeNum), int64(standardDeviation))
+		standardDeviation := resources.GetDeviationFromNodes(nodesRes, average)
+		cellName := fmt.Sprintf("%s%d", deviation, placeNum)
+		log.Logger().Info("deviation", zap.String("cellName", cellName), zap.Float64("deviation", standardDeviation))
+		m.file.SetCellValue(migsheet, cellName, standardDeviation)
 	}
 	_ = os.Remove(utilizationfiltpath)
 	if err := m.file.SaveAs(utilizationfiltpath); err != nil {
@@ -137,16 +141,19 @@ func (n *NodeResource) Allocate(allocated, release uint64, req *resources.Resour
 	reqWithoutDuration := req.Clone()
 	delete(reqWithoutDuration.Resources, sicommon.Duration)
 	if _, ok := n.events[allocated]; !ok {
-		n.events[allocated] = resources.Sub(nil, reqWithoutDuration.Clone())
+		n.events[allocated] = resources.Sub(resources.NewResource(), reqWithoutDuration.Clone())
 	} else {
 		n.events[allocated] = resources.Sub(n.events[allocated], reqWithoutDuration.Clone())
 	}
+	log.Logger().Info("Allocate request map", zap.String("allocated", n.events[allocated].String()), zap.String("request", req.String()))
 
 	if _, ok := n.events[release]; !ok {
 		n.events[release] = reqWithoutDuration.Clone()
 	} else {
-		n.events[release] = resources.Add(n.events[allocated], reqWithoutDuration.Clone())
+		n.events[release] = resources.Add(n.events[release], reqWithoutDuration.Clone())
 	}
+	log.Logger().Info("release request map", zap.String("released", n.events[allocated].String()), zap.String("release", req.String()))
+
 	return
 }
 

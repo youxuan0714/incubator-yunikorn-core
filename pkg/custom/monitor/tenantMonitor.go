@@ -69,7 +69,7 @@ func (m *FairnessMonitor) UpdateTheTenantMasterResource(app *objects.Application
 		m.startTime = currentTime
 		m.First = true
 	}
-	duration := SubTimeAndTranslateToMiliSecondUint64(currentTime, m.startTime)
+	duration := SubTimeAndTranslateToMiliSecond(currentTime, m.startTime)
 	log.Logger().Info("Add duration to excel", zap.Uint64("duration", duration))
 	m.AddEventTimeStamp(duration)
 	m.count++
