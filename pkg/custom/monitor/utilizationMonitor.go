@@ -29,6 +29,7 @@ type NodeUtilizationMonitor struct {
 func NewUtilizationMonitor() *NodeUtilizationMonitor {
 	file := excel.NewFile()
 	file.NewSheet(migsheet)
+	file.NewSheet(deviationsheet)
 	return &NodeUtilizationMonitor{
 		nodes:             make(map[string]*NodeResource),
 		GlobalEventUnique: make(map[uint64]bool),
@@ -92,9 +93,10 @@ func (m *NodeUtilizationMonitor) Save() {
 	sort.Slice(m.GlobalEvent, func(i, j int) bool { return m.GlobalEvent[i] < m.GlobalEvent[j] })
 	for index, timestamp := range m.GlobalEvent {
 		placeNum := uint64(index + 2)
-		timestampCellName := fmt.Sprintf("%s%d", timestampLetterOfUitlization, placeNum)
+		timestampCellName := fmt.Sprintf("%s%d", TimeStampLetter, placeNum)
 		log.Logger().Info("timestamp cell info", zap.String("timestampCellName", timestampCellName), zap.Uint64("timestamp", timestamp))
-		m.file.SetCellValue(fairness, timestampCellName, timestamp)
+		m.file.SetCellValue(migsheet, timestampCellName, timestamp)
+		m.file.SetCellValue(deviationsheet, timestampCellName, timestamp)
 		nodesRes := make([]*resources.Resource, 0)
 		for nodeID, nodeRes := range m.nodes {
 			_ = nodeRes.AllocateResource(timestamp)
@@ -112,9 +114,9 @@ func (m *NodeUtilizationMonitor) Save() {
 		}
 		average := resources.Average(nodesRes)
 		standardDeviation := resources.GetDeviationFromNodes(nodesRes, average)
-		cellName := fmt.Sprintf("%s%d", deviation, placeNum)
+		cellName := fmt.Sprintf("%s%d", deviationCellName, placeNum)
 		log.Logger().Info("deviation", zap.String("cellName", cellName), zap.Float64("deviation", standardDeviation))
-		m.file.SetCellValue(migsheet, cellName, standardDeviation)
+		m.file.SetCellValue(deviationsheet, cellName, standardDeviation)
 	}
 	_ = os.Remove(utilizationfiltpath)
 	if err := m.file.SaveAs(utilizationfiltpath); err != nil {
