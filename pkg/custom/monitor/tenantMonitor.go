@@ -51,12 +51,14 @@ func (m *FairnessMonitor) RecordUnScheduledApp(app *objects.Application) {
 	if _, ok := m.UnRunningApps[app.ApplicationID]; !ok {
 		m.UnRunningApps[app.ApplicationID] = app
 		_, username, _ := customutil.ParseApp(app)
-		m.id[username] = excelCol[len(m.MasterResourceOfTenants)]
-		m.MasterResourceOfTenants[username] = uint64(0)
-		// write tenant id in B1, C1, D1 ...
-		idLetter := m.id[username]
-		log.Logger().Info("Set tenant ID", zap.String("tenant ID", idLetter), zap.String("next idLetter", excelCol[len(m.MasterResourceOfTenants)]))
-		m.file.SetCellValue(fairness, fmt.Sprintf("%s%d", idLetter, 1), username)
+		if _, ok := m.id[username]; !ok {
+			m.id[username] = excelCol[len(m.MasterResourceOfTenants)]
+			m.MasterResourceOfTenants[username] = uint64(0)
+			// write tenant id in B1, C1, D1 ...
+			idLetter := m.id[username]
+			log.Logger().Info("dynamic set tenant ID", zap.String("tenant name", username), zap.String("tenant ID", idLetter), zap.String("next idLetter", excelCol[len(m.MasterResourceOfTenants)]))
+			m.file.SetCellValue(fairness, fmt.Sprintf("%s%d", idLetter, 1), username)
+		}
 	}
 }
 
