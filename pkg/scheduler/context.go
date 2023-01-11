@@ -131,16 +131,14 @@ func (cc *ClusterContext) customschedule() bool {
 
 		schedulingStart := time.Now()
 		scheduled, username, tenantAppID := customutil.GetFairManager().NextAppToSchedule()
-		if scheduled {
+		if app := psc.GetApplication(tenantAppID); scheduled && app != nil {
 			log.Logger().Info("Start to schedule app", zap.String("appid", tenantAppID), zap.String("user", username))
-			app := psc.GetApplication(tenantAppID)
 			nodeID, startTime, tenantAppID, res := customutil.GetLBManager().Schedule(app, schedulingStart)
 			customutil.GetPlanManager().AssignAppToNode(tenantAppID, nodeID)
 			customutil.GetLBManager().Allocate(nodeID, tenantAppID, startTime, res.Clone())
 			customutil.GetFairManager().UpdateScheduledApp(app)
 			customutil.GetFairMonitor().UpdateTheTenantMasterResource(app)
 			//customutil.GetNodeUtilizationMonitor().Allocate(nodeID, startTime, res.Clone())
-			//continue
 		}
 		metrics.GetSchedulerMetrics().ObserveSchedulingLatency(schedulingStart)
 

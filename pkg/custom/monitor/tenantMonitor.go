@@ -157,7 +157,7 @@ func (m *FairnessMonitor) Save() {
 			}
 			masterResource := currentMasterResource[username]
 			log.Logger().Info("master resource of specific timestamp", zap.Uint64("timestamp", timestamp), zap.String("tenant", username), zap.String("cellName", cellName), zap.Uint64("master resource", masterResource))
-			m.file.SetCellValue(fairness, cellName, math.Log10(Float64(masterResource)))
+			m.file.SetCellValue(fairness, cellName, math.Log10(float64(masterResource)))
 		}
 	}
 	_ = os.Remove(tenantsfiltpath)
