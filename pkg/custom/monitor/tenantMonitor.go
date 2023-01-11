@@ -11,6 +11,7 @@ import (
 	sicommon "github.com/apache/yunikorn-scheduler-interface/lib/go/common"
 	excel "github.com/xuri/excelize/v2"
 	"go.uber.org/zap"
+	"math"
 	"os"
 	"sort"
 	"time"
@@ -81,10 +82,6 @@ func (m *FairnessMonitor) UpdateTheTenantMasterResource(app *objects.Application
 	duration := SubTimeAndTranslateToMiliSecond(currentTime, m.startTime)
 	log.Logger().Info("Add duration to excel", zap.Uint64("duration", duration))
 	m.AddEventTimeStamp(duration)
-	m.count++
-	if m.count == appNum {
-		m.Save()
-	}
 
 	// events: person
 	if _, ok := m.Infos[user]; !ok {
@@ -95,6 +92,10 @@ func (m *FairnessMonitor) UpdateTheTenantMasterResource(app *objects.Application
 	// stream
 	m.AddMasterResourceToTenant(user, masterResource)
 	log.Logger().Info("fairness print", zap.Any("apps", app.ApplicationID), zap.Any("tenants", m.MasterResourceOfTenants))
+	m.count++
+	if m.count == appNum {
+		m.Save()
+	}
 	return
 }
 
@@ -156,7 +157,7 @@ func (m *FairnessMonitor) Save() {
 			}
 			masterResource := currentMasterResource[username]
 			log.Logger().Info("master resource of specific timestamp", zap.Uint64("timestamp", timestamp), zap.String("tenant", username), zap.String("cellName", cellName), zap.Uint64("master resource", masterResource))
-			m.file.SetCellValue(fairness, cellName, masterResource)
+			m.file.SetCellValue(fairness, cellName, math.Log10(Float64(masterResource)))
 		}
 	}
 	_ = os.Remove(tenantsfiltpath)
