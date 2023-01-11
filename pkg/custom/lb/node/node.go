@@ -36,26 +36,41 @@ func (n *NodeResource) Allocate(appID string, allocateTime time.Time, req *resou
 	heap.Push(n.RequestEvents, NewReleaseEvent(appID, releaseTime, s.Clone()))
 	heap.Push(n.RequestEvents, NewAllocatedEvent(appID, allocateTime, s.Clone()))
 	log.Logger().Info("Current events heap", zap.Int("length", n.RequestEvents.Len()))
+	log.Logger().Info("expect", zap.String("allocate", n.GetUtilization(allocateTime, nil).String()), zap.String("release", n.GetUtilization(releaseTime, req.Clone()).String()))
 }
 
 func (n *NodeResource) GetUtilization(timeStamp time.Time, request *resources.Resource) (utilization *resources.Resource) {
 	bk := make([]*Event, 0)
 	available := n.Available.Clone()
-	log.Logger().Info("calculate utilization of avaialble", zap.String("avialble", available.String()))
+	log.Logger().Info("Get utilization", zap.String("initial avialble", available.String()))
+	if request != nil {
+		log.Logger().Info("get utilization with request")
+	}
 	for n.RequestEvents.Len() > 0 {
+		log.Logger().Info("events", zap.Int("length", n.RequestEvents.Len()))
 		event := heap.Pop(n.RequestEvents).(*Event)
-		bk = append(bk, event)
 		// when there is t=5 submit, that means the events before t=5 should be handle and calucalte in to temperal resources
-		if !event.Timestamp.After(timeStamp) {
+		if event.Timestamp.Equal(timeStamp) || event.Timestamp.Before(timeStamp) {
+			bk = append(bk, event)
 			AllocatedOrRelease := event.AllocatedOrRelease.Clone()
 			if event.Allocate {
-				log.Logger().Info("Allocate", zap.Any("timestamp", event.Timestamp), zap.String("allocate", AllocatedOrRelease.String()))
 				available = resources.Sub(available, AllocatedOrRelease)
+				log.Logger().Info("Allocate", zap.Any("timestamp", event.Timestamp), zap.String("avail", available.String()), zap.String("allocate", AllocatedOrRelease.String()))
 			} else {
-				log.Logger().Info("Release", zap.Any("timestamp", event.Timestamp), zap.String("release", AllocatedOrRelease.String()))
 				available = resources.Add(available, AllocatedOrRelease)
+				log.Logger().Info("Release", zap.Any("timestamp", event.Timestamp), zap.String("avail", available.String()), zap.String("release", AllocatedOrRelease.String()))
 			}
 		} else {
+			heap.Push(n.RequestEvents, event)
+			for n.RequestEvents.Len() > 0 {
+				tmp := heap.Pop(n.RequestEvents).(*Event)
+				bk = append(bk, tmp)
+				if tmp.Allocate {
+					log.Logger().Info("other allocate utilization events", zap.Any("timestamp", tmp.Timestamp), zap.String("resource", tmp.AllocatedOrRelease.String()))
+				} else {
+					log.Logger().Info("other release utilization events", zap.Any("timestamp", tmp.Timestamp), zap.String("resource", tmp.AllocatedOrRelease.String()))
+				}
+			}
 			break
 		}
 	}
@@ -90,20 +105,20 @@ func (n *NodeResource) WhenCanStart(submitTime time.Time, req *resources.Resourc
 	}
 
 	// clear outdated event and update
-	var startTime time.Time
+	startTime := submitTime
 	bk := make([]*Event, 0)
 	available := n.Available.Clone()
 	for n.RequestEvents.Len() > 0 {
 		log.Logger().Info("events length", zap.Int("events", n.RequestEvents.Len()))
 		event := heap.Pop(n.RequestEvents).(*Event)
-		if event.Timestamp.Equal(submitTime) || event.Timestamp.Before(submitTime) {
-			bk = append(bk, event)
+		bk = append(bk, event)
+		if event.Timestamp.Before(submitTime) || event.Timestamp.Equal(submitTime) {
 			if event.Allocate {
 				available = resources.Sub(available, event.AllocatedOrRelease)
-				log.Logger().Info("skip: when could start Sub", zap.Int("events", n.RequestEvents.Len()), zap.String("avialable", available.String()))
+				log.Logger().Info("skip: when could start Sub", zap.Any("time", event.Timestamp), zap.String("avialable", available.String()), zap.String("event", event.AllocatedOrRelease.String()))
 			} else {
 				available = resources.Add(available, event.AllocatedOrRelease)
-				log.Logger().Info("skip: When could start Add", zap.Int("events", n.RequestEvents.Len()), zap.String("avialable", available.String()))
+				log.Logger().Info("skip: When could start Add", zap.Any("time", event.Timestamp), zap.String("avialable", available.String()), zap.String("event", event.AllocatedOrRelease.String()))
 			}
 		} else {
 			heap.Push(n.RequestEvents, event)
@@ -111,26 +126,27 @@ func (n *NodeResource) WhenCanStart(submitTime time.Time, req *resources.Resourc
 		}
 	}
 
-	startTime = submitTime
-	for !resources.StrictlyGreaterThanOrEquals(available, applicationReq) {
+	for !resources.StrictlyGreaterThanOrEquals(available, applicationReq) && n.RequestEvents.Len() > 0 {
 		log.Logger().Info("events length", zap.Int("events", n.RequestEvents.Len()))
-		if n.RequestEvents.Len() > 0 {
-			event := heap.Pop(n.RequestEvents).(*Event)
-			bk = append(bk, event)
-			startTime = event.Timestamp
-			if event.Allocate {
-				available = resources.Sub(available, event.AllocatedOrRelease)
-				log.Logger().Info("When could start Sub", zap.Int("events", n.RequestEvents.Len()), zap.String("avialable", available.String()))
-			} else {
-				available = resources.Add(available, event.AllocatedOrRelease)
-				log.Logger().Info("When could start Add", zap.Int("events", n.RequestEvents.Len()), zap.String("avialable", available.String()))
-			}
-		} else if n.RequestEvents.Len() == 0 {
-			for _, element := range bk {
-				heap.Push(n.RequestEvents, element)
-			}
-			log.Logger().Info("not enough cap", zap.String("max avial", n.MaxAvialable.String()), zap.String("avail", available.String()))
-			return false, submitTime
+		event := heap.Pop(n.RequestEvents).(*Event)
+		bk = append(bk, event)
+		startTime = event.Timestamp
+		if event.Allocate {
+			available = resources.Sub(available, event.AllocatedOrRelease)
+			log.Logger().Info("When could start Sub", zap.Any("time", event.Timestamp), zap.String("avialable", available.String()), zap.String("event", event.AllocatedOrRelease.String()))
+		} else {
+			available = resources.Add(available, event.AllocatedOrRelease)
+			log.Logger().Info("When could start Add", zap.Any("time", event.Timestamp), zap.String("avialable", available.String()), zap.String("event", event.AllocatedOrRelease.String()))
+		}
+	}
+
+	for n.RequestEvents.Len() > 0 {
+		event := heap.Pop(n.RequestEvents).(*Event)
+		bk = append(bk, event)
+		if event.Allocate {
+			log.Logger().Info("When could start other allocate", zap.Any("time", event.Timestamp), zap.String("avialable", available.String()), zap.String("event", event.AllocatedOrRelease.String()))
+		} else {
+			log.Logger().Info("When could start other release", zap.Any("time", event.Timestamp), zap.String("avialable", available.String()), zap.String("event", event.AllocatedOrRelease.String()))
 		}
 	}
 
@@ -138,6 +154,6 @@ func (n *NodeResource) WhenCanStart(submitTime time.Time, req *resources.Resourc
 		heap.Push(n.RequestEvents, element)
 	}
 
-	log.Logger().Info("Can start at", zap.Any("startTime", startTime))
+	log.Logger().Info("Can start at", zap.Any("startTime", startTime), zap.String("availble res", available.String()), zap.String("req", applicationReq.String()))
 	return true, startTime
 }

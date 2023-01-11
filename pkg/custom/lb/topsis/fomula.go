@@ -1,19 +1,20 @@
 package topsis
 
 import (
-	"github.com/apache/yunikorn-core/pkg/common/resources"
 	"math"
 )
 
-func Normalized(q []resources.Quantity) []float64 {
+func Normalized(q []float64) []float64 {
 	result := make([]float64, 0)
+
 	sum := float64(0)
 	for _, element := range q {
-		sum += math.Pow(float64(int64(element)), float64(2))
+		sum += math.Pow(element, float64(2))
 	}
 	base := math.Sqrt(sum)
+
 	for _, element := range q {
-		tmp := float64(int64(element)) / base
+		tmp := element / base
 		result = append(result, tmp)
 	}
 	return result

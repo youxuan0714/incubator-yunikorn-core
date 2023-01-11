@@ -9,20 +9,20 @@ import (
 func TestNormalized(t *testing.T) {
 	tests := []struct {
 		caseName string
-		inputs   []resources.Quantity
-		expect   []int64
+		inputs   []float64
+		expect   []float64
 	}{
 		{
 			"MIG",
-			[]resources.Quantity{
-				resources.Quantity(20),
-				resources.Quantity(35),
-				resources.Quantity(22),
+			[]float64{
+				20.0,
+				35.0,
+				22.0,
 			},
 			[]int64{
-				43,
-				76,
-				47,
+				43.0,
+				76.0,
+				47.0,
 			},
 		},
 	}
@@ -30,7 +30,7 @@ func TestNormalized(t *testing.T) {
 		t.Run(tt.caseName, func(t *testing.T) {
 			got := Normalized(tt.inputs)
 			for index, expect := range tt.expect {
-				if tmp := int64(got[index] * 100); tmp != expect {
+				if tmp := got[index]; tmp != expect {
 					t.Errorf("normalize expect %v, got %v", expect, tmp)
 				}
 			}

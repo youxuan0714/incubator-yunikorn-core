@@ -3,6 +3,8 @@ package topsis
 import (
 	"github.com/apache/yunikorn-core/pkg/common/resources"
 	"github.com/apache/yunikorn-core/pkg/custom/lb/node"
+	"github.com/apache/yunikorn-core/pkg/log"
+	"go.uber.org/zap"
 	"time"
 )
 
@@ -61,40 +63,34 @@ func WhenCanStart(nodes map[string]*node.NodeResource, submittedTime time.Time, 
 	for nodeID, n := range nodes {
 		if enough, startTimeOfNode := n.WhenCanStart(submittedTime, app); enough {
 			startTimeOfNodes[nodeID] = startTimeOfNode
+			log.Logger().Info("metadata when", zap.String("nodeID", nodeID), zap.Any("timestamp", startTimeOfNode))
+			log.Logger().Info("expect", zap.String("unassign", n.GetUtilization(startTimeOfNode, nil).String()), zap.String("assign", n.GetUtilization(startTimeOfNode, app.Clone()).String()))
 		}
 	}
 	return startTimeOfNodes
 }
 
-func MIGAndStandardDeviation(nodes map[string]*node.NodeResource, startTimeOfNodes map[string]time.Time, app *resources.Resource) ([]resources.Quantity, []resources.Quantity, []string) {
-	MIGs := make([]resources.Quantity, 0)
-	standardDeviations := make([]resources.Quantity, 0)
+func MIGAndStandardDeviation(nodes map[string]*node.NodeResource, startTimeOfNodes map[string]time.Time, app *resources.Resource) ([]float64, []float64, []string) {
+	MIGs := make([]float64, 0)
+	standardDeviations := make([]float64, 0)
 	indexOfNodeID := make([]string, 0)
+
 	for nodeID, startingTime := range startTimeOfNodes {
 		indexOfNodeID = append(indexOfNodeID, nodeID)
 		utilizationsAtTimeT := make([]*resources.Resource, 0)
 		for currentNodeID, n := range nodes {
+			AssignedNodeUtilization := n.GetUtilization(startingTime, nil)
 			if currentNodeID == nodeID {
 				// assume that assign application to node and calculate utilization
 				AssignedNodeUtilization := n.GetUtilization(startingTime, app)
-				utilizationsAtTimeT = append(utilizationsAtTimeT, AssignedNodeUtilization)
-				MIGs = append(MIGs, resources.MIG(AssignedNodeUtilization))
-			} else {
-				utilizationsAtTimeT = append(utilizationsAtTimeT, n.GetUtilization(startingTime, nil))
+				MIGs = append(MIGs, float64(resources.MIG(AssignedNodeUtilization)))
 			}
+			utilizationsAtTimeT = append(utilizationsAtTimeT, AssignedNodeUtilization)
 		}
 		averageResource := resources.Average(utilizationsAtTimeT)
-		gapSum := resources.NewResource()
-		// sum += (utilization - average utilization)^2
-		for _, n := range utilizationsAtTimeT {
-			gap := resources.Sub(n, averageResource)
-			powerGap := resources.Power(gap, float64(2))
-			gapSum = resources.Add(gapSum, powerGap)
-		}
-		// Max deviation = Max(SQRT(sum including cpu and memory))
-		gapSum = resources.Power(gapSum, float64(0.5))
-		standardDeviation := resources.Max(gapSum)
+		standardDeviation := resources.GetDeviationFromNodes(utilizationsAtTimeT, averageResource)
 		standardDeviations = append(standardDeviations, standardDeviation)
 	}
+
 	return MIGs, standardDeviations, indexOfNodeID
 }

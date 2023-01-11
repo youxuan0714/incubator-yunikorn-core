@@ -140,7 +140,7 @@ func (cc *ClusterContext) customschedule() bool {
 			customutil.GetFairManager().UpdateScheduledApp(app)
 			customutil.GetFairMonitor().UpdateTheTenantMasterResource(app)
 			//customutil.GetNodeUtilizationMonitor().Allocate(nodeID, startTime, res.Clone())
-			continue
+			//continue
 		}
 		metrics.GetSchedulerMetrics().ObserveSchedulingLatency(schedulingStart)
 
@@ -183,7 +183,7 @@ func (cc *ClusterContext) scheduleWithRecord() bool {
 			metrics.GetSchedulerMetrics().ObserveSchedulingLatency(schedulingStart)
 			app := psc.GetApplication(alloc.GetApplicationID())
 			_, _, res := util.ParseApp(app)
-			//customutil.GetFairMonitor().UpdateTheTenantMasterResource(app)
+			customutil.GetFairMonitor().UpdateTheTenantMasterResource(app)
 			customutil.GetNodeUtilizationMonitor().Allocate(alloc.GetNodeID(), schedulingStart, res.Clone())
 			if alloc.GetResult() == objects.Replaced {
 				// communicate the removal to the RM

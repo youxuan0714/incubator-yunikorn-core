@@ -50,6 +50,13 @@ func NewFairnessMonitor() *FairnessMonitor {
 func (m *FairnessMonitor) RecordUnScheduledApp(app *objects.Application) {
 	if _, ok := m.UnRunningApps[app.ApplicationID]; !ok {
 		m.UnRunningApps[app.ApplicationID] = app
+		_, username, _ := customutil.ParseApp(app)
+		m.id[username] = excelCol[len(m.MasterResourceOfTenants)]
+		m.MasterResourceOfTenants[username] = uint64(0)
+		// write tenant id in B1, C1, D1 ...
+		idLetter := m.id[username]
+		log.Logger().Info("Set tenant ID", zap.String("tenant ID", idLetter), zap.String("next idLetter", excelCol[len(m.MasterResourceOfTenants)]))
+		m.file.SetCellValue(fairness, fmt.Sprintf("%s%d", idLetter, 1), username)
 	}
 }
 
@@ -102,7 +109,6 @@ func (m *FairnessMonitor) AddMasterResourceToTenant(user string, masterResource 
 // Analyze the partition config and get the tenants
 func (m *FairnessMonitor) ParseTenantsInPartitionConfig(conf configs.PartitionConfig) {
 	users := customutil.ParseUsersInPartitionConfig(conf)
-	m.startTime = time.Now()
 	for userNameInConfig, _ := range users {
 		if _, ok := m.MasterResourceOfTenants[userNameInConfig]; !ok {
 			// 1. update excel id, excel id From A,B,C -> 0, 1, 2
