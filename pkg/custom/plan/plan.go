@@ -27,8 +27,6 @@ func (p *PlanManager) UpdateNodes(nodeID string, HandledApp int) {
 	p.Nodes[nodeID] = apps
 }
 
-func (p *PlanManager) CompletedApps(nodeID string, HandledApp int) {
-	if apps := p.Nodes[nodeID]; len(apps)-1 == HandledApp {
-		p.Nodes[nodeID] = make([]string, 0)
-	}
+func (p *PlanManager) Clear(nodeID string) {
+	p.Nodes[nodeID] = make([]string, 0)
 }

@@ -12,6 +12,14 @@ type Event struct {
 	AllocatedOrRelease *resources.Resource
 }
 
+func (e *Event) IsAllocate() bool {
+	return e.Allocate
+}
+
+func (e *Event) GetAllocatedOrRelease() *resources.Resource {
+	return e.AllocatedOrRelease.Clone()
+}
+
 func NewAllocatedEvent(appID string, t time.Time, r *resources.Resource) *Event {
 	res := r.Clone()
 	return &Event{

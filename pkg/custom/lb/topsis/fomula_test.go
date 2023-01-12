@@ -1,7 +1,6 @@
 package topsis
 
 import (
-	"github.com/apache/yunikorn-core/pkg/common/resources"
 	"math"
 	"testing"
 )
@@ -19,10 +18,10 @@ func TestNormalized(t *testing.T) {
 				35.0,
 				22.0,
 			},
-			[]int64{
-				43.0,
-				76.0,
-				47.0,
+			[]float64{
+				0.43,
+				0.76,
+				0.47,
 			},
 		},
 	}
@@ -30,7 +29,7 @@ func TestNormalized(t *testing.T) {
 		t.Run(tt.caseName, func(t *testing.T) {
 			got := Normalized(tt.inputs)
 			for index, expect := range tt.expect {
-				if tmp := got[index]; tmp != expect {
+				if tmp := got[index]; int64(tmp*100) != int64(expect*100) {
 					t.Errorf("normalize expect %v, got %v", expect, tmp)
 				}
 			}

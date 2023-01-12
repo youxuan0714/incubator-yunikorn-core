@@ -130,21 +130,24 @@ func (cc *ClusterContext) customschedule() bool {
 		}
 
 		schedulingStart := time.Now()
-		scheduled, username, tenantAppID := customutil.GetFairManager().NextAppToSchedule()
+		scheduled, _, tenantAppID := customutil.GetFairManager().NextAppToSchedule()
 		if app := psc.GetApplication(tenantAppID); scheduled && app != nil {
-			log.Logger().Info("Start to schedule app", zap.String("appid", tenantAppID), zap.String("user", username))
 			nodeID, startTime, tenantAppID, res := customutil.GetLBManager().Schedule(app, schedulingStart)
 			customutil.GetPlanManager().AssignAppToNode(tenantAppID, nodeID)
+			log.Logger().Info("schedule app", zap.Any("startTime", startTime), zap.String("appid", tenantAppID), zap.String("nodeID", nodeID))
 			customutil.GetLBManager().Allocate(nodeID, tenantAppID, startTime, res.Clone())
 			customutil.GetFairManager().UpdateScheduledApp(app)
 			customutil.GetFairMonitor().UpdateTheTenantMasterResource(app)
-			//customutil.GetNodeUtilizationMonitor().Allocate(nodeID, startTime, res.Clone())
+			customutil.GetNodeUtilizationMonitor().Allocate(nodeID, startTime, res.Clone())
 		}
 		metrics.GetSchedulerMetrics().ObserveSchedulingLatency(schedulingStart)
 
 		for nodeID, appIDs := range customutil.GetPlanManager().GetNodes() {
 			for index, appID := range appIDs {
 				if alloc := psc.GetApplication(appID).TrySpecifiedNode(nodeID, psc.GetNode); alloc != nil {
+					if index == len(appIDs)-1 {
+						customutil.GetPlanManager().Clear(nodeID)
+					}
 					log.Logger().Info("success allocate", zap.String("appid", appID), zap.String("nodeID", nodeID))
 					if alloc.GetResult() == objects.Replaced {
 						// communicate the removal to the RM
@@ -156,7 +159,6 @@ func (cc *ClusterContext) customschedule() bool {
 					customutil.GetPlanManager().UpdateNodes(nodeID, index)
 					break
 				}
-				customutil.GetPlanManager().CompletedApps(nodeID, index)
 			}
 		}
 	}

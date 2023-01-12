@@ -879,8 +879,7 @@ func (sa *Application) TrySpecifiedNode(requiredNode string, getNodeFn func(stri
 					zap.String("required node", requiredNode))
 				return nil
 			}
-			alloc := sa.tryNode(node, request)
-			if alloc != nil {
+			if alloc := sa.tryNode(node, request); alloc != nil {
 				// check if the node was reserved and we allocated after a release
 				if _, ok := sa.reservations[reservationKey(node, nil, request)]; ok {
 					log.Logger().Debug("allocation on required node after release",
@@ -896,6 +895,7 @@ func (sa *Application) TrySpecifiedNode(requiredNode string, getNodeFn func(stri
 					zap.String("AllocationResult", alloc.GetResult().String()))
 				return alloc
 			}
+			log.Logger().Info("current node resource is not enough", zap.String("node Id", node.NodeID), zap.String("Node avalable", node.GetAvailableResource().String()), zap.String("req", request.GetAllocatedResource().String()))
 			//return newReservedAllocation(Reserved, node.NodeID, request)
 		}
 	}
