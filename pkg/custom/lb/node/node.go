@@ -74,7 +74,8 @@ func (n *NodeResource) getAvialableAtTimeT(timeStamp time.Time) *resources.Resou
 		if event.Timestamp.Equal(timeStamp) || event.Timestamp.Before(timeStamp) {
 			result = handleEvent(event, result)
 		} else {
-			printEventInfo(event)
+			break
+			//printEventInfo(event)
 		}
 	}
 
@@ -136,10 +137,10 @@ func handleEvent(event *Event, available *resources.Resource) *resources.Resourc
 	AllocatedOrRelease := event.GetAllocatedOrRelease()
 	if event.IsAllocate() {
 		result = resources.Sub(result, AllocatedOrRelease)
-		log.Logger().Info("Allocate", zap.Any("timestamp", event.Timestamp), zap.String("avail", result.String()), zap.String("allocate", AllocatedOrRelease.String()))
+		//log.Logger().Info("Allocate", zap.Any("timestamp", event.Timestamp), zap.String("avail", result.String()), zap.String("allocate", AllocatedOrRelease.String()))
 	} else {
 		result = resources.Add(result, AllocatedOrRelease)
-		log.Logger().Info("Release", zap.Any("timestamp", event.Timestamp), zap.String("avail", result.String()), zap.String("release", AllocatedOrRelease.String()))
+		//log.Logger().Info("Release", zap.Any("timestamp", event.Timestamp), zap.String("avail", result.String()), zap.String("release", AllocatedOrRelease.String()))
 	}
 	return result
 }
