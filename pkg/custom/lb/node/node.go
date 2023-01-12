@@ -10,30 +10,39 @@ import (
 )
 
 type NodeResource struct {
-	RequestEvents *Events
-	Available     *resources.Resource
-	Capcity       *resources.Resource
-	MaxAvialable  *resources.Resource
-	CurrentTime   time.Time
+	RequestEvents    *Events
+	ReleaseEvents    *Events
+	Available        *resources.Resource
+	Capcity          *resources.Resource
+	MaxAvialable     *resources.Resource
+	CurrentAvailable *resources.Resource
+	CurrentTime      time.Time
 }
 
 func NewNodeResource(Available *resources.Resource, cap *resources.Resource) *NodeResource {
 	s := Available.Clone()
 	delete(s.Resources, sicommon.Duration)
 	return &NodeResource{
-		RequestEvents: NewEvents(),
-		Available:     s.Clone(),
-		MaxAvialable:  s.Clone(),
-		Capcity:       cap.Clone(),
-		CurrentTime:   time.Now(),
+		RequestEvents:    NewEvents(),
+		ReleaseEvents:    NewEvents(),
+		Available:        s.Clone(),
+		MaxAvialable:     s.Clone(),
+		Capcity:          cap.Clone(),
+		CurrentAvailable: s.Clone(),
+		CurrentTime:      time.Now(),
 	}
 }
 
 func (n *NodeResource) Allocate(appID string, allocateTime time.Time, req *resources.Resource) {
 	releaseTime := allocateTime.Add(time.Second * time.Duration(req.Resources[sicommon.Duration]))
 	request := removeDurationInApp(req)
-	heap.Push(n.RequestEvents, NewReleaseEvent(appID, releaseTime, request.Clone()))
-	heap.Push(n.RequestEvents, NewAllocatedEvent(appID, allocateTime, request.Clone()))
+	releaseEvent := NewReleaseEvent(appID, releaseTime, request.Clone())
+	allocateEvent := NewAllocatedEvent(appID, allocateTime, request.Clone())
+	heap.Push(n.RequestEvents, releaseEvent)
+	heap.Push(n.RequestEvents, allocateEvent)
+
+	n.UpdateLastestRequest(req)
+	heap.Push(n.ReleaseEvents, releaseEvent)
 	log.Logger().Info("Current events heap", zap.Int("length", n.RequestEvents.Len()))
 	log.Logger().Info("expect", zap.String("allocate", n.GetUtilization(allocateTime, nil).String()), zap.String("release", n.GetUtilization(releaseTime, req.Clone()).String()))
 }
@@ -77,57 +86,49 @@ func (n *NodeResource) getAvialableAtTimeT(timeStamp time.Time) *resources.Resou
 
 func (n *NodeResource) WhenCanStart(submitTime time.Time, req *resources.Resource) (bool, time.Time) {
 	log.Logger().Info("find when can start", zap.Any("submit", submitTime), zap.String("request", req.String()))
-	applicationReq := removeDurationInApp(req)
-
+	applicationReq := removeDurationInApp(req.Clone())
 	if enoughCapicity := resources.StrictlyGreaterThanOrEquals(n.MaxAvialable, applicationReq); !enoughCapicity {
 		log.Logger().Info("not enough cap", zap.String("max avial", n.MaxAvialable.String()), zap.String("app", applicationReq.String()))
 		return enoughCapicity, submitTime
 	}
 
 	// clear outdated event and update
+	available := n.CurrentAvailable.Clone()
+	if resources.StrictlyGreaterThanOrEquals(available, applicationReq) {
+		return true, submitTime
+	}
+
 	bk := make([]*Event, 0)
-	startTime := submitTime
-	available := n.Available.Clone()
-	for n.RequestEvents.Len() > 0 {
-		event := heap.Pop(n.RequestEvents).(*Event)
+	startTime := n.CurrentTime
+	for n.ReleaseEvents.Len() > 0 && !resources.StrictlyGreaterThanOrEquals(available, applicationReq) {
+		event := heap.Pop(n.ReleaseEvents).(*Event)
 		bk = append(bk, event)
-		if event.Timestamp.Before(submitTime) || event.Timestamp.Equal(submitTime) {
-			available = handleEvent(event, available)
-		} else {
-			heap.Push(n.RequestEvents, event)
-			break
-		}
+		available = handleEvent(event, available)
+		startTime = event.Timestamp
 	}
 
-	for !resources.StrictlyGreaterThanOrEquals(available, applicationReq) {
-		var timestamp time.Time
-		for first := true; n.RequestEvents.Len() > 0; {
-			event := heap.Pop(n.RequestEvents).(*Event)
-			if first {
-				timestamp = event.Timestamp
-				first = false
-			} else if !event.Timestamp.Equal(timestamp) {
-				heap.Push(n.RequestEvents, event)
-				break
-			}
-			bk = append(bk, event)
-			available = handleEvent(event, available)
-			startTime = event.Timestamp
-		}
-	}
-
-	for n.RequestEvents.Len() > 0 {
-		event := heap.Pop(n.RequestEvents).(*Event)
-		bk = append(bk, event)
-		printEventInfo(event)
+	if startTime.Before(submitTime) {
+		startTime = submitTime
 	}
 
 	for _, element := range bk {
-		heap.Push(n.RequestEvents, element)
+		heap.Push(n.ReleaseEvents, element)
 	}
 
 	log.Logger().Info("Can start at", zap.Any("startTime", startTime), zap.String("availble res", available.String()), zap.String("req", applicationReq.String()))
 	return true, startTime
+}
+
+func (n *NodeResource) UpdateLastestRequest(req *resources.Resource) {
+	applicationReq := removeDurationInApp(req.Clone())
+	available := n.CurrentAvailable.Clone()
+	for n.ReleaseEvents.Len() > 0 && !resources.StrictlyGreaterThanOrEquals(available, applicationReq) {
+		event := heap.Pop(n.ReleaseEvents).(*Event)
+		available = handleEvent(event, available)
+		n.CurrentTime = event.Timestamp
+	}
+	n.CurrentAvailable = resources.Sub(available, applicationReq)
+	return
 }
 
 func handleEvent(event *Event, available *resources.Resource) *resources.Resource {

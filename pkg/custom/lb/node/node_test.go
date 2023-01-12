@@ -2,6 +2,7 @@ package node
 
 import (
 	//"container/heap"
+	//fmt
 	"github.com/apache/yunikorn-core/pkg/common/resources"
 	sicommon "github.com/apache/yunikorn-scheduler-interface/lib/go/common"
 	"testing"
@@ -35,10 +36,10 @@ func TestNewNodeResource(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.caseName, func(t *testing.T) {
 			nr := NewNodeResource(tt.input.max.Clone(), tt.input.cap.Clone())
-			if nr.RequestEvents.Len() > 0 {
+			if nr.RequestEvents.Len() > 0 || nr.ReleaseEvents.Len() > 0 {
 				t.Error("length should be zero")
 			}
-			if !resources.Equals(nr.Capcity, tt.input.cap) || !resources.Equals(nr.Available, tt.input.max) {
+			if !resources.Equals(nr.Capcity, tt.input.cap) || !resources.Equals(nr.Available, tt.input.max) || !resources.Equals(nr.CurrentAvailable, tt.input.max) {
 				t.Error("cap or max avialable is not expect")
 			}
 		})
@@ -60,14 +61,30 @@ func Test Allocate(t *testing.T) {
 
 /*
 func TestAllocateAndWhenCanStart(t *testing.T) {
-	cap := resources.NewResourceFromMap(map[string]resources.Quantity{sicommon.CPU: resources.Quantity(2000)})
-	max := := resources.NewResourceFromMap(map[string]resources.Quantity{sicommon.CPU: resources.Quantity(1600)})
+	cap := resources.NewResourceFromMap(map[string]resources.Quantity{sicommon.CPU: resources.Quantity(20)})
+	max := := resources.NewResourceFromMap(map[string]resources.Quantity{sicommon.CPU: resources.Quantity(16)})
 	nr := NewNodeResource(max.Clone(), cap.Clone())
-
-	for _, tt := range tests {
-		t.Run(tt.caseName, func(t *testing.T) {
-
-		})
+	replica := 10
+	tests := []struct {
+		cpu int64
+		duration int64
+	}{
+		{8, 3},
+		{7, 4},
+		{9, 7},
+	}
+	for i := 0; i < replica; i++ {
+		for _, tt := range tests {
+			submitTime := time.Now()
+			t.Run(fmt.Sprintf("%v:%d %d", submitTime, tt.cpu, tt.duration), func(t *testing.T) {
+				req := resources.NewResourceFromMap(map[string]resources.Quantity{
+					sicommon.CPU:    resources.Quantity(tt.cpu),
+					sicommon.Duration: resources.Quantity(tt.duration)})
+				_, startTime := nr.WhenCanStart(submitTime, req.Clone())
+				current := nr.GetUtilization(startTime, nil)
+				update := nr.GetUtilization(startTime, req.Clone())
+			})
+		}
 	}
 }
 */
