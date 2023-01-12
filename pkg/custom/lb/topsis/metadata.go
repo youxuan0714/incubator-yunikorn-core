@@ -29,25 +29,29 @@ func (m *MetaData) Recommanded() (RecommandednodeID string, startTime time.Time)
 	startTimeOfNodes := WhenCanStart(m.Nodes, m.SubmittedTime, m.AppRequest.Clone())
 
 	// stand deviation and mig
-	MIGs, standardDeviations, indexOfNodeID := MIGAndStandardDeviation(m.Nodes, startTimeOfNodes, m.AppRequest.Clone())
+	WaitTimes, MIGs, standardDeviations, indexOfNodeID := MIGAndStandardDeviation(m.SubmittedTime, m.Nodes, startTimeOfNodes, m.AppRequest.Clone())
 
 	//objectNames := []string{"MIG", "Deviation"}
 	// normalized
+	NorWaitTimes := Normalized(WaitTimes)
 	NorMIGs := Normalized(MIGs)
 	NorStandardDeviations := Normalized(standardDeviations)
+	weightedWaitTimes := Weight(NorWaitTimes)
 	weightedMIGs := Weight(NorMIGs)
 	weightedStandardDeviations := Weight(NorStandardDeviations)
 
 	// A+ and A-
+	APlusWaitTimes := APlus(weightedWaitTimes)
 	APlusMIG := APlus(weightedMIGs)
 	APlusStandardDeviation := APlus(weightedStandardDeviations)
+	AMinusWaitTimes := AMinus(weightedWaitTimes)
 	AMinusMIG := AMinus(weightedMIGs)
 	AMinusStandardDeviation := AMinus(weightedStandardDeviations)
 
 	// SM+ and SM-
-	weighted := [][]float64{weightedMIGs, weightedStandardDeviations}
-	APlusObjective := []float64{APlusMIG, APlusStandardDeviation}
-	AMinusObjective := []float64{AMinusMIG, AMinusStandardDeviation}
+	weighted := [][]float64{weightedWaitTimes, weightedMIGs, weightedStandardDeviations}
+	APlusObjective := []float64{APlusWaitTimes, APlusMIG, APlusStandardDeviation}
+	AMinusObjective := []float64{AMinusWaitTimes, AMinusMIG, AMinusStandardDeviation}
 	SMPlusObject := SM(weighted, APlusObjective)
 	SMMinusObject := SM(weighted, AMinusObjective)
 
@@ -70,7 +74,8 @@ func WhenCanStart(nodes map[string]*node.NodeResource, submittedTime time.Time, 
 	return startTimeOfNodes
 }
 
-func MIGAndStandardDeviation(nodes map[string]*node.NodeResource, startTimeOfNodes map[string]time.Time, app *resources.Resource) ([]float64, []float64, []string) {
+func MIGAndStandardDeviation(submitTime time.Time, nodes map[string]*node.NodeResource, startTimeOfNodes map[string]time.Time, app *resources.Resource) ([]float64, []float64, []float64, []string) {
+	WaitTimes := make([]float64, 0)
 	MIGs := make([]float64, 0)
 	standardDeviations := make([]float64, 0)
 	indexOfNodeID := make([]string, 0)
@@ -78,6 +83,7 @@ func MIGAndStandardDeviation(nodes map[string]*node.NodeResource, startTimeOfNod
 	for nodeID, startingTime := range startTimeOfNodes {
 		indexOfNodeID = append(indexOfNodeID, nodeID)
 		utilizationsAtTimeT := make([]*resources.Resource, 0)
+		WaitTimes = append(WaitTimes, startingTime.Sub(submitTime).Seconds())
 		for currentNodeID, n := range nodes {
 			AssignedNodeUtilization := n.GetUtilization(startingTime, nil)
 			if currentNodeID == nodeID {
@@ -92,5 +98,5 @@ func MIGAndStandardDeviation(nodes map[string]*node.NodeResource, startTimeOfNod
 		standardDeviations = append(standardDeviations, standardDeviation)
 	}
 
-	return MIGs, standardDeviations, indexOfNodeID
+	return WaitTimes, MIGs, standardDeviations, indexOfNodeID
 }

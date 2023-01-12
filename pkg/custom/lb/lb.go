@@ -32,9 +32,9 @@ func (lb *LBManager) AddNode(node *objects.Node) {
 // resrouce of application includes CPU, memory and duration.
 func (lb *LBManager) Schedule(input *objects.Application, currentTime time.Time) (recommandedNodeID string, startTime time.Time, appID string, res *resources.Resource) {
 	appID, _, res = util.ParseApp(input)
-	recommandedNodeID, startTime = topsis.NewMetaData(appID, currentTime, res, lb.Nodes).Recommanded()
+	recommandedNodeID, startTime = topsis.NewMetaData(appID, input.SubmissionTime, res, lb.Nodes).Recommanded()
 	if _, ok := lb.Nodes[recommandedNodeID]; !ok {
-		log.Logger().Warn("LB scheduling decision recommand a non existed node", zap.String("node ID", recommandedNodeID))
+		log.Logger().Warn("LB scheduling decision recommand a non existed node", zap.Any("time", currentTime), zap.String("node ID", recommandedNodeID))
 	}
 	return recommandedNodeID, startTime, appID, res
 }
