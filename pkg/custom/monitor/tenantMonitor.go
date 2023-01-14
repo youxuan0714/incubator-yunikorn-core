@@ -64,7 +64,7 @@ func (m *FairnessMonitor) RecordUnScheduledApp(app *objects.Application) {
 }
 
 // this function would be called when application is in running status
-func (m *FairnessMonitor) UpdateTheTenantMasterResource(app *objects.Application) {
+func (m *FairnessMonitor) UpdateTheTenantMasterResource(currentTime time.Time, app *objects.Application) {
 	appID := app.ApplicationID
 	if _, ok := m.UnRunningApps[appID]; !ok {
 		log.Logger().Info("fairness unrecord app", zap.String("app", appID))
@@ -74,7 +74,6 @@ func (m *FairnessMonitor) UpdateTheTenantMasterResource(app *objects.Application
 	user := app.GetUser().User
 	masterResource := CalculateMasterResourceOfApplication(app)
 	// events: global
-	currentTime := time.Now()
 	if !m.First {
 		m.startTime = currentTime
 		m.First = true

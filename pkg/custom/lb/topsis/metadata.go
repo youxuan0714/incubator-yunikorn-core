@@ -24,12 +24,12 @@ func NewMetaData(appID string, submittedTime time.Time, app *resources.Resource,
 	}
 }
 
-func (m *MetaData) Recommanded() (RecommandednodeID string, startTime time.Time) {
+func (m *MetaData) Recommanded(AppCreateTime time.Time) (RecommandednodeID string, startTime time.Time) {
 	// Calculate the starttime of each node which could contains application.
 	startTimeOfNodes := WhenCanStart(m.Nodes, m.SubmittedTime, m.AppRequest.Clone())
 
 	// stand deviation and mig
-	WaitTimes, MIGs, standardDeviations, indexOfNodeID := MIGAndStandardDeviation(m.SubmittedTime, m.Nodes, startTimeOfNodes, m.AppRequest.Clone())
+	WaitTimes, MIGs, standardDeviations, indexOfNodeID := MIGAndStandardDeviation(AppCreateTime, m.Nodes, startTimeOfNodes, m.AppRequest.Clone())
 
 	//objectNames := []string{"MIG", "Deviation"}
 	// normalized

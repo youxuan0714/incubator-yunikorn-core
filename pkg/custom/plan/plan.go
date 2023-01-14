@@ -1,12 +1,18 @@
 package plan
 
 type PlanManager struct {
-	Nodes map[string][]string
+	Scheduled       bool
+	AppID           string
+	StreamAppToNode string
+	Nodes           map[string][]string
 }
 
 func NewPlanManager() *PlanManager {
 	return &PlanManager{
-		Nodes: make(map[string][]string, 0),
+		Nodes:           make(map[string][]string, 0),
+		Scheduled:       false,
+		AppID:           "",
+		StreamAppToNode: "",
 	}
 }
 
