@@ -92,6 +92,7 @@ func (m *FairnessMonitor) UpdateTheTenantMasterResource(currentTime time.Time, a
 	m.AddMasterResourceToTenant(user, masterResource)
 	log.Logger().Info("fairness print", zap.Any("apps", app.ApplicationID), zap.Any("tenants", m.MasterResourceOfTenants))
 	m.count++
+	log.Logger().Info("save file: tenant", zap.Uint64("count", m.count))
 	if m.count == appNum {
 		m.Save()
 	}

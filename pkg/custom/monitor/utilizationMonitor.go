@@ -63,6 +63,7 @@ func (m *NodeUtilizationMonitor) Allocate(nodeID string, allocatedTime time.Time
 
 		n.Allocate(d1, d2, req)
 		m.count++
+		log.Logger().Info("save file: utilization", zap.Uint64("count", m.count))
 		if m.count == appNum {
 			m.Save()
 		}

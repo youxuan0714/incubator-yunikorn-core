@@ -136,14 +136,11 @@ func (cc *ClusterContext) customschedule() bool {
 			if app := psc.GetApplication(tenantAppID); scheduled && app != nil {
 				nodeID, startTime, tenantAppID, res := customutil.GetLBManager().Schedule(app, schedulingStart)
 				customutil.GetPlanManager().AssignAppToNode(tenantAppID, nodeID)
-				log.Logger().Info("customschedule: schedule app", zap.Any("startTime", startTime), zap.String("appid", tenantAppID), zap.String("nodeID", nodeID))
+				//log.Logger().Info("customschedule: schedule app", zap.Any("startTime", startTime), zap.String("appid", tenantAppID), zap.String("nodeID", nodeID))
 				customutil.GetPlanManager().AppID = tenantAppID
 				customutil.GetPlanManager().StreamAppToNode = nodeID
 				customutil.GetPlanManager().Scheduled = true
 				customutil.GetLBManager().Allocate(nodeID, tenantAppID, startTime, res.Clone())
-				customutil.GetFairManager().UpdateScheduledApp(app)
-				customutil.GetFairMonitor().UpdateTheTenantMasterResource(startTime, app)
-				customutil.GetNodeUtilizationMonitor().Allocate(nodeID, startTime, res.Clone())
 				metrics.GetSchedulerMetrics().ObserveSchedulingLatency(schedulingStart)
 			}
 		}
@@ -151,7 +148,12 @@ func (cc *ClusterContext) customschedule() bool {
 		//log.Logcger().Info("customschedule: try application", zap.String("appid", customutil.GetPlanManager().AppID))
 		if app := psc.GetApplication(customutil.GetPlanManager().AppID); app != nil {
 			if alloc := app.TrySpecifiedNode(customutil.GetPlanManager().StreamAppToNode, psc.GetNode); alloc != nil {
-				log.Logger().Info("customschedule: success allocate", zap.String("appid", app.ApplicationID), zap.String("nodeID", customutil.GetPlanManager().StreamAppToNode))
+				startTime := time.Now()
+				_, _, res := util.ParseApp(app)
+				customutil.GetFairManager().UpdateScheduledApp(app)
+				customutil.GetFairMonitor().UpdateTheTenantMasterResource(startTime, app)
+				customutil.GetNodeUtilizationMonitor().Allocate(customutil.GetPlanManager().StreamAppToNode, startTime, res.Clone())
+				//log.Logger().Info("customschedule: success allocate", zap.String("appid", app.ApplicationID), zap.String("nodeID", customutil.GetPlanManager().StreamAppToNode))
 				customutil.GetPlanManager().Scheduled = false
 				if alloc.GetResult() == objects.Replaced {
 					// communicate the removal to the RM

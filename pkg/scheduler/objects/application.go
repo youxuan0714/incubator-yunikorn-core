@@ -895,7 +895,7 @@ func (sa *Application) TrySpecifiedNode(requiredNode string, getNodeFn func(stri
 					zap.String("AllocationResult", alloc.GetResult().String()))
 				return alloc
 			}
-			log.Logger().Info("current node resource is not enough", zap.String("node Id", node.NodeID), zap.String("Node avalable", node.GetAvailableResource().String()), zap.String("req", request.GetAllocatedResource().String()))
+			//log.Logger().Info("current node resource is not enough", zap.String("node Id", node.NodeID), zap.String("Node avalable", node.GetAvailableResource().String()), zap.String("req", request.GetAllocatedResource().String()))
 			//return newReservedAllocation(Reserved, node.NodeID, request)
 		}
 	}
