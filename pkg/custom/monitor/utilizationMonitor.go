@@ -30,6 +30,7 @@ func NewUtilizationMonitor() *NodeUtilizationMonitor {
 	file := excel.NewFile()
 	file.NewSheet(migsheet)
 	file.NewSheet(deviationsheet)
+	file.SetCellValue(deviationsheet, "B1", "deviation")
 	return &NodeUtilizationMonitor{
 		nodes:             make(map[string]*NodeResource),
 		GlobalEventUnique: make(map[uint64]bool),

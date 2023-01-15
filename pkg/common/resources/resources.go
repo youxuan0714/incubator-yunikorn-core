@@ -949,7 +949,7 @@ func GetDeviationFromNodes(nodes []*Resource, average *Resource) float64 {
 			tmp := float64(resOnNode) - float64(base)
 			deviations[resType] += math.Pow(tmp, float64(2))
 		}
-
+		deviations[resType] /= float64(len(nodes))
 		deviations[resType] = math.Sqrt(deviations[resType])
 		log.Logger().Info("deviation", zap.String("type", resType), zap.Float64("result", deviations[resType]))
 	}
