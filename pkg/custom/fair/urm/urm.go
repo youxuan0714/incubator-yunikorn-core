@@ -36,12 +36,12 @@ func (u *UserResourceManager) GetMinResourceUser(apps map[string]*apps.AppsHeap)
 	if u.priority.Len() == 0 {
 		log.Logger().Warn("userheap should not be empty when getting min")
 	}
-	bk := make([]*Score, 0)
-	var s *Score
+	bk := make([]*users.Score, 0)
+	var s *users.Score
 	for u.priority.Len() > 0 {
 		tmp := heap.Pop(u.priority).(*users.Score)
 		bk = append(bk, tmp)
-		if apps[s.GetUser].Len() > 0 {
+		if apps[s.GetUser()].Len() > 0 {
 			s = tmp
 			break
 		}

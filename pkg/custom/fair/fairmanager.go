@@ -28,19 +28,6 @@ func NewFairManager() *FairManager {
 	}
 }
 
-func (f *FairManager) ContinueSchedule() bool {
-	minUser := f.GetTenants().GetMinResourceUser()
-	if h, ok := f.apps[minUser]; !ok {
-		f.apps[minUser] = apps.NewAppsHeap()
-		return false
-	} else {
-		if h.Len() == 0 {
-			return false
-		}
-	}
-	return true
-}
-
 func (f *FairManager) ParseUsersInPartitionConfig(conf configs.PartitionConfig) {
 	records := f.GetTenants()
 	users := customutil.ParseUsersInPartitionConfig(conf)
@@ -92,5 +79,4 @@ func (f *FairManager) UpdateScheduledApp(input *objects.Application) {
 		heap.Pop(h)
 	}
 	f.GetTenants().UpdateUser(user, res)
-	log.Logger().Info("Next min user", zap.String("user", f.GetTenants().GetMinResourceUser()))
 }
