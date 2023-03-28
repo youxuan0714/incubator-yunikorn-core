@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"github.com/apache/yunikorn-core/pkg/common/resources"
+	"github.com/apache/yunikorn-core/pkg/custom/fair/urm/apps"
 	"github.com/apache/yunikorn-core/pkg/custom/fair/urm/users"
 	"github.com/apache/yunikorn-core/pkg/log"
 	"go.uber.org/zap"
@@ -31,12 +32,24 @@ func (u *UserResourceManager) AddUser(name string) {
 	}
 }
 
-func (u *UserResourceManager) GetMinResourceUser() string {
+func (u *UserResourceManager) GetMinResourceUser(apps map[string]*apps.AppsHeap) string {
 	if u.priority.Len() == 0 {
 		log.Logger().Warn("userheap should not be empty when getting min")
 	}
-	s := heap.Pop(u.priority).(*users.Score)
-	heap.Push(u.priority, s)
+	bk := make([]*Score, 0)
+	var s *Score
+	for u.priority.Len() > 0 {
+		tmp := heap.Pop(u.priority).(*users.Score)
+		bk = append(bk, tmp)
+		if apps[s.GetUser].Len() > 0 {
+			s = tmp
+			break
+		}
+	}
+
+	for _, element := range bk {
+		heap.Push(u.priority, element)
+	}
 	return s.GetUser()
 }
 

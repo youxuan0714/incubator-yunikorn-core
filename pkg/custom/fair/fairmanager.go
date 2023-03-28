@@ -63,7 +63,7 @@ func (f *FairManager) ParseUserInApp(input *objects.Application) {
 }
 
 func (f *FairManager) NextAppToSchedule() (bool, string, string) {
-	user := f.GetTenants().GetMinResourceUser()
+	user := f.GetTenants().GetMinResourceUser(f.apps)
 	h, ok := f.apps[user]
 	if !ok {
 		//log.Logger().Info("Non existed user apps", zap.String("user", user))

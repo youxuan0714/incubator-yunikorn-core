@@ -1002,6 +1002,17 @@ func MasterResource(input *Resource) Quantity {
 	return masterResource
 }
 
+func Distance(ave *Resource) float64 {
+	resType := []string{common.CPU, common.Memory}
+	var result float64
+	tmp := 0.0
+	for _, resname := range resType {
+		tmp += math.Pow((100.0 - float64(int64(ave.Resources[resname]))), float64(2))
+	}
+	result = math.Sqrt(float64(tmp))
+	return result
+}
+
 func Average(inputs []*Resource) (result *Resource) {
 	resType := []string{common.CPU, common.Memory}
 	result = NewResource()
