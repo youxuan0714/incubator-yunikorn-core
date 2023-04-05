@@ -141,6 +141,7 @@ func (cc *ClusterContext) customschedule() bool {
 					customutil.GetPlanManager().AppID = tenantAppID
 					customutil.GetPlanManager().StreamAppToNode = nodeID
 					customutil.GetPlanManager().Scheduled = true
+					customutil.GetFairManager().UpdateScheduledApp(app)
 					customutil.GetLBManager().Allocate(nodeID, tenantAppID, startTime, res.Clone())
 					metrics.GetSchedulerMetrics().ObserveSchedulingLatency(schedulingStart)
 				}
@@ -151,7 +152,6 @@ func (cc *ClusterContext) customschedule() bool {
 				if alloc := app.TrySpecifiedNode(customutil.GetPlanManager().StreamAppToNode, psc.GetNode); alloc != nil {
 					startTime := time.Now()
 					_, _, res := util.ParseApp(app)
-					customutil.GetFairManager().UpdateScheduledApp(app)
 					customutil.GetFairMonitor().UpdateTheTenantMasterResource(startTime, app)
 					customutil.GetNodeUtilizationMonitor().Allocate(customutil.GetPlanManager().StreamAppToNode, startTime, res.Clone())
 					//log.Logger().Info("customschedule: success allocate", zap.String("appid", app.ApplicationID), zap.String("nodeID", customutil.GetPlanManager().StreamAppToNode))
@@ -175,9 +175,10 @@ func (cc *ClusterContext) customschedule() bool {
 				customutil.GetPlanManager().AppID = tenantAppID
 				customutil.GetPlanManager().StreamAppToNode = nodeID
 				customutil.GetPlanManager().Scheduled = true
-				//customutil.GetFairManager().UpdateScheduledApp(app)
-				//customutil.GetFairMonitor().UpdateTheTenantMasterResource(startTime, app)
-				customutil.GetNodeUtilizationMonitor().Allocate(nodeID, startTime, res.Clone())
+				customutil.GetFairManager().UpdateScheduledApp(app)
+				// Monitor
+				// customutil.GetFairMonitor().UpdateTheTenantMasterResource(startTime, app)
+				// customutil.GetNodeUtilizationMonitor().Allocate(nodeID, startTime, res.Clone())
 				metrics.GetSchedulerMetrics().ObserveSchedulingLatency(schedulingStart)
 			}
 		}
