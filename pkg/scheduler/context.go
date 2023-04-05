@@ -129,6 +129,7 @@ func (cc *ClusterContext) customschedule() bool {
 			continue
 		}
 
+		/*
 		if !customutil.GetPlanManager().Scheduled {
 			schedulingStart := time.Now()
 			scheduled, _, tenantAppID := customutil.GetFairManager().NextAppToSchedule()
@@ -163,20 +164,21 @@ func (cc *ClusterContext) customschedule() bool {
 				}
 			}
 		}
+		*/
 
-		/*
 			schedulingStart := time.Now()
-			scheduled, _, tenantAppID := customutil.GetFairManager().NextAppToSchedule()
-			if app := psc.GetApplication(tenantAppID); scheduled && app != nil {
+			_, _, tenantAppID := customutil.GetFairManager().NextAppToSchedule()
+			if app := psc.GetApplication(tenantAppID); app != nil {
 				nodeID, startTime, tenantAppID, res := customutil.GetLBManager().Schedule(app, schedulingStart)
 				customutil.GetPlanManager().AssignAppToNode(tenantAppID, nodeID)
-				log.Logger().Info("schedule app", zap.Any("startTime", startTime), zap.String("appid", tenantAppID), zap.String("nodeID", nodeID))
-				customutil.GetLBManager().Allocate(nodeID, tenantAppID, startTime, res.Clone())
+				// log.Logger().Info("schedule app", zap.Any("startTime", startTime), zap.String("appid", tenantAppID), zap.String("nodeID", nodeID))
+				customutil.GetPlanManager().AppID = tenantAppID
+				customutil.GetPlanManager().StreamAppToNode = nodeID
+				customutil.GetPlanManager().Scheduled = true
 				customutil.GetFairManager().UpdateScheduledApp(app)
-				customutil.GetFairMonitor().UpdateTheTenantMasterResource(app)
 				customutil.GetNodeUtilizationMonitor().Allocate(nodeID, startTime, res.Clone())
+				metrics.GetSchedulerMetrics().ObserveSchedulingLatency(schedulingStart)
 			}
-			metrics.GetSchedulerMetrics().ObserveSchedulingLatency(schedulingStart)
 
 			for nodeID, appIDs := range customutil.GetPlanManager().GetNodes() {
 				for index, appID := range appIDs {
@@ -185,6 +187,9 @@ func (cc *ClusterContext) customschedule() bool {
 							if index == len(appIDs)-1 {
 								customutil.GetPlanManager().Clear(nodeID)
 							}
+							
+							customutil.GetFairMonitor().UpdateTheTenantMasterResource(startTime, app)
+							customutil.GetNodeUtilizationMonitor().Allocate(customutil.GetPlanManager().StreamAppToNode, startTime, res.Clone())
 							log.Logger().Info("success allocate", zap.String("appid", appID), zap.String("nodeID", nodeID))
 							if alloc.GetResult() == objects.Replaced {
 								// communicate the removal to the RM
@@ -199,7 +204,6 @@ func (cc *ClusterContext) customschedule() bool {
 					}
 				}
 			}
-		*/
 	}
 	return true
 }
