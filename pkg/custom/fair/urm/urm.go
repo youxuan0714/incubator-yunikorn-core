@@ -3,7 +3,6 @@ package urm
 import (
 	"container/heap"
 	"errors"
-	"fmt"
 
 	"github.com/apache/yunikorn-core/pkg/common/resources"
 	"github.com/apache/yunikorn-core/pkg/custom/fair/urm/apps"
@@ -38,21 +37,25 @@ func (u *UserResourceManager) GetMinResourceUser(apps map[string]*apps.AppsHeap)
 		log.Logger().Warn("userheap should not be empty when getting min")
 	}
 	bk := make([]*users.Score, 0)
-	var s *users.Score = users.NewScore("None", 0)
+	var s *users.Score
 	for u.priority.Len() > 0 {
 		tmp := heap.Pop(u.priority).(*users.Score)
 		bk = append(bk, tmp)
-		if requests, ok := apps[s.GetUser()]; ok {
+		if requests, ok := apps[tmp.GetUser()]; ok {
 			if requests.Len() > 0 {
 				s = tmp
 				break
 			}
 		}
 	}
+
 	for _, element := range bk {
 		heap.Push(u.priority, element)
 	}
-	log.Logger().Warn(fmt.Sprintf("Try user is %s", s.GetUser()))
+
+	if s == nil {
+		return ""
+	}
 	return s.GetUser()
 }
 
