@@ -183,28 +183,27 @@ func (cc *ClusterContext) customschedule() bool {
 
 		for nodeID, appIDs := range customutil.GetPlanManager().GetNodes() {
 			for index, appID := range appIDs {
-				if app := psc.GetApplication(appID); app != nil {
-					if alloc := app.TrySpecifiedNode(nodeID, psc.GetNode); alloc != nil {
-						if index == (len(appIDs) - 1) {
-							customutil.GetPlanManager().Clear(nodeID)
-						}
-
-						starttime := time.Now()
-						_, _, res := util.ParseApp(app)
-						customutil.GetFairMonitor().UpdateTheTenantMasterResource(starttime, app)
-						customutil.GetNodeUtilizationMonitor().Allocate(customutil.GetPlanManager().StreamAppToNode, starttime, res.Clone())
-
-						// log.Logger().Info("success allocate", zap.String("appid", appID), zap.String("nodeID", nodeID))
-						if alloc.GetResult() == objects.Replaced {
-							// communicate the removal to the RM
-							cc.notifyRMAllocationReleased(psc.RmID, alloc.GetReleasesClone(), si.TerminationType_PLACEHOLDER_REPLACED, "replacing uuid: "+alloc.GetUUID())
-						} else {
-							cc.notifyRMNewAllocation(psc.RmID, alloc)
-						}
-					} else {
-						customutil.GetPlanManager().UpdateNodes(nodeID, index)
-						break
+				app := psc.GetApplication(appID)
+				if alloc := app.TrySpecifiedNode(nodeID, psc.GetNode); alloc != nil {
+					if index == (len(appIDs) - 1) {
+						customutil.GetPlanManager().Clear(nodeID)
 					}
+
+					starttime := time.Now()
+					_, _, res := util.ParseApp(app)
+					customutil.GetFairMonitor().UpdateTheTenantMasterResource(starttime, app)
+					customutil.GetNodeUtilizationMonitor().Allocate(customutil.GetPlanManager().StreamAppToNode, starttime, res.Clone())
+
+					log.Logger().Info("success allocate", zap.String("appid", appID), zap.String("nodeID", nodeID))
+					if alloc.GetResult() == objects.Replaced {
+						// communicate the removal to the RM
+						cc.notifyRMAllocationReleased(psc.RmID, alloc.GetReleasesClone(), si.TerminationType_PLACEHOLDER_REPLACED, "replacing uuid: "+alloc.GetUUID())
+					} else {
+						cc.notifyRMNewAllocation(psc.RmID, alloc)
+					}
+				} else {
+					customutil.GetPlanManager().UpdateNodes(nodeID, index)
+					break
 				}
 			}
 		}
