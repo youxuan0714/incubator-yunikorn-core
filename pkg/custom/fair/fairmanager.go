@@ -64,14 +64,14 @@ func (f *FairManager) NextAppToSchedule() (bool, string, string) {
 	}
 
 	target := heap.Pop(h).(*apps.AppInfo)
-	heap.Push(h, target)
-	log.Logger().Info("User has apps", zap.String("user", user), zap.String("appid", target.ApplicationID), zap.Int("heap", h.Len()))
+	defer heap.Push(h, target)
+	//log.Logger().Info("User has apps", zap.String("user", user), zap.String("appid", target.ApplicationID), zap.Int("heap", h.Len()))
 	return true, user, target.ApplicationID
 }
 
 func (f *FairManager) UpdateScheduledApp(input *objects.Application) {
 	appID, user, res := customutil.ParseApp(input)
-	log.Logger().Info("Update scheduled app", zap.String("app", appID), zap.String("user", user))
+	//log.Logger().Info("Update scheduled app", zap.String("app", appID), zap.String("user", user))
 	if h, ok := f.apps[user]; !ok {
 		log.Logger().Error("Non existed app update", zap.String("app", appID), zap.String("user", user))
 	} else {
