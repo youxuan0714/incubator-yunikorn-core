@@ -188,8 +188,10 @@ func (cc *ClusterContext) customschedule() bool {
 							customutil.GetPlanManager().Clear(nodeID)
 						}
 
-						customutil.GetFairMonitor().UpdateTheTenantMasterResource(startTime, app)
-						customutil.GetNodeUtilizationMonitor().Allocate(customutil.GetPlanManager().StreamAppToNode, startTime, res.Clone())
+						starttime := time.Now()
+						_, _, res := util.ParseApp(app)
+						customutil.GetFairMonitor().UpdateTheTenantMasterResource(starttime, app)
+						customutil.GetNodeUtilizationMonitor().Allocate(customutil.GetPlanManager().StreamAppToNode, starttime, res.Clone())
 						// log.Logger().Info("success allocate", zap.String("appid", appID), zap.String("nodeID", nodeID))
 						if alloc.GetResult() == objects.Replaced {
 							// communicate the removal to the RM
