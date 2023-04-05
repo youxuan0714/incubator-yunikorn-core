@@ -187,10 +187,10 @@ func (cc *ClusterContext) customschedule() bool {
 							if index == len(appIDs)-1 {
 								customutil.GetPlanManager().Clear(nodeID)
 							}
-							
+
 							customutil.GetFairMonitor().UpdateTheTenantMasterResource(startTime, app)
 							customutil.GetNodeUtilizationMonitor().Allocate(customutil.GetPlanManager().StreamAppToNode, startTime, res.Clone())
-							log.Logger().Info("success allocate", zap.String("appid", appID), zap.String("nodeID", nodeID))
+							// log.Logger().Info("success allocate", zap.String("appid", appID), zap.String("nodeID", nodeID))
 							if alloc.GetResult() == objects.Replaced {
 								// communicate the removal to the RM
 								cc.notifyRMAllocationReleased(psc.RmID, alloc.GetReleasesClone(), si.TerminationType_PLACEHOLDER_REPLACED, "replacing uuid: "+alloc.GetUUID())
