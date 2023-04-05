@@ -130,80 +130,78 @@ func (cc *ClusterContext) customschedule() bool {
 		}
 
 		/*
-		if !customutil.GetPlanManager().Scheduled {
-			schedulingStart := time.Now()
-			scheduled, _, tenantAppID := customutil.GetFairManager().NextAppToSchedule()
-			//log.Logger().Info("customschedule: find next app", zap.String("appID", tenantAppID))
-			if app := psc.GetApplication(tenantAppID); scheduled && app != nil {
-				nodeID, startTime, tenantAppID, res := customutil.GetLBManager().Schedule(app, schedulingStart)
-				customutil.GetPlanManager().AssignAppToNode(tenantAppID, nodeID)
-				//log.Logger().Info("customschedule: schedule app", zap.Any("startTime", startTime), zap.String("appid", tenantAppID), zap.String("nodeID", nodeID))
-				customutil.GetPlanManager().AppID = tenantAppID
-				customutil.GetPlanManager().StreamAppToNode = nodeID
-				customutil.GetPlanManager().Scheduled = true
-				customutil.GetLBManager().Allocate(nodeID, tenantAppID, startTime, res.Clone())
-				metrics.GetSchedulerMetrics().ObserveSchedulingLatency(schedulingStart)
-			}
-		}
-
-		//log.Logger().Info("customschedule: try application", zap.String("appid", customutil.GetPlanManager().AppID))
-		if app := psc.GetApplication(customutil.GetPlanManager().AppID); app != nil {
-			if alloc := app.TrySpecifiedNode(customutil.GetPlanManager().StreamAppToNode, psc.GetNode); alloc != nil {
-				startTime := time.Now()
-				_, _, res := util.ParseApp(app)
-				customutil.GetFairManager().UpdateScheduledApp(app)
-				customutil.GetFairMonitor().UpdateTheTenantMasterResource(startTime, app)
-				customutil.GetNodeUtilizationMonitor().Allocate(customutil.GetPlanManager().StreamAppToNode, startTime, res.Clone())
-				//log.Logger().Info("customschedule: success allocate", zap.String("appid", app.ApplicationID), zap.String("nodeID", customutil.GetPlanManager().StreamAppToNode))
-				customutil.GetPlanManager().Scheduled = false
-				if alloc.GetResult() == objects.Replaced {
-					// communicate the removal to the RM
-					cc.notifyRMAllocationReleased(psc.RmID, alloc.GetReleasesClone(), si.TerminationType_PLACEHOLDER_REPLACED, "replacing uuid: "+alloc.GetUUID())
-				} else {
-					cc.notifyRMNewAllocation(psc.RmID, alloc)
+			if !customutil.GetPlanManager().Scheduled {
+				schedulingStart := time.Now()
+				scheduled, _, tenantAppID := customutil.GetFairManager().NextAppToSchedule()
+				//log.Logger().Info("customschedule: find next app", zap.String("appID", tenantAppID))
+				if app := psc.GetApplication(tenantAppID); scheduled && app != nil {
+					nodeID, startTime, tenantAppID, res := customutil.GetLBManager().Schedule(app, schedulingStart)
+					customutil.GetPlanManager().AssignAppToNode(tenantAppID, nodeID)
+					//log.Logger().Info("customschedule: schedule app", zap.Any("startTime", startTime), zap.String("appid", tenantAppID), zap.String("nodeID", nodeID))
+					customutil.GetPlanManager().AppID = tenantAppID
+					customutil.GetPlanManager().StreamAppToNode = nodeID
+					customutil.GetPlanManager().Scheduled = true
+					customutil.GetLBManager().Allocate(nodeID, tenantAppID, startTime, res.Clone())
+					metrics.GetSchedulerMetrics().ObserveSchedulingLatency(schedulingStart)
 				}
 			}
-		}
-		*/
 
-			schedulingStart := time.Now()
-			_, _, tenantAppID := customutil.GetFairManager().NextAppToSchedule()
-			if app := psc.GetApplication(tenantAppID); app != nil {
-				nodeID, startTime, tenantAppID, res := customutil.GetLBManager().Schedule(app, schedulingStart)
-				customutil.GetPlanManager().AssignAppToNode(tenantAppID, nodeID)
-				// log.Logger().Info("schedule app", zap.Any("startTime", startTime), zap.String("appid", tenantAppID), zap.String("nodeID", nodeID))
-				customutil.GetPlanManager().AppID = tenantAppID
-				customutil.GetPlanManager().StreamAppToNode = nodeID
-				customutil.GetPlanManager().Scheduled = true
-				customutil.GetFairManager().UpdateScheduledApp(app)
-				customutil.GetNodeUtilizationMonitor().Allocate(nodeID, startTime, res.Clone())
-				metrics.GetSchedulerMetrics().ObserveSchedulingLatency(schedulingStart)
-			}
-
-			for nodeID, appIDs := range customutil.GetPlanManager().GetNodes() {
-				for index, appID := range appIDs {
-					app := psc.GetApplication(appID); app != nil {
-						if alloc := app.TrySpecifiedNode(nodeID, psc.GetNode); alloc != nil {
-							if index == len(appIDs)-1 {
-								customutil.GetPlanManager().Clear(nodeID)
-							}
-
-							customutil.GetFairMonitor().UpdateTheTenantMasterResource(startTime, app)
-							customutil.GetNodeUtilizationMonitor().Allocate(customutil.GetPlanManager().StreamAppToNode, startTime, res.Clone())
-							// log.Logger().Info("success allocate", zap.String("appid", appID), zap.String("nodeID", nodeID))
-							if alloc.GetResult() == objects.Replaced {
-								// communicate the removal to the RM
-								cc.notifyRMAllocationReleased(psc.RmID, alloc.GetReleasesClone(), si.TerminationType_PLACEHOLDER_REPLACED, "replacing uuid: "+alloc.GetUUID())
-							} else {
-								cc.notifyRMNewAllocation(psc.RmID, alloc)
-							} else {
-								customutil.GetPlanManager().UpdateNodes(nodeID, index)
-								break
-							}
-						}
+			//log.Logger().Info("customschedule: try application", zap.String("appid", customutil.GetPlanManager().AppID))
+			if app := psc.GetApplication(customutil.GetPlanManager().AppID); app != nil {
+				if alloc := app.TrySpecifiedNode(customutil.GetPlanManager().StreamAppToNode, psc.GetNode); alloc != nil {
+					startTime := time.Now()
+					_, _, res := util.ParseApp(app)
+					customutil.GetFairManager().UpdateScheduledApp(app)
+					customutil.GetFairMonitor().UpdateTheTenantMasterResource(startTime, app)
+					customutil.GetNodeUtilizationMonitor().Allocate(customutil.GetPlanManager().StreamAppToNode, startTime, res.Clone())
+					//log.Logger().Info("customschedule: success allocate", zap.String("appid", app.ApplicationID), zap.String("nodeID", customutil.GetPlanManager().StreamAppToNode))
+					customutil.GetPlanManager().Scheduled = false
+					if alloc.GetResult() == objects.Replaced {
+						// communicate the removal to the RM
+						cc.notifyRMAllocationReleased(psc.RmID, alloc.GetReleasesClone(), si.TerminationType_PLACEHOLDER_REPLACED, "replacing uuid: "+alloc.GetUUID())
+					} else {
+						cc.notifyRMNewAllocation(psc.RmID, alloc)
 					}
 				}
 			}
+		*/
+
+		schedulingStart := time.Now()
+		_, _, tenantAppID := customutil.GetFairManager().NextAppToSchedule()
+		if app := psc.GetApplication(tenantAppID); app != nil {
+			nodeID, startTime, tenantAppID, res := customutil.GetLBManager().Schedule(app, schedulingStart)
+			customutil.GetPlanManager().AssignAppToNode(tenantAppID, nodeID)
+			// log.Logger().Info("schedule app", zap.Any("startTime", startTime), zap.String("appid", tenantAppID), zap.String("nodeID", nodeID))
+			customutil.GetPlanManager().AppID = tenantAppID
+			customutil.GetPlanManager().StreamAppToNode = nodeID
+			customutil.GetPlanManager().Scheduled = true
+			customutil.GetFairManager().UpdateScheduledApp(app)
+			customutil.GetNodeUtilizationMonitor().Allocate(nodeID, startTime, res.Clone())
+			metrics.GetSchedulerMetrics().ObserveSchedulingLatency(schedulingStart)
+		}
+
+		for nodeID, appIDs := range customutil.GetPlanManager().GetNodes() {
+			for index, appID := range appIDs {
+				if app := psc.GetApplication(appID); app != nil {
+					if alloc := app.TrySpecifiedNode(nodeID, psc.GetNode); alloc != nil {
+						if index == (len(appIDs) - 1) {
+							customutil.GetPlanManager().Clear(nodeID)
+						}
+
+						customutil.GetFairMonitor().UpdateTheTenantMasterResource(startTime, app)
+						customutil.GetNodeUtilizationMonitor().Allocate(customutil.GetPlanManager().StreamAppToNode, startTime, res.Clone())
+						// log.Logger().Info("success allocate", zap.String("appid", appID), zap.String("nodeID", nodeID))
+						if alloc.GetResult() == objects.Replaced {
+							// communicate the removal to the RM
+							cc.notifyRMAllocationReleased(psc.RmID, alloc.GetReleasesClone(), si.TerminationType_PLACEHOLDER_REPLACED, "replacing uuid: "+alloc.GetUUID())
+						} else {
+							cc.notifyRMNewAllocation(psc.RmID, alloc)
+						}
+						customutil.GetPlanManager().UpdateNodes(nodeID, index)
+					}
+				}
+			}
+		}
 	}
 	return true
 }
