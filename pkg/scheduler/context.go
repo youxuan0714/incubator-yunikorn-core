@@ -145,7 +145,7 @@ func (cc *ClusterContext) customschedule() bool {
 			}
 		}
 
-		log.Logcger().Info("customschedule: try application", zap.String("appid", customutil.GetPlanManager().AppID))
+		log.Logger().Info("customschedule: try application", zap.String("appid", customutil.GetPlanManager().AppID))
 		if app := psc.GetApplication(customutil.GetPlanManager().AppID); app != nil {
 			if alloc := app.TrySpecifiedNode(customutil.GetPlanManager().StreamAppToNode, psc.GetNode); alloc != nil {
 				startTime := time.Now()
