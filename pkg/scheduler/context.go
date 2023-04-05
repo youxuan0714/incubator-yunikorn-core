@@ -202,7 +202,9 @@ func (cc *ClusterContext) customschedule() bool {
 						} else {
 							cc.notifyRMNewAllocation(psc.RmID, alloc)
 						}
+					} else {
 						customutil.GetPlanManager().UpdateNodes(nodeID, index)
+						break
 					}
 				}
 			}
