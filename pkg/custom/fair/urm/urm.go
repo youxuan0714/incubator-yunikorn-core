@@ -3,6 +3,7 @@ package urm
 import (
 	"container/heap"
 	"errors"
+	"fmt"
 
 	"github.com/apache/yunikorn-core/pkg/common/resources"
 	"github.com/apache/yunikorn-core/pkg/custom/fair/urm/apps"
@@ -48,10 +49,10 @@ func (u *UserResourceManager) GetMinResourceUser(apps map[string]*apps.AppsHeap)
 			}
 		}
 	}
-
 	for _, element := range bk {
 		heap.Push(u.priority, element)
 	}
+	log.Logger().Warn(fmt.Sprintf("Try user is %s", s.GetUser()))
 	return s.GetUser()
 }
 
