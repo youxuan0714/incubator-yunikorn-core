@@ -129,7 +129,7 @@ func (cc *ClusterContext) customschedule() bool {
 			continue
 		}
 
-		/*
+		
 			if !customutil.GetPlanManager().Scheduled {
 				schedulingStart := time.Now()
 				scheduled, _, tenantAppID := customutil.GetFairManager().NextAppToSchedule()
@@ -164,8 +164,9 @@ func (cc *ClusterContext) customschedule() bool {
 					}
 				}
 			}
-		*/
+		
 
+		/*
 		schedulingStart := time.Now()
 		_, _, tenantAppID := customutil.GetFairManager().NextAppToSchedule()
 		if app := psc.GetApplication(tenantAppID); app != nil {
@@ -208,6 +209,7 @@ func (cc *ClusterContext) customschedule() bool {
 			}
 		}
 	}
+	*/
 	return true
 }
 
