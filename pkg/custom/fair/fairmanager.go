@@ -13,8 +13,9 @@ import (
 )
 
 type FairManager struct {
-	tenants *urm.UserResourceManager
-	apps    map[string]*apps.AppsHeap
+	tenants      *urm.UserResourceManager
+	apps         map[string]*apps.AppsHeap
+	waitToDelete map[string]bool
 }
 
 func (f *FairManager) GetTenants() *urm.UserResourceManager {
@@ -23,8 +24,9 @@ func (f *FairManager) GetTenants() *urm.UserResourceManager {
 
 func NewFairManager() *FairManager {
 	return &FairManager{
-		tenants: urm.NewURM(),
-		apps:    make(map[string]*apps.AppsHeap, 0),
+		tenants:      urm.NewURM(),
+		apps:         make(map[string]*apps.AppsHeap, 0),
+		waitToDelete: make(map[string]bool, 0),
 	}
 }
 
@@ -71,12 +73,23 @@ func (f *FairManager) NextAppToSchedule() (bool, string, string) {
 
 func (f *FairManager) UpdateScheduledApp(input *objects.Application) {
 	appID, user, res := customutil.ParseApp(input)
+	f.waitToDelete[appID] = true
 	//log.Logger().Info("Update scheduled app", zap.String("app", appID), zap.String("user", user))
 	if h, ok := f.apps[user]; !ok {
 		log.Logger().Error("Non existed app update", zap.String("app", appID), zap.String("user", user))
 	} else {
 		log.Logger().Info("Update scheduled app", zap.Int("heap", h.Len()))
-		heap.Pop(h)
+		bk := make([]*apps.AppInfo, 0)
+		for index := len(f.waitToDelete); h.Len() > 0; index-- {
+			target := heap.Pop(h).(*apps.AppInfo)
+			if _, exist := f.waitToDelete[target.ApplicationID]; !exist {
+				bk = append(bk, target)
+			}
+		}
+
+		for _, element := range bk {
+			heap.Push(h, element)
+		}
 	}
 	f.GetTenants().UpdateUser(user, res)
 }
