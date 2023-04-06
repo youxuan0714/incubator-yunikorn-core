@@ -2,11 +2,12 @@ package node
 
 import (
 	"container/heap"
+	"time"
+
 	"github.com/apache/yunikorn-core/pkg/common/resources"
 	"github.com/apache/yunikorn-core/pkg/log"
 	sicommon "github.com/apache/yunikorn-scheduler-interface/lib/go/common"
 	"go.uber.org/zap"
-	"time"
 )
 
 type NodeResource struct {
@@ -43,8 +44,8 @@ func (n *NodeResource) Allocate(appID string, allocateTime time.Time, req *resou
 
 	n.UpdateLastestRequest(req)
 	heap.Push(n.ReleaseEvents, releaseEvent)
-	log.Logger().Info("Current events heap", zap.Int("length", n.RequestEvents.Len()))
-	log.Logger().Info("expect", zap.String("allocate", n.GetUtilization(allocateTime, nil).String()), zap.String("release", n.GetUtilization(releaseTime, req.Clone()).String()))
+	// log.Logger().Info("Current events heap", zap.Int("length", n.RequestEvents.Len()))
+	// log.Logger().Info("expect", zap.String("allocate", n.GetUtilization(allocateTime, nil).String()), zap.String("release", n.GetUtilization(releaseTime, req.Clone()).String()))
 }
 
 func (n *NodeResource) GetUtilization(timeStamp time.Time, request *resources.Resource) (utilization *resources.Resource) {
@@ -54,7 +55,7 @@ func (n *NodeResource) GetUtilization(timeStamp time.Time, request *resources.Re
 
 	available := n.getAvialableAtTimeT(timeStamp)
 	total := n.Capcity.Clone() //cpu and memory
-	log.Logger().Info("calculate utilization", zap.Any("timestamp", timeStamp), zap.String("cap", total.String()), zap.String("avialble", available.String()))
+	// log.Logger().Info("calculate utilization", zap.Any("timestamp", timeStamp), zap.String("cap", total.String()), zap.String("avialble", available.String()))
 	allocated := resources.Sub(total, available)
 	if request != nil {
 		tmp := removeDurationInApp(request)
@@ -86,7 +87,7 @@ func (n *NodeResource) getAvialableAtTimeT(timeStamp time.Time) *resources.Resou
 }
 
 func (n *NodeResource) WhenCanStart(submitTime time.Time, req *resources.Resource) (bool, time.Time) {
-	log.Logger().Info("find when can start", zap.Any("submit", submitTime), zap.String("request", req.String()))
+	// log.Logger().Info("find when can start", zap.Any("submit", submitTime), zap.String("request", req.String()))
 	applicationReq := removeDurationInApp(req.Clone())
 	if enoughCapicity := resources.StrictlyGreaterThanOrEquals(n.MaxAvialable, applicationReq); !enoughCapicity {
 		log.Logger().Info("not enough cap", zap.String("max avial", n.MaxAvialable.String()), zap.String("app", applicationReq.String()))
@@ -116,7 +117,7 @@ func (n *NodeResource) WhenCanStart(submitTime time.Time, req *resources.Resourc
 		heap.Push(n.ReleaseEvents, element)
 	}
 
-	log.Logger().Info("Can start at", zap.Any("startTime", startTime), zap.String("availble res", available.String()), zap.String("req", applicationReq.String()))
+	// log.Logger().Info("Can start at", zap.Any("startTime", startTime), zap.String("availble res", available.String()), zap.String("req", applicationReq.String()))
 	return true, startTime
 }
 

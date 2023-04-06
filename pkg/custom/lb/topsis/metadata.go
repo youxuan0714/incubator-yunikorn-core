@@ -5,8 +5,8 @@ import (
 
 	"github.com/apache/yunikorn-core/pkg/common/resources"
 	"github.com/apache/yunikorn-core/pkg/custom/lb/node"
-	"github.com/apache/yunikorn-core/pkg/log"
-	"go.uber.org/zap"
+	//"github.com/apache/yunikorn-core/pkg/log"
+	//"go.uber.org/zap"
 )
 
 type MetaData struct {
@@ -72,8 +72,8 @@ func WhenCanStart(nodes map[string]*node.NodeResource, submittedTime time.Time, 
 	for nodeID, n := range nodes {
 		if enough, startTimeOfNode := n.WhenCanStart(submittedTime, app.Clone()); enough {
 			startTimeOfNodes[nodeID] = startTimeOfNode
-			log.Logger().Info("metadata when", zap.String("nodeID", nodeID), zap.Any("timestamp", startTimeOfNode))
-			log.Logger().Info("expect", zap.String("unassign", n.GetUtilization(startTimeOfNode, nil).String()), zap.String("assign", n.GetUtilization(startTimeOfNode, app.Clone()).String()))
+			//log.Logger().Info("metadata when", zap.String("nodeID", nodeID), zap.Any("timestamp", startTimeOfNode))
+			//log.Logger().Info("expect", zap.String("unassign", n.GetUtilization(startTimeOfNode, nil).String()), zap.String("assign", n.GetUtilization(startTimeOfNode, app.Clone()).String()))
 		}
 	}
 	return startTimeOfNodes

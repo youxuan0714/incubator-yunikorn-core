@@ -945,13 +945,13 @@ func GetDeviationFromNodes(nodes []*Resource, average *Resource) float64 {
 		base := int64(average.Resources[resType])
 		for _, node := range nodes {
 			resOnNode := int64(node.Resources[resType])
-			log.Logger().Info("deviation sub", zap.Int64("node res", resOnNode), zap.Int64("average", base))
+			// log.Logger().Info("deviation sub", zap.Int64("node res", resOnNode), zap.Int64("average", base))
 			tmp := float64(resOnNode) - float64(base)
 			deviations[resType] += math.Pow(tmp, float64(2))
 		}
 		deviations[resType] /= float64(len(nodes))
 		deviations[resType] = math.Sqrt(deviations[resType])
-		log.Logger().Info("deviation", zap.String("type", resType), zap.Float64("result", deviations[resType]))
+		// log.Logger().Info("deviation", zap.String("type", resType), zap.Float64("result", deviations[resType]))
 	}
 
 	if deviations[common.CPU] >= deviations[common.Memory] {

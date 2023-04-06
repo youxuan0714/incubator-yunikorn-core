@@ -186,6 +186,7 @@ func (cc *ClusterContext) customschedule() bool {
 		for nodeID, appIDs := range customutil.GetPlanManager().GetNodes() {
 			for index, appID := range appIDs {
 				app := psc.GetApplication(appID)
+				log.Logger().Info("Try allocate %s for %s", nodeID, appID)
 				if alloc := app.TrySpecifiedNode(nodeID, psc.GetNode); alloc != nil {
 					if index == (len(appIDs) - 1) {
 						customutil.GetPlanManager().Clear(nodeID)
