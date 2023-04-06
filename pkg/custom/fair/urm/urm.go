@@ -73,7 +73,7 @@ func (u *UserResourceManager) UpdateUser(user string, info *resources.Resource) 
 	*/
 
 	s.AddWeight(int64(resources.MasterResource(info)))
-	log.Logger().Info("wieght", zap.String("user", s.GetUser()), zap.Int64("weight", s.GetWeight()))
+	// log.Logger().Info("wieght", zap.String("user", s.GetUser()), zap.Int64("weight", s.GetWeight()))
 	heap.Push(u.priority, s)
 	return nil
 }
