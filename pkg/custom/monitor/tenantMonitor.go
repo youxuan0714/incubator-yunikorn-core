@@ -4,6 +4,11 @@ import (
 	"strconv"
 
 	"fmt"
+	"math"
+	"os"
+	"sort"
+	"time"
+
 	"github.com/apache/yunikorn-core/pkg/common/configs"
 	customutil "github.com/apache/yunikorn-core/pkg/custom/util"
 	"github.com/apache/yunikorn-core/pkg/log"
@@ -11,10 +16,6 @@ import (
 	sicommon "github.com/apache/yunikorn-scheduler-interface/lib/go/common"
 	excel "github.com/xuri/excelize/v2"
 	"go.uber.org/zap"
-	"math"
-	"os"
-	"sort"
-	"time"
 )
 
 type FairnessMonitor struct {
@@ -67,7 +68,7 @@ func (m *FairnessMonitor) RecordUnScheduledApp(app *objects.Application) {
 func (m *FairnessMonitor) UpdateTheTenantMasterResource(currentTime time.Time, app *objects.Application) {
 	appID := app.ApplicationID
 	if _, ok := m.UnRunningApps[appID]; !ok {
-		log.Logger().Info("fairness unrecord app", zap.String("app", appID))
+		// log.Logger().Info("fairness unrecord app", zap.String("app", appID))
 		return
 	}
 
@@ -79,7 +80,7 @@ func (m *FairnessMonitor) UpdateTheTenantMasterResource(currentTime time.Time, a
 		m.First = true
 	}
 	duration := SubTimeAndTranslateToMiliSecond(currentTime, m.startTime)
-	log.Logger().Info("Add duration to excel", zap.Uint64("duration", duration))
+	// log.Logger().Info("Add duration to excel", zap.Uint64("duration", duration))
 	m.AddEventTimeStamp(duration)
 
 	// events: person
@@ -90,9 +91,9 @@ func (m *FairnessMonitor) UpdateTheTenantMasterResource(currentTime time.Time, a
 	h.AddInfo(NewAddMasterResourceInfo(user, duration, masterResource))
 	// stream
 	m.AddMasterResourceToTenant(user, masterResource)
-	log.Logger().Info("fairness print", zap.Any("apps", app.ApplicationID), zap.Any("tenants", m.MasterResourceOfTenants))
+	// log.Logger().Info("fairness print", zap.Any("apps", app.ApplicationID), zap.Any("tenants", m.MasterResourceOfTenants))
 	m.count++
-	log.Logger().Info("save file: tenant", zap.Uint64("count", m.count))
+	// log.Logger().Info("save file: tenant", zap.Uint64("count", m.count))
 	if m.count == appNum {
 		m.Save()
 	}
@@ -101,7 +102,7 @@ func (m *FairnessMonitor) UpdateTheTenantMasterResource(currentTime time.Time, a
 
 // Add master resource to specific tenant
 func (m *FairnessMonitor) AddMasterResourceToTenant(user string, masterResource uint64) {
-	log.Logger().Warn("Update master resource who is not paresd in config, add it", zap.String("user", user), zap.Uint64("masterResource", masterResource))
+	// log.Logger().Warn("Update master resource who is not paresd in config, add it", zap.String("user", user), zap.Uint64("masterResource", masterResource))
 	if _, ok := m.MasterResourceOfTenants[user]; !ok {
 		m.MasterResourceOfTenants[user] = masterResource
 	} else {
@@ -121,7 +122,7 @@ func (m *FairnessMonitor) ParseTenantsInPartitionConfig(conf configs.PartitionCo
 			m.MasterResourceOfTenants[userNameInConfig] = uint64(0)
 			// write tenant id in B1, C1, D1 ...
 			idLetter := m.id[userNameInConfig]
-			log.Logger().Info("Set tenant ID", zap.String("tenant ID", idLetter), zap.String("next idLetter", excelCol[len(m.MasterResourceOfTenants)]))
+			// log.Logger().Info("Set tenant ID", zap.String("tenant ID", idLetter), zap.String("next idLetter", excelCol[len(m.MasterResourceOfTenants)]))
 			m.file.SetCellValue(fairness, fmt.Sprintf("%s%d", idLetter, 1), userNameInConfig)
 		}
 	}

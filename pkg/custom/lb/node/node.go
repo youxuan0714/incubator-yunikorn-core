@@ -49,9 +49,11 @@ func (n *NodeResource) Allocate(appID string, allocateTime time.Time, req *resou
 }
 
 func (n *NodeResource) GetUtilization(timeStamp time.Time, request *resources.Resource) (utilization *resources.Resource) {
-	if request != nil {
-		log.Logger().Info("get utilization with request")
-	}
+	/*
+		if request != nil {
+			log.Logger().Info("get utilization with request")
+		}
+	*/
 
 	available := n.getAvialableAtTimeT(timeStamp)
 	total := n.Capcity.Clone() //cpu and memory
@@ -90,7 +92,7 @@ func (n *NodeResource) WhenCanStart(submitTime time.Time, req *resources.Resourc
 	// log.Logger().Info("find when can start", zap.Any("submit", submitTime), zap.String("request", req.String()))
 	applicationReq := removeDurationInApp(req.Clone())
 	if enoughCapicity := resources.StrictlyGreaterThanOrEquals(n.MaxAvialable, applicationReq); !enoughCapicity {
-		log.Logger().Info("not enough cap", zap.String("max avial", n.MaxAvialable.String()), zap.String("app", applicationReq.String()))
+		// log.Logger().Info("not enough cap", zap.String("max avial", n.MaxAvialable.String()), zap.String("app", applicationReq.String()))
 		return enoughCapicity, submitTime
 	}
 
