@@ -84,6 +84,7 @@ func (f *FairManager) UpdateScheduledApp(input *objects.Application) {
 		for h.Len() > 0 {
 			target := heap.Pop(h).(*apps.AppInfo)
 			if _, exist := f.waitToDelete[target.ApplicationID]; !exist {
+				log.Logger().Info("Delete  app is not in the heap", zap.String("appid", target.ApplicationID))
 				bk = append(bk, target)
 			} else {
 				log.Logger().Info("Delete  app", zap.String("appid", target.ApplicationID))
