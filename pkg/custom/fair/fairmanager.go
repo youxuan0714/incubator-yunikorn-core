@@ -66,9 +66,10 @@ func (f *FairManager) NextAppToSchedule() (bool, string, string) {
 	}
 
 	target := heap.Pop(h).(*apps.AppInfo)
-	defer heap.Push(h, target)
+	appID := target.ApplicationID
+	heap.Push(h, target)
 	//log.Logger().Info("User has apps", zap.String("user", user), zap.String("appid", target.ApplicationID), zap.Int("heap", h.Len()))
-	return true, user, target.ApplicationID
+	return true, user, appID
 }
 
 func (f *FairManager) UpdateScheduledApp(input *objects.Application) {
@@ -80,11 +81,12 @@ func (f *FairManager) UpdateScheduledApp(input *objects.Application) {
 	} else {
 		log.Logger().Info("Update scheduled app", zap.Int("heap", h.Len()))
 		bk := make([]*apps.AppInfo, 0)
-		for index := len(f.waitToDelete); h.Len() > 0; index-- {
+		for h.Len() > 0 {
 			target := heap.Pop(h).(*apps.AppInfo)
 			if _, exist := f.waitToDelete[target.ApplicationID]; !exist {
 				bk = append(bk, target)
 			} else {
+				log.Logger().Info("Delete  app", zap.String("appid", target.ApplicationID))
 				delete(f.waitToDelete, target.ApplicationID)
 			}
 		}
