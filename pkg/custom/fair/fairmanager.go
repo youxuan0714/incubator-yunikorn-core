@@ -66,6 +66,11 @@ func (f *FairManager) NextAppToSchedule() (bool, string, string) {
 	}
 
 	target := heap.Pop(h).(*apps.AppInfo)
+	if _, exist := f.waitToDelete[target.ApplicationID]; !exist ; {
+		delete(f.waitToDelete, target.ApplicationID)
+		target := heap.Pop(h).(*apps.AppInfo)
+	}
+	
 	appID := target.ApplicationID
 	heap.Push(h, target)
 	//log.Logger().Info("User has apps", zap.String("user", user), zap.String("appid", target.ApplicationID), zap.Int("heap", h.Len()))
