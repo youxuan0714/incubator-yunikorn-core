@@ -13,7 +13,7 @@ type MetaData struct {
 	AppID         string
 	SubmittedTime time.Time
 	AppRequest    *resources.Resource           // include cpu, memory and duration
-	Nodes         map[string]*node.NodeResource //includes cpu, memory
+	Nodes         map[string]*node.NodeResource // includes cpu, memory
 }
 
 func NewMetaData(appID string, submittedTime time.Time, app *resources.Resource, nodes map[string]*node.NodeResource) *MetaData {
