@@ -169,7 +169,7 @@ func (cc *ClusterContext) customschedule() bool {
 		*/
 
 		schedulingStart := time.Now()
-		if ok, _, tenantAppID := customutil.GetFairManager().NextAppToSchedule(); ok; {
+		if ok, _, tenantAppID := customutil.GetFairManager().NextAppToSchedule(); ok {
 			if app := psc.GetApplication(tenantAppID); app != nil {
 				nodeID, startTime, tenantAppID, res := customutil.GetLBManager().Schedule(app, schedulingStart)
 				if nodeID == "" {
