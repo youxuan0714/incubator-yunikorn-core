@@ -172,6 +172,9 @@ func (cc *ClusterContext) customschedule() bool {
 		for ok, _, tenantAppID := customutil.GetFairManager().NextAppToSchedule(); ok; {
 			if app := psc.GetApplication(tenantAppID); app != nil {
 				nodeID, startTime, tenantAppID, res := customutil.GetLBManager().Schedule(app, schedulingStart)
+				if nodeID == "" {
+					break
+				}
 				customutil.GetPlanManager().AssignAppToNode(tenantAppID, nodeID)
 				log.Logger().Info("schedule app", zap.Any("startTime", startTime), zap.String("appid", tenantAppID), zap.String("nodeID", nodeID))
 				customutil.GetFairManager().UpdateScheduledApp(app)
