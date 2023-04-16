@@ -70,13 +70,15 @@ func (f *FairManager) NextAppToSchedule() (bool, string, string) {
 		delete(f.waitToDelete, target.ApplicationID)
 		if h.Len() > 0 {
 			target = heap.Pop(h).(*apps.AppInfo)
+			heap.Push(h, target)
 		} else {
 			return false, "", ""
 		}
+	} else {
+		heap.Push(h, target)
 	}
 
 	appID := target.ApplicationID
-	heap.Push(h, target)
 	//log.Logger().Info("User has apps", zap.String("user", user), zap.String("appid", target.ApplicationID), zap.Int("heap", h.Len()))
 	return true, user, appID
 }
@@ -90,14 +92,15 @@ func (f *FairManager) UpdateScheduledApp(input *objects.Application) {
 	} else {
 		log.Logger().Info("Update scheduled app", zap.Int("heap", h.Len()))
 		bk := make([]*apps.AppInfo, 0)
-		for h.Len() > 0 {
+		for h.Len() > 0 || len(f.waitToDelete) > 0 {
 			target := heap.Pop(h).(*apps.AppInfo)
-			if _, exist := f.waitToDelete[target.ApplicationID]; !exist {
-				log.Logger().Info("Delete app is not in the heap", zap.String("appid", target.ApplicationID))
+			id := target.ApplicationID
+			if _, exist := f.waitToDelete[id]; !exist {
+				log.Logger().Info("Delete app is not in the heap", zap.String("appid", id))
 				bk = append(bk, target)
 			} else {
-				log.Logger().Info("Delete  app", zap.String("appid", target.ApplicationID))
-				delete(f.waitToDelete, target.ApplicationID)
+				delete(f.waitToDelete, id)
+				log.Logger().Info("Delete app", zap.String("appid", id), zap.Int("heap", h.Len()))
 			}
 		}
 
