@@ -76,7 +76,7 @@ func (m *MetaData) Recommanded(AppCreateTime time.Time) (RecommandednodeID strin
 	RecommandednodeID = indexOfNodeID[nodeIndex]
 	startTime = startTimeOfNodes[RecommandednodeID]
 
-	duration := time.Duration(int64(m.AppRequest[sicommon.Duration]))
+	duration := time.Duration(int64(m.AppRequest.Resources[sicommon.Duration]))
 	m.EndingTime = startTime.Add(duration)
 	m.Makespan += float64(int64(m.EndingTime.Sub(startTime)))
 	return
@@ -101,7 +101,7 @@ func MIGAndStandardDeviation(submitTime time.Time, nodes map[string]*node.NodeRe
 	distances := make([]float64, 0)
 	indexOfNodeID := make([]string, 0)
 	makespans := make([]float64, 0)
-	duration := time.Duration(int64(app[sicommon.Duration]))
+	duration := time.Duration(int64(app.Resources[sicommon.Duration]))
 
 	for nodeID, startingTime := range startTimeOfNodes {
 		makespans = append(makespans, float64(int64(startingTime.Add(duration).Sub(end)))+makespan)
