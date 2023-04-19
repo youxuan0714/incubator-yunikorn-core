@@ -20,9 +20,8 @@ func Normalized(q []float64) []float64 {
 	return result
 }
 
-func Weight(normalizedValues []float64) []float64 {
+func Weight(normalizedValues []float64, objectNames []string) []float64 {
 	result := make([]float64, 0)
-	objectNames := []string{"MIG", "deviation", "waitTime", "distance"}
 	w := float64(len(objectNames))
 	for _, value := range normalizedValues {
 		result = append(result, (value / w))
