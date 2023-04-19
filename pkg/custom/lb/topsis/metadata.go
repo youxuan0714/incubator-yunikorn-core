@@ -33,32 +33,32 @@ func (m *MetaData) Recommanded(AppCreateTime time.Time) (RecommandednodeID strin
 	}
 
 	// stand deviation and mig
-	WaitTimes, MIGs, standardDeviations, distances, indexOfNodeID := MIGAndStandardDeviation(AppCreateTime, m.Nodes, startTimeOfNodes, m.AppRequest.Clone())
+	WaitTimes, MIGs, standardDeviations, _, indexOfNodeID := MIGAndStandardDeviation(AppCreateTime, m.Nodes, startTimeOfNodes, m.AppRequest.Clone())
 
 	// normalized
 	NorWaitTimes := Normalized(WaitTimes)
 	NorMIGs := Normalized(MIGs)
 	NorStandardDeviations := Normalized(standardDeviations)
-	NorDistances := Normalized(distances)
+	//NorDistances := Normalized(distances)
 	weightedWaitTimes := Weight(NorWaitTimes)
 	weightedMIGs := Weight(NorMIGs)
 	weightedStandardDeviations := Weight(NorStandardDeviations)
-	weightedDistances := Weight(NorDistances)
+	//weightedDistances := Weight(NorDistances)
 
 	// A+ and A-
 	APlusWaitTimes := APlus(weightedWaitTimes)
 	APlusMIG := APlus(weightedMIGs)
 	APlusStandardDeviation := APlus(weightedStandardDeviations)
-	APlusDistances := APlus(weightedDistances)
+	//APlusDistances := APlus(weightedDistances)
 	AMinusWaitTimes := AMinus(weightedWaitTimes)
 	AMinusMIG := AMinus(weightedMIGs)
 	AMinusStandardDeviation := AMinus(weightedStandardDeviations)
-	AMinusDistances := AMinus(weightedDistances)
+	//AMinusDistances := AMinus(weightedDistances)
 
 	// SM+ and SM-
-	weighted := [][]float64{weightedWaitTimes, weightedMIGs, weightedStandardDeviations, weightedDistances}
-	APlusObjective := []float64{APlusWaitTimes, APlusMIG, APlusStandardDeviation, APlusDistances}
-	AMinusObjective := []float64{AMinusWaitTimes, AMinusMIG, AMinusStandardDeviation, AMinusDistances}
+	weighted := [][]float64{weightedWaitTimes, weightedMIGs, weightedStandardDeviations} //, weightedDistances}
+	APlusObjective := []float64{APlusWaitTimes, APlusMIG, APlusStandardDeviation}        //, APlusDistances}
+	AMinusObjective := []float64{AMinusWaitTimes, AMinusMIG, AMinusStandardDeviation}    //, AMinusDistances}
 	SMPlusObject := SM(weighted, APlusObjective)
 	SMMinusObject := SM(weighted, AMinusObjective)
 
