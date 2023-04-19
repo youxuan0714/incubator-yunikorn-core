@@ -5,6 +5,7 @@ import (
 
 	"github.com/apache/yunikorn-core/pkg/common/resources"
 	"github.com/apache/yunikorn-core/pkg/custom/lb/node"
+	sicommon "github.com/apache/yunikorn-scheduler-interface/lib/go/common"
 	//"github.com/apache/yunikorn-core/pkg/log"
 	//"go.uber.org/zap"
 )
