@@ -38,19 +38,19 @@ func (m *MetaData) Recommanded(AppCreateTime time.Time) (RecommandednodeID strin
 	}
 
 	// stand deviation and mig
-	_, MIGs, standardDeviations, _, _, usages, indexOfNodeID := MIGAndStandardDeviation(AppCreateTime, m.Nodes, startTimeOfNodes, m.AppRequest.Clone(), m.EndingTime, m.Makespan)
+	_, MIGs, _, _, _, usages, indexOfNodeID := MIGAndStandardDeviation(AppCreateTime, m.Nodes, startTimeOfNodes, m.AppRequest.Clone(), m.EndingTime, m.Makespan)
 
 	// normalized
 	//NorWaitTimes := Normalized(WaitTimes)
 	NorMIGs := Normalized(MIGs)
-	NorStandardDeviations := Normalized(standardDeviations)
+	// NorStandardDeviations := Normalized(standardDeviations)
 	NorUsages := Normalized(usages)
 	//NorDistances := Normalized(distances)
 	//NorMakespans := Normalized(makespans)
-	objectNames := []string{"MIG", "deviation", "fair"}
+	objectNames := []string{"MIG", "fair"}
 	//weightedWaitTimes := Weight(NorWaitTimes, objectNames)
 	weightedMIGs := Weight(NorMIGs, objectNames)
-	weightedStandardDeviations := Weight(NorStandardDeviations, objectNames)
+	// weightedStandardDeviations := Weight(NorStandardDeviations, objectNames)
 	weightedUsages := Weight(NorUsages, objectNames)
 	//weightedDistances := Weight(NorDistances, objectNames)
 	//weightedMakespans := Weight(NorMakespans, objectNames)
@@ -58,21 +58,21 @@ func (m *MetaData) Recommanded(AppCreateTime time.Time) (RecommandednodeID strin
 	// A+ and A-
 	//APlusWaitTimes := APlus(weightedWaitTimes)
 	APlusMIG := APlus(weightedMIGs)
-	APlusStandardDeviation := APlus(weightedStandardDeviations)
+	// APlusStandardDeviation := APlus(weightedStandardDeviations)
 	//APlusMakespans := APlus(weightedMakespans)
 	APlusUsages := APlus(weightedUsages)
 	//APlusDistances := APlus(weightedDistances)
 	//AMinusWaitTimes := AMinus(weightedWaitTimes)
 	AMinusMIG := AMinus(weightedMIGs)
-	AMinusStandardDeviation := AMinus(weightedStandardDeviations)
+	// AMinusStandardDeviation := AMinus(weightedStandardDeviations)
 	//AMinusDistances := AMinus(weightedDistances)
 	//AMinusMakespans := AMinus(weightedMakespans)
 	AMinusUsages := APlus(weightedUsages)
 
 	// SM+ and SM-
-	weighted := [][]float64{weightedMIGs, weightedStandardDeviations, weightedUsages} //, weightedDistances}
-	APlusObjective := []float64{APlusMIG, APlusStandardDeviation, APlusUsages}        //, APlusDistances}
-	AMinusObjective := []float64{AMinusMIG, AMinusStandardDeviation, AMinusUsages}    //, AMinusDistances}
+	weighted := [][]float64{weightedMIGs, weightedUsages} //, weightedStandardDeviations, weightedDistances}
+	APlusObjective := []float64{APlusMIG, APlusUsages}    //, APlusStandardDeviation, APlusDistances}
+	AMinusObjective := []float64{AMinusMIG, AMinusUsages} //, AMinusStandardDeviation,AMinusDistances}
 	SMPlusObject := SM(weighted, APlusObjective)
 	SMMinusObject := SM(weighted, AMinusObjective)
 
