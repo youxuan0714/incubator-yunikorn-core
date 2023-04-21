@@ -1013,6 +1013,16 @@ func Distance(ave *Resource) float64 {
 	return result
 }
 
+func AverageUsage(input *Resource) float64 {
+	resType := []string{common.CPU, common.Memory}
+	result := 0.0
+	for _, resname := range resType {
+		result += float64(int64(input.Resources[resname]))
+	}
+	result /= float64(len(resType))
+	return result
+}
+
 func Average(inputs []*Resource) (result *Resource) {
 	resType := []string{common.CPU, common.Memory}
 	result = NewResource()
