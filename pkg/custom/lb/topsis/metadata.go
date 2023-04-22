@@ -90,7 +90,7 @@ func (m *MetaData) Recommanded(AppCreateTime time.Time) (RecommandednodeID strin
 func WhenCanStart(nodes map[string]*node.NodeResource, submittedTime time.Time, app *resources.Resource) map[string]time.Time {
 	startTimeOfNodes := make(map[string]time.Time, 0)
 	for nodeID, n := range nodes {
-		if enough, startTimeOfNode := n.WhenCanStart(submittedTime, app.Clone()); enough { // && startTimeOfNode.Equal(submittedTime) {
+		if enough, startTimeOfNode := n.WhenCanStart(submittedTime, app.Clone()); enough && startTimeOfNode.Equal(submittedTime) {
 			startTimeOfNodes[nodeID] = startTimeOfNode
 			//log.Logger().Info("metadata when", zap.String("nodeID", nodeID), zap.Any("timestamp", startTimeOfNode))
 			//log.Logger().Info("expect", zap.String("unassign", n.GetUtilization(startTimeOfNode, nil).String()), zap.String("assign", n.GetUtilization(startTimeOfNode, app.Clone()).String()))
