@@ -136,6 +136,7 @@ func (cc *ClusterContext) customCurrentschedule() bool {
 				metrics.GetSchedulerMetrics().ObserveSchedulingLatency(schedulingStart)
 				starttime := time.Now()
 				_, _, res := util.ParseApp(app)
+				customutil.GetFairManager().UpdateScheduledApp(app)
 				customutil.GetFairMonitor().UpdateTheTenantMasterResource(starttime, app)
 				customutil.GetNodeUtilizationMonitor().Allocate(nodeID, starttime, res.Clone())
 				if alloc.GetResult() == objects.Replaced {
