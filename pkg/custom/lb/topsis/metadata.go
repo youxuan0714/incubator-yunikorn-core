@@ -47,7 +47,7 @@ func (m *MetaData) Recommanded(AppCreateTime time.Time) (RecommandednodeID strin
 	NorUsages := Normalized(usages)
 	// NorDistances := Normalized(distances)
 	NorMakespans := Normalized(makespans)
-	objectNames := []string{"mig", "usage"}
+	objectNames := []string{"mig", "makespans", "usage"}
 	// weightedWaitTimes := Weight(NorWaitTimes, objectNames)
 	weightedMIGs := Weight(NorMIGs, objectNames)
 	// weightedStandardDeviations := Weight(NorStandardDeviations, objectNames)
