@@ -38,17 +38,17 @@ func (m *MetaData) Recommanded(AppCreateTime time.Time) (RecommandednodeID strin
 	}
 
 	// stand deviation and mig
-	_, MIGs, _, _, _, usages, indexOfNodeID := MIGAndStandardDeviation(AppCreateTime, m.Nodes, startTimeOfNodes, m.AppRequest.Clone(), m.EndingTime, m.Makespan)
+	WaitTimes, MIGs, _, _, _, usages, indexOfNodeID := MIGAndStandardDeviation(AppCreateTime, m.Nodes, startTimeOfNodes, m.AppRequest.Clone(), m.EndingTime, m.Makespan)
 
 	// normalized
-	// NorWaitTimes := Normalized(WaitTimes)
+	NorWaitTimes := Normalized(WaitTimes)
 	NorMIGs := Normalized(MIGs)
 	//  NorStandardDeviations := Normalized(standardDeviations)
 	NorUsages := Normalized(usages)
 	// NorDistances := Normalized(distances)
 	//NorMakespans := Normalized(makespans)
-	objectNames := []string{"mig", "usage"}
-	// weightedWaitTimes := Weight(NorWaitTimes, objectNames)
+	objectNames := []string{"wait", "mig", "usage"}
+	weightedWaitTimes := Weight(NorWaitTimes, objectNames)
 	weightedMIGs := Weight(NorMIGs, objectNames)
 	// weightedStandardDeviations := Weight(NorStandardDeviations, objectNames)
 	weightedUsages := Weight(NorUsages, objectNames)
@@ -56,13 +56,13 @@ func (m *MetaData) Recommanded(AppCreateTime time.Time) (RecommandednodeID strin
 	//weightedMakespans := Weight(NorMakespans, objectNames)
 
 	// A+ and A-
-	// APlusWaitTimes := APlus(weightedWaitTimes)
+	APlusWaitTimes := APlus(weightedWaitTimes)
 	APlusMIG := APlus(weightedMIGs)
 	// APlusStandardDeviation := APlus(weightedStandardDeviations)
 	//APlusMakespans := APlus(weightedMakespans)
 	APlusUsages := APlus(weightedUsages)
 	// APlusDistances := APlus(weightedDistances)
-	// AMinusWaitTimes := AMinus(weightedWaitTimes)
+	AMinusWaitTimes := AMinus(weightedWaitTimes)
 	AMinusMIG := AMinus(weightedMIGs)
 	// AMinusStandardDeviation := AMinus(weightedStandardDeviations)
 	// AMinusDistances := AMinus(weightedDistances)
@@ -70,9 +70,9 @@ func (m *MetaData) Recommanded(AppCreateTime time.Time) (RecommandednodeID strin
 	AMinusUsages := APlus(weightedUsages)
 
 	// SM+ and SM-
-	weighted := [][]float64{weightedMIGs, weightedUsages}
-	APlusObjective := []float64{APlusMIG, APlusUsages}
-	AMinusObjective := []float64{AMinusMIG, AMinusUsages}
+	weighted := [][]float64{weightedMIGs, weightedUsages, weightedWaitTimes}
+	APlusObjective := []float64{APlusMIG, APlusUsages, APlusWaitTimes}
+	AMinusObjective := []float64{AMinusMIG, AMinusUsages, AMinusWaitTimes}
 	SMPlusObject := SM(weighted, APlusObjective)
 	SMMinusObject := SM(weighted, AMinusObjective)
 
@@ -80,10 +80,10 @@ func (m *MetaData) Recommanded(AppCreateTime time.Time) (RecommandednodeID strin
 	nodeIndex, _ := IndexOfMaxRC(SMPlusObject, SMMinusObject)
 	RecommandednodeID = indexOfNodeID[nodeIndex]
 	startTime = startTimeOfNodes[RecommandednodeID]
-
-	duration := time.Duration(int64(m.AppRequest.Resources[sicommon.Duration]))
-	m.EndingTime = startTime.Add(duration)
-	m.Makespan += float64(int64(m.EndingTime.Sub(startTime)))
+	/*
+		duration := time.Duration(int64(m.AppRequest.Resources[sicommon.Duration]))
+		m.EndingTime = startTime.Add(duration)
+		m.Makespan += float64(int64(m.EndingTime.Sub(startTime)))*/
 	return
 }
 
