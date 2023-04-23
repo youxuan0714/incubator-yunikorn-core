@@ -38,7 +38,7 @@ func (m *MetaData) Recommanded(AppCreateTime time.Time) (RecommandednodeID strin
 	}
 
 	// stand deviation and mig
-	_, MIGs, _, _, _, usages, indexOfNodeID := MIGAndStandardDeviation(AppCreateTime, m.Nodes, startTimeOfNodes, m.AppRequest.Clone(), m.EndingTime, m.Makespan)
+	_, MIGs, _, _, makespans, usages, indexOfNodeID := MIGAndStandardDeviation(AppCreateTime, m.Nodes, startTimeOfNodes, m.AppRequest.Clone(), m.EndingTime, m.Makespan)
 
 	// normalized
 	// NorWaitTimes := Normalized(WaitTimes)
@@ -46,33 +46,33 @@ func (m *MetaData) Recommanded(AppCreateTime time.Time) (RecommandednodeID strin
 	//  NorStandardDeviations := Normalized(standardDeviations)
 	NorUsages := Normalized(usages)
 	// NorDistances := Normalized(distances)
-	// NorMakespans := Normalized(makespans)
+	NorMakespans := Normalized(makespans)
 	objectNames := []string{"mig", "usage"}
 	// weightedWaitTimes := Weight(NorWaitTimes, objectNames)
 	weightedMIGs := Weight(NorMIGs, objectNames)
 	// weightedStandardDeviations := Weight(NorStandardDeviations, objectNames)
 	weightedUsages := Weight(NorUsages, objectNames)
 	// weightedDistances := Weight(NorDistances, objectNames)
-	// weightedMakespans := Weight(NorMakespans, objectNames)
+	weightedMakespans := Weight(NorMakespans, objectNames)
 
 	// A+ and A-
 	// APlusWaitTimes := APlus(weightedWaitTimes)
 	APlusMIG := APlus(weightedMIGs)
 	// APlusStandardDeviation := APlus(weightedStandardDeviations)
-	// APlusMakespans := APlus(weightedMakespans)
+	APlusMakespans := APlus(weightedMakespans)
 	APlusUsages := APlus(weightedUsages)
 	// APlusDistances := APlus(weightedDistances)
 	// AMinusWaitTimes := AMinus(weightedWaitTimes)
 	AMinusMIG := AMinus(weightedMIGs)
 	// AMinusStandardDeviation := AMinus(weightedStandardDeviations)
 	// AMinusDistances := AMinus(weightedDistances)
-	// AMinusMakespans := AMinus(weightedMakespans)
+	AMinusMakespans := AMinus(weightedMakespans)
 	AMinusUsages := APlus(weightedUsages)
 
 	// SM+ and SM-
-	weighted := [][]float64{weightedMIGs, weightedUsages}
-	APlusObjective := []float64{APlusMIG, APlusUsages}
-	AMinusObjective := []float64{AMinusMIG, AMinusUsages}
+	weighted := [][]float64{weightedMIGs, weightedUsages, weightedMakespans}
+	APlusObjective := []float64{APlusMIG, APlusUsages, APlusMakespans}
+	AMinusObjective := []float64{AMinusMIG, AMinusUsages, AMinusMakespans}
 	SMPlusObject := SM(weighted, APlusObjective)
 	SMMinusObject := SM(weighted, AMinusObjective)
 
