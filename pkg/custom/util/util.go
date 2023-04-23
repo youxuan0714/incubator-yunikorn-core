@@ -48,6 +48,19 @@ func ParseApp(a *objects.Application) (appID string, username string, resResult 
 	return
 }
 
+func ParseAppWithoutDuration(a *objects.Application) *resources.Resource {
+	resResult := resources.NewResource()
+	resType := []string{sicommon.CPU, sicommon.Memory}
+	for _, key := range resType {
+		if value, err := strconv.ParseInt(a.GetTag(key), 10, 64); err != nil {
+			log.Logger().Info("Resource parsing fail", zap.String("key", key), zap.String("error", err.Error()))
+		} else {
+			resResult.Resources[key] = resources.Quantity(value)
+		}
+	}
+	return resResult
+}
+
 func ParseUsersInPartitionConfig(conf configs.PartitionConfig) map[string]bool {
 	records := map[string]bool{}
 	for _, q := range conf.Queues {

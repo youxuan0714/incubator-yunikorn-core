@@ -72,7 +72,8 @@ func (s *Scheduler) StartService(handlers handler.EventHandlers, manualSchedule 
 func (s *Scheduler) internalSchedule() {
 	for {
 		s.awaitActivity()
-		if s.clusterContext.customschedule() {
+		// customCurrentschedule, scheduleWithRecord, customschedule
+		if s.clusterContext.customCurrentschedule() {
 			s.registerActivity()
 		}
 	}

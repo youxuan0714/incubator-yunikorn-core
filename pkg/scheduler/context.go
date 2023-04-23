@@ -112,11 +112,48 @@ func (cc *ClusterContext) setEventHandler(rmHandler handler.EventHandler) {
 	cc.rmEventHandler = rmHandler
 }
 
+func (cc *ClusterContext) customCurrentschedule() bool {
+	// schedule each partition defined in the cluster
+	for _, psc := range cc.GetPartitionMapClone() {
+		// if there are no resources in the partition just skip
+		if psc.root.GetMaxResource() == nil {
+			continue
+		}
+		// a stopped partition does not allocate
+		if psc.isStopped() {
+			continue
+		}
+
+		schedulingStart := time.Now()
+		scheduled, _, tenantAppID := customutil.GetFairManager().NextAppToSchedule()
+		if app := psc.GetApplication(tenantAppID); scheduled && app != nil {
+			nodeID := customutil.GetLBManager().CurrentSchedule(app)
+			if nodeID == "" {
+				continue
+			}
+
+			if alloc := app.TrySpecifiedNode(nodeID, psc.GetNode); alloc != nil {
+				metrics.GetSchedulerMetrics().ObserveSchedulingLatency(schedulingStart)
+				starttime := time.Now()
+				_, _, res := util.ParseApp(app)
+				customutil.GetFairMonitor().UpdateTheTenantMasterResource(starttime, app)
+				customutil.GetNodeUtilizationMonitor().Allocate(nodeID, starttime, res.Clone())
+				if alloc.GetResult() == objects.Replaced {
+					// communicate the removal to the RM
+					cc.notifyRMAllocationReleased(psc.RmID, alloc.GetReleasesClone(), si.TerminationType_PLACEHOLDER_REPLACED, "replacing uuid: "+alloc.GetUUID())
+				} else {
+					cc.notifyRMNewAllocation(psc.RmID, alloc)
+				}
+			}
+		}
+	}
+	return true
+}
+
 // schedule is the main scheduling routine.
 // Process each partition in the scheduler, walk over each queue and app to check if anything can be scheduled.
 // This can be forked into a go routine per partition if needed to increase parallel allocations.
 // Returns true if an allocation was able to be scheduled.
-
 func (cc *ClusterContext) customschedule() bool {
 	// schedule each partition defined in the cluster
 	for _, psc := range cc.GetPartitionMapClone() {

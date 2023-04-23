@@ -161,3 +161,17 @@ func removeDurationInApp(req *resources.Resource) *resources.Resource {
 	delete(tmp.Resources, sicommon.Duration)
 	return tmp
 }
+
+type SimpleNode struct {
+	Available *resources.Resource
+	Capcity   *resources.Resource
+	Usage     *resources.Resource
+}
+
+func NewSimpleNode(a *resources.Resource, c *resources.Resource, u *resources.Resource) *SimpleNode {
+	return &SimpleNode{
+		Available: a,
+		Capcity:   c,
+		Usage:     u,
+	}
+}
