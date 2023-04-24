@@ -16,23 +16,23 @@ func CurrentTOPSIS(req *resources.Resource, nodes map[string]*node.SimpleNode) s
 		usages = append(usages, usage)
 	}
 
-	NorMIGs := Normalized(MIGs)
+	//NorMIGs := Normalized(MIGs)
 	NorUsages := Normalized(usages)
 
-	objectNames := []string{"mig", "usages"}
-	weightedMIGs := Weight(NorMIGs, objectNames)
+	objectNames := []string{"usages"}
+	//weightedMIGs := Weight(NorMIGs, objectNames)
 	weightedUsages := Weight(NorUsages, objectNames)
 
 	// A+ and A-
-	APlusMIG := APlus(weightedMIGs)
+	//APlusMIG := APlus(weightedMIGs)
 	APlusUsages := APlus(weightedUsages)
-	AMinusMIG := AMinus(weightedMIGs)
+	//AMinusMIG := AMinus(weightedMIGs)
 	AMinusUsages := APlus(weightedUsages)
 
 	// SM+ and SM-
-	weighted := [][]float64{weightedMIGs, weightedUsages}
-	APlusObjective := []float64{APlusMIG, APlusUsages}
-	AMinusObjective := []float64{AMinusMIG, AMinusUsages}
+	weighted := [][]float64{weightedUsages}
+	APlusObjective := []float64{APlusUsages}
+	AMinusObjective := []float64{AMinusUsages}
 	SMPlusObject := SM(weighted, APlusObjective)
 	SMMinusObject := SM(weighted, AMinusObjective)
 
