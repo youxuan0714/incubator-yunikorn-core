@@ -134,9 +134,9 @@ func (cc *ClusterContext) customCurrentschedule() bool {
 
 			if alloc := app.TrySpecifiedNode(nodeID, psc.GetNode); alloc != nil {
 				metrics.GetSchedulerMetrics().ObserveSchedulingLatency(schedulingStart)
-				starttime := time.Now()
 				_, _, res := util.ParseApp(app)
 				customutil.GetFairManager().UpdateScheduledApp(app)
+				starttime := time.Now()
 				customutil.GetFairMonitor().UpdateTheTenantMasterResource(starttime, app)
 				customutil.GetNodeUtilizationMonitor().Allocate(nodeID, starttime, res.Clone())
 				if alloc.GetResult() == objects.Replaced {
