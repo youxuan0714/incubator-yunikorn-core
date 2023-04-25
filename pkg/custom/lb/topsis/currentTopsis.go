@@ -23,6 +23,7 @@ func CurrentTOPSIS(req *resources.Resource, nodes map[string]*node.SimpleNode) s
 	objectNames := []string{"usages", "MIG"}
 	weightedMIGs := Weight(NorMIGs, objectNames)
 	weightedUsages := Weight(NorUsages, objectNames)
+	weighted := [][]float64{weightedUsages, weightedMIGs}
 
 	// A+ and A-
 	APlusMIG := APlus(weightedMIGs)
@@ -31,7 +32,6 @@ func CurrentTOPSIS(req *resources.Resource, nodes map[string]*node.SimpleNode) s
 	AMinusUsages := APlus(weightedUsages)
 
 	// SM+ and SM-
-	weighted := [][]float64{weightedUsages, weightedMIGs}
 	APlusObjective := []float64{APlusUsages, APlusMIG}
 	AMinusObjective := []float64{AMinusUsages, AMinusMIG}
 	SMPlusObject := SM(weighted, APlusObjective)
@@ -45,7 +45,7 @@ func GetObjectives(req *resources.Resource, n *node.SimpleNode) (float64, float6
 	// mig float64(resources.GetMIGFromNodeUtilization())
 	// usage resources.AverageUsage()
 	change := resources.Sub(n.Capcity, resources.Sub(n.Available, req))
-	mig := float64(resources.GetMIGFromNodeUtilization(resources.CalculateAbsUsedCapacity(n.Capcity, change)))
+	mig := float64(resources.GetMIGFromNodeUtilization(change))
 	usage := resources.AverageUsage(n.Usage)
 	return mig, usage
 }

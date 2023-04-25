@@ -925,7 +925,9 @@ func MIG(input *Resource) Quantity {
 	gaps := Quantity(int64(0))
 	for _, utilization := range utilizations.Resources {
 		gap := subVal(utilization, minUtilization)
-		gaps = addVal(gaps, gap)
+		if int64(gap) > int64(gaps) {
+			gaps = gap
+		}
 	}
 	return gaps
 }
