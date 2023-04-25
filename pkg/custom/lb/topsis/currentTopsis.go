@@ -45,7 +45,7 @@ func GetObjectives(req *resources.Resource, n *node.SimpleNode) (float64, float6
 	// mig float64(resources.GetMIGFromNodeUtilization())
 	// usage resources.AverageUsage()
 	change := resources.Sub(n.Capcity, resources.Sub(n.Available, req))
-	mig := float64(resources.GetMIGFromNodeUtilization(change))
+	mig := float64(resources.GetMIGFromNodeUtilization(resources.Sub(n.Capcity, change)))
 	usage := resources.AverageUsage(n.Usage)
 	return mig, usage
 }
