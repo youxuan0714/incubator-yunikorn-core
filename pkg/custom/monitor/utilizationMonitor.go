@@ -121,8 +121,8 @@ func (m *NodeUtilizationMonitor) Save() {
 			log.Logger().Info("mig", zap.String("celName", cellName), zap.Int64("mig", mig))
 			cpu := float64(int64(utilization.Resources[sicommon.CPU]))
 			mem := float64(int64(utilization.Resources[sicommon.Memory]))
-			m.file.SetCellValue(cpufilepath, cellName, cpu)
-			m.file.SetCellValue(memfilepath, cellName, mem)
+			m.file.SetCellValue(cpusheet, cellName, cpu)
+			m.file.SetCellValue(memorysheet, cellName, mem)
 			m.file.SetCellValue(migsheet, cellName, mig)
 		}
 		average := resources.Average(nodesRes)
