@@ -83,6 +83,8 @@ func (m *NodeUtilizationMonitor) AddNode(n *objects.Node) {
 		cellName := fmt.Sprintf("%s%d", idLetter, 1)
 		log.Logger().Info("node get id", zap.String("nodeID", idLetter), zap.String("cellName", cellName))
 		m.file.SetCellValue(migsheet, cellName, nodeID)
+		m.file.SetCellValue(cpusheet, cellName, nodeID)
+		m.file.SetCellValue(memorysheet, cellName, nodeID)
 	}
 }
 
@@ -102,8 +104,8 @@ func (m *NodeUtilizationMonitor) Save() {
 		placeNum := uint64(index + 2)
 		timestampCellName := fmt.Sprintf("%s%d", TimeStampLetter, placeNum)
 		log.Logger().Info("timestamp cell info", zap.String("timestampCellName", timestampCellName), zap.Uint64("timestamp", timestamp))
-		m.file.SetCellValue(cpufilepath, timestampCellName, timestamp)
-		m.file.SetCellValue(memfilepath, timestampCellName, timestamp)
+		m.file.SetCellValue(cpusheet, timestampCellName, timestamp)
+		m.file.SetCellValue(memorysheet, timestampCellName, timestamp)
 		m.file.SetCellValue(migsheet, timestampCellName, timestamp)
 		m.file.SetCellValue(deviationsheet, timestampCellName, timestamp)
 		nodesRes := make([]*resources.Resource, 0)
