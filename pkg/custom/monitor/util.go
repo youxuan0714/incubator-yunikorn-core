@@ -6,11 +6,14 @@ import (
 )
 
 const (
-	deviationCellName = "B"
-	TimeStampLetter   = "A"
-	migsheet          = "mig"
-	deviationsheet    = "deviation"
-
+	deviationCellName   = "B"
+	TimeStampLetter     = "A"
+	migsheet            = "mig"
+	deviationsheet      = "deviation"
+	memorysheet         = "memory"
+	cpusheet            = "cpu"
+	memfilepath         = "/tmp/mem.xlsx"
+	cpufilepath         = "/tmp/cpu.xlsx"
 	utilizationfiltpath = "/tmp/utiliztion.xlsx"
 	tenantsfiltpath     = "/tmp/tenants.xlsx"
 	fairness            = "tenants"

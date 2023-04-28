@@ -2,15 +2,16 @@ package monitor
 
 import (
 	"fmt"
+	"os"
+	"sort"
+	"time"
+
 	"github.com/apache/yunikorn-core/pkg/common/resources"
 	"github.com/apache/yunikorn-core/pkg/custom/util"
 	"github.com/apache/yunikorn-core/pkg/log"
 	"github.com/apache/yunikorn-core/pkg/scheduler/objects"
 	sicommon "github.com/apache/yunikorn-scheduler-interface/lib/go/common"
 	"go.uber.org/zap"
-	"os"
-	"sort"
-	"time"
 
 	excel "github.com/xuri/excelize/v2"
 )
@@ -29,6 +30,8 @@ type NodeUtilizationMonitor struct {
 func NewUtilizationMonitor() *NodeUtilizationMonitor {
 	file := excel.NewFile()
 	file.NewSheet(migsheet)
+	file.NewSheet(memorysheet)
+	file.NewSheet(cpusheet)
 	file.NewSheet(deviationsheet)
 	file.SetCellValue(deviationsheet, "B1", "deviation")
 	return &NodeUtilizationMonitor{
@@ -92,11 +95,15 @@ func (m *NodeUtilizationMonitor) AddGlobalEventsTime(t uint64) {
 
 func (m *NodeUtilizationMonitor) Save() {
 	DeleteExistedFile(utilizationfiltpath)
+	DeleteExistedFile(memfilepath)
+	DeleteExistedFile(cpufilepath)
 	sort.Slice(m.GlobalEvent, func(i, j int) bool { return m.GlobalEvent[i] < m.GlobalEvent[j] })
 	for index, timestamp := range m.GlobalEvent {
 		placeNum := uint64(index + 2)
 		timestampCellName := fmt.Sprintf("%s%d", TimeStampLetter, placeNum)
 		log.Logger().Info("timestamp cell info", zap.String("timestampCellName", timestampCellName), zap.Uint64("timestamp", timestamp))
+		m.file.SetCellValue(cpufilepath, timestampCellName, timestamp)
+		m.file.SetCellValue(memfilepath, timestampCellName, timestamp)
 		m.file.SetCellValue(migsheet, timestampCellName, timestamp)
 		m.file.SetCellValue(deviationsheet, timestampCellName, timestamp)
 		nodesRes := make([]*resources.Resource, 0)
@@ -112,6 +119,10 @@ func (m *NodeUtilizationMonitor) Save() {
 			cellName := fmt.Sprintf("%s%d", idLetter, placeNum)
 			mig := int64(resources.MIG(utilization))
 			log.Logger().Info("mig", zap.String("celName", cellName), zap.Int64("mig", mig))
+			cpu := float64(int64(utilization.Resources[sicommon.CPU]))
+			mem := float64(int64(utilization.Resources[sicommon.Memory]))
+			m.file.SetCellValue(cpufilepath, cellName, cpu)
+			m.file.SetCellValue(memfilepath, cellName, mem)
 			m.file.SetCellValue(migsheet, cellName, mig)
 		}
 		average := resources.Average(nodesRes)
