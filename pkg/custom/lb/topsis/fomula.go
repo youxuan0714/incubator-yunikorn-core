@@ -49,6 +49,14 @@ func AMinus(q []float64) float64 {
 	return max
 }
 
+func APlusOfUsages(q []float64) float64 {
+	return AMinus(q)
+}
+
+func AMinusOfUsages(q []float64) float64 {
+	return APlus(q)
+}
+
 // This fomula only calculate one of MIG or deviation distance
 // For example, there are n MIGs and n A(+/-), this gomula would caculate
 // If develeoper would add a new objetive, developer

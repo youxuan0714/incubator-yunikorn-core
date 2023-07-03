@@ -51,6 +51,12 @@ func NewResource() *Resource {
 	return &Resource{Resources: make(map[string]Quantity)}
 }
 
+func GetCPUandMemoryUtilizations(meanUtilizationsOfClusterResources *Resource) (result []float64) {
+	result := make([]float64, 2)
+	result[0] = float64(int64(meanUtilizationsOfClusterResources.Resources[common.CPU]))
+	result[1] = float64(int64(meanUtilizationsOfClusterResources.Resources[common.Memory]))
+}
+
 func NewResourceFromProto(proto *si.Resource) *Resource {
 	out := NewResource()
 	if proto == nil {

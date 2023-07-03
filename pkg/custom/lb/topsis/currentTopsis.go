@@ -7,41 +7,48 @@ import (
 
 func CurrentTOPSIS(req *resources.Resource, nodes map[string]*node.SimpleNode) string {
 	MIGs := make([]float64, 0)
-	usages := make([]float64, 0)
+	CPUUtilizations := make([]float64, 0)
+	MemoryUtilizations := make([]float64, 0)
 	devs := make([]float64, 0)
 	nodesID := make([]string, 0)
-	for nodeID, n := range nodes {
+	for nodeID, targetNode := range nodes {
 		nodesID = append(nodesID, nodeID)
-		mig, usage := GetObjectives(req, n)
+		mig := GetMIG(req, targetNode)
+		usageOfResource := GetUsages(req, nodeID, nodes)
 		dev := GetDev(req, nodeID, nodes)
 		MIGs = append(MIGs, mig)
-		usages = append(usages, usage)
+		CPUUtilizations = append(CPUUtilizations, usageOfResource[0])
+		MemoryUtilization = append(MemoryUtilizations, usageOfResource[1])
 		devs = append(devs, dev)
 	}
 
 	// Normalize
+	NorCPUs := Normalized(CPUUtilizations)
+	NorMems := Normalized(MemoryUtilizations)
 	NorMIGs := Normalized(MIGs)
-	NorUsages := Normalized(usages)
-	//NorDevs := Normalized(devs)
+	NorDevs := Normalized(devs)
 
-	objectNames := []string{"usages", "MIG"}
+	objectNames := []string{"CPUUtilization", "MemoryUtilization", "MIG", "deviation"}
+	weightedCPUs := Weight(NorCPUs, objectNames)
+	weightedMems := Weight(NorMems, objectNames)
 	weightedMIGs := Weight(NorMIGs, objectNames)
-	weightedUsages := Weight(NorUsages, objectNames)
-	//weightedDevs := Weight(NorDevs, objectNames)
+	weightedDevs := Weight(NorDevs, objectNames)
 
 	// A+ and A-
+	APlustCPU := APlusOfUsages(weightedCPUs)
+	APlustMem := APlusOfUsages(weightedMems)
 	APlusMIG := APlus(weightedMIGs)
-	APlusUsages := APlus(weightedUsages)
-	//APlusDevs := APlus(weightedDevs)
+	APlusDevs := APlus(weightedDevs)
 
+	AMinusCPU := AMinusOfUsages(weightedCPUs)
+	AMinusMem := AMinusOfUsages(weightedMems)
 	AMinusMIG := AMinus(weightedMIGs)
-	AMinusUsages := AMinus(weightedUsages)
-	//AMinusDevs := AMinus(weightedDevs)
+	AMinusDevs := AMinus(weightedDevs)
 
 	// SM+ and SM-
-	weighted := [][]float64{weightedUsages, weightedMIGs}
-	APlusObjective := []float64{APlusUsages, APlusMIG}
-	AMinusObjective := []float64{AMinusUsages, AMinusMIG}
+	weighted := [][]float64{weightedCPUs, weightedMems, weightedMIGs, weightedDevs}
+	APlusObjective := []float64{APlustCPU, APlustMem, APlusMI, APlusDevs}
+	AMinusObjective := []float64{AMinusCPU, AMinusMem, AMinusMIG, AMinusDevs}
 	SMPlusObject := SM(weighted, APlusObjective)
 	SMMinusObject := SM(weighted, AMinusObjective)
 
@@ -52,10 +59,29 @@ func CurrentTOPSIS(req *resources.Resource, nodes map[string]*node.SimpleNode) s
 func GetObjectives(req *resources.Resource, n *node.SimpleNode) (float64, float64) {
 	// mig float64(resources.GetMIGFromNodeUtilization())
 	// usage resources.AverageUsage()
+	return GetMIG(req, n), GetNodeUsage(n)
+}
+
+func GetNodeUsage(n *node.SimpleNode) {
+	return resources.AverageUsage(n.Usage)
+}
+
+func GetMIG(req *resources.Resource, n *node.SimpleNode) {
 	change := resources.Sub(n.Capcity, resources.Sub(n.Available, req))
-	mig := float64(resources.GetMIGFromNodeUtilization(change))
-	usage := resources.AverageUsage(n.Usage)
-	return mig, usage
+	return float64(resources.GetMIGFromNodeUtilization(change))
+}
+
+func GetUsages(req *resources.Resource, assignNode string, nodes map[string]*node.SimpleNode) []float64 {
+	ns := make([]*resources.Resource, 0)
+	for id, n := range nodes {
+		res := n.Available
+		if id == assignNode {
+			res = resources.Sub(res, req)
+		}
+		ns = append(ns, resources.CalculateAbsUsedCapacity(n.Capcity, resources.Sub(n.Capcity, res)))
+	}
+	ave := resources.Average(ns)
+	return resources.GetCPUandMemoryUtilizations(ave)
 }
 
 func GetDev(eq *resources.Resource, assignNode string, nodes map[string]*node.SimpleNode) float64 {
