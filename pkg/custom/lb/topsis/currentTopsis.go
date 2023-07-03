@@ -18,7 +18,7 @@ func CurrentTOPSIS(req *resources.Resource, nodes map[string]*node.SimpleNode) s
 		dev := GetDev(req, nodeID, nodes)
 		MIGs = append(MIGs, mig)
 		CPUUtilizations = append(CPUUtilizations, usageOfResource[0])
-		MemoryUtilization = append(MemoryUtilizations, usageOfResource[1])
+		MemoryUtilizations = append(MemoryUtilizations, usageOfResource[1])
 		devs = append(devs, dev)
 	}
 
@@ -47,7 +47,7 @@ func CurrentTOPSIS(req *resources.Resource, nodes map[string]*node.SimpleNode) s
 
 	// SM+ and SM-
 	weighted := [][]float64{weightedCPUs, weightedMems, weightedMIGs, weightedDevs}
-	APlusObjective := []float64{APlustCPU, APlustMem, APlusMI, APlusDevs}
+	APlusObjective := []float64{APlustCPU, APlustMem, APlusMIG, APlusDevs}
 	AMinusObjective := []float64{AMinusCPU, AMinusMem, AMinusMIG, AMinusDevs}
 	SMPlusObject := SM(weighted, APlusObjective)
 	SMMinusObject := SM(weighted, AMinusObjective)
@@ -62,11 +62,11 @@ func GetObjectives(req *resources.Resource, n *node.SimpleNode) (float64, float6
 	return GetMIG(req, n), GetNodeUsage(n)
 }
 
-func GetNodeUsage(n *node.SimpleNode) {
+func GetNodeUsage(n *node.SimpleNode) float64 {
 	return resources.AverageUsage(n.Usage)
 }
 
-func GetMIG(req *resources.Resource, n *node.SimpleNode) {
+func GetMIG(req *resources.Resource, n *node.SimpleNode) float64 {
 	change := resources.Sub(n.Capcity, resources.Sub(n.Available, req))
 	return float64(resources.GetMIGFromNodeUtilization(change))
 }
