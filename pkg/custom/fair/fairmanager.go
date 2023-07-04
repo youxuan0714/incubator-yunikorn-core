@@ -30,6 +30,7 @@ func NewFairManager() *FairManager {
 	}
 }
 
+// Add the names of users in the config to the fairmanager
 func (f *FairManager) ParseUsersInPartitionConfig(conf configs.PartitionConfig) {
 	records := f.GetTenants()
 	users := customutil.ParseUsersInPartitionConfig(conf)
@@ -38,6 +39,7 @@ func (f *FairManager) ParseUsersInPartitionConfig(conf configs.PartitionConfig) 
 	}
 }
 
+// If there is a new tenant's name in the new submitted application, add the username to the fairmanager
 func (f *FairManager) ParseUserInApp(input *objects.Application) {
 	appID, user, _ := customutil.ParseApp(input)
 	f.GetTenants().AddUser(user)

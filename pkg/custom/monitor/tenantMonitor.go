@@ -49,6 +49,7 @@ func NewFairnessMonitor() *FairnessMonitor {
 }
 
 // Add application referrence when there is new application
+// If there is a new tenant, set the tenant with a new cell name
 func (m *FairnessMonitor) RecordUnScheduledApp(app *objects.Application) {
 	if _, ok := m.UnRunningApps[app.ApplicationID]; !ok {
 		m.UnRunningApps[app.ApplicationID] = app

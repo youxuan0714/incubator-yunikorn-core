@@ -35,7 +35,10 @@ func (u *UserResourceManager) AddUser(name string) {
 func (u *UserResourceManager) GetMinResourceUser(apps map[string]*apps.AppsHeap) string {
 	if u.priority.Len() == 0 {
 		log.Logger().Warn("userheap should not be empty when getting min")
+		return ""
 	}
+
+	// return the user with min resource if this user has unscheduled apps
 	bk := make([]*users.Score, 0)
 	var s *users.Score
 	for u.priority.Len() > 0 {
@@ -65,13 +68,6 @@ func (u *UserResourceManager) UpdateUser(user string, info *resources.Resource) 
 	}
 
 	s := heap.Pop(u.priority).(*users.Score)
-	/*
-		if user != s.GetUser() {
-			heap.Push(u.priority, s)
-			return errors.New(fmt.Sprintf("score is %s, info is %s", s.GetUser(), user))
-		}
-	*/
-
 	s.AddWeight(int64(resources.MasterResource(info)))
 	// log.Logger().Info("wieght", zap.String("user", s.GetUser()), zap.Int64("weight", s.GetWeight()))
 	heap.Push(u.priority, s)
