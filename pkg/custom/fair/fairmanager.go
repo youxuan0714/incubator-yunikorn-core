@@ -11,7 +11,7 @@ type FairManager struct {
 	unscheduledApps map[string]*apps.AppsHeap
 	scheduledApps   map[string]bool
 
-	nodesID         map[string]*resouces.Resource
+	nodesID         map[string]*resources.Resource
 	clusterResource *resources.Resource
 }
 

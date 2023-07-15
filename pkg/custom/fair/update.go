@@ -4,13 +4,15 @@ import (
 	"container/heap"
 
 	"github.com/apache/yunikorn-core/pkg/common/resources"
+	"github.com/apache/yunikorn-core/pkg/custom/fair/urm/apps"
+	"github.com/apache/yunikorn-core/pkg/custom/util"
 	"github.com/apache/yunikorn-core/pkg/log"
 	"github.com/apache/yunikorn-core/pkg/scheduler/objects"
 	"go.uber.org/zap"
 )
 
 func (f *FairManager) UpdateScheduledApp(input *objects.Application) {
-	appID, user, res := customutil.ParseApp(input)
+	appID, user, res := util.ParseApp(input)
 	f.scheduledApps[appID] = true
 
 	if h, ok := f.unscheduledApps[user]; !ok {
@@ -37,15 +39,15 @@ func (f *FairManager) UpdateScheduledApp(input *objects.Application) {
 	f.GetTenants().UpdateUser(user, res)
 }
 
-func (f *FairManager) AddNode(nodeID string, capicity *resrouce.Resource) {
+func (f *FairManager) AddNode(nodeID string, capicity *resources.Resource) {
 	tmp := f.clusterResource.Clone()
 	if cap, ok := f.nodesID[nodeID]; ok {
-		if !resources.StrictlyGreaterThanOrEquals(cap, capacity) {
+		if !resources.StrictlyGreaterThanOrEquals(cap, capicity) {
 			tmp = resources.Sub(tmp, cap)
-			tmp = resources.Add(tmp, capacity)
+			tmp = resources.Add(tmp, capicity)
 		}
 	} else {
-		tmp = resource.Add(tmp, capacity)
+		tmp = resources.Add(tmp, capicity)
 	}
 	f.clusterResource = tmp
 }
