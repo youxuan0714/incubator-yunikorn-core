@@ -24,11 +24,11 @@ func (f *FairManager) ParseUsersInPartitionConfig(conf configs.PartitionConfig) 
 func (f *FairManager) ParseUserInApp(input *objects.Application) {
 	appID, user, _ := customutil.ParseApp(input)
 	f.GetTenants().AddUser(user)
-	if _, ok := f.apps[user]; !ok {
-		f.apps[user] = apps.NewAppsHeap()
+	if _, ok := f.unscheduledApps[user]; !ok {
+		f.unscheduledApps[user] = apps.NewAppsHeap()
 	}
 
-	h := f.apps[user]
+	h := f.unscheduledApps[user]
 	info := apps.NewAppInfo(appID, input.SubmissionTime)
 	heap.Push(h, info)
 	log.Logger().Info("Add application in fair manager", zap.String("user", user), zap.String("applicationID", appID), zap.Int("heap", h.Len()))

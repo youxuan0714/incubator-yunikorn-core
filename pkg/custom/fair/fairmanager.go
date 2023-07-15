@@ -8,8 +8,8 @@ import (
 
 type FairManager struct {
 	tenants         *urm.UserResourceManager
-	apps            map[string]*apps.AppsHeap
-	waitToDelete    map[string]bool
+	unscheduledApps map[string]*apps.AppsHeap
+	scheduledApps   map[string]bool
 
 	nodesID         map[string]*resouces.Resource
 	clusterResource *resources.Resource
@@ -22,8 +22,8 @@ func (f *FairManager) GetTenants() *urm.UserResourceManager {
 func NewFairManager() *FairManager {
 	return &FairManager{
 		tenants:         urm.NewURM(),
-		apps:            make(map[string]*apps.AppsHeap, 0),
-		waitToDelete:    make(map[string]bool, 0),
+		unscheduledApps: make(map[string]*apps.AppsHeap, 0),
+		scheduledApps:   make(map[string]bool, 0),
 		nodesID:         make(map[string]*resources.Resource, 0),
 		clusterResource: resources.NewResource()
 	}

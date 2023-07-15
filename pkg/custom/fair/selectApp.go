@@ -7,22 +7,20 @@ import (
 )
 
 func (f *FairManager) NextAppToSchedule() (bool, string, string) {
-	user := f.GetTenants().GetMinResourceUser(f.apps)
-	h, ok := f.apps[user]
+	user := f.GetTenants().GetMinResourceUser(f.unscheduledApps)
+	h, ok := f.unscheduledApps[user]
 	if !ok {
-		//log.Logger().Info("Non existed user apps", zap.String("user", user))
-		f.apps[user] = apps.NewAppsHeap()
+		f.unscheduledApps[user] = apps.NewAppsHeap()
 		return false, "", ""
 	}
 
 	if h.Len() == 0 {
-		//log.Logger().Info("User does not has apps", zap.String("user", user))
 		return false, "", ""
 	}
 
 	target := heap.Pop(h).(*apps.AppInfo)
-	if _, exist := f.waitToDelete[target.ApplicationID]; exist {
-		delete(f.waitToDelete, target.ApplicationID)
+	if _, exist := f.scheduledApps[target.ApplicationID]; exist {
+		delete(f.scheduledApps, target.ApplicationID)
 		if h.Len() > 0 {
 			target = heap.Pop(h).(*apps.AppInfo)
 			heap.Push(h, target)
@@ -33,7 +31,5 @@ func (f *FairManager) NextAppToSchedule() (bool, string, string) {
 		heap.Push(h, target)
 	}
 
-	appID := target.ApplicationID
-	//log.Logger().Info("User has apps", zap.String("user", user), zap.String("appid", target.ApplicationID), zap.Int("heap", h.Len()))
-	return true, user, appID
+	return true, user, target.ApplicationID
 }

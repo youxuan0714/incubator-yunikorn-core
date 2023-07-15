@@ -11,21 +11,21 @@ import (
 
 func (f *FairManager) UpdateScheduledApp(input *objects.Application) {
 	appID, user, res := customutil.ParseApp(input)
-	f.waitToDelete[appID] = true
-	//log.Logger().Info("Update scheduled app", zap.String("app", appID), zap.String("user", user))
-	if h, ok := f.apps[user]; !ok {
+	f.scheduledApps[appID] = true
+
+	if h, ok := f.unscheduledApps[user]; !ok {
 		log.Logger().Error("Non existed app update", zap.String("app", appID), zap.String("user", user))
 	} else {
 		log.Logger().Info("Update scheduled app", zap.Int("heap", h.Len()))
 		bk := make([]*apps.AppInfo, 0)
-		for h.Len() > 0 || len(f.waitToDelete) > 0 {
+		for h.Len() > 0 || len(f.scheduledApps) > 0 {
 			target := heap.Pop(h).(*apps.AppInfo)
 			id := target.ApplicationID
-			if _, exist := f.waitToDelete[id]; !exist {
+			if _, exist := f.scheduledApps[id]; !exist {
 				log.Logger().Info("Delete app is not in the heap", zap.String("appid", id))
 				bk = append(bk, target)
 			} else {
-				delete(f.waitToDelete, id)
+				delete(f.scheduledApps, id)
 				log.Logger().Info("Delete app", zap.String("appid", id), zap.Int("heap", h.Len()))
 			}
 		}
