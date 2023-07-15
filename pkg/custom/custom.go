@@ -10,7 +10,6 @@ var GlobalFairManager *fair.FairManager
 var GlobalLBManager *lb.LBManager
 var GlobalFairnessMonitor *monitor.FairnessMonitor
 var GlobalNodeUtilizationMonitor *monitor.NodeUtilizationMonitor
-var GlobalPlanManager *plan.PlanManager
 
 func init() {
 	GlobalFairManager = fair.NewFairManager()
@@ -33,8 +32,4 @@ func GetFairMonitor() *monitor.FairnessMonitor {
 
 func GetNodeUtilizationMonitor() *monitor.NodeUtilizationMonitor {
 	return GlobalNodeUtilizationMonitor
-}
-
-func GetPlanManager() *plan.PlanManager {
-	return GlobalPlanManager
 }
