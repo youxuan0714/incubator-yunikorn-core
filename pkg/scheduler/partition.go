@@ -590,7 +590,7 @@ func (pc *PartitionContext) AddNode(node *objects.Node, existingAllocations []*o
 
 	custom.GetLBManager().AddNode(node)
 	custom.GetNodeUtilizationMonitor().AddNode(node)
-	custom.GetFairManager().AddNode(node.NodeID, node.GetCapacity)
+	custom.GetFairManager().AddNode(node.NodeID, node.GetCapacity())
 
 	// Add allocations that exist on the node when added
 	if len(existingAllocations) > 0 {
