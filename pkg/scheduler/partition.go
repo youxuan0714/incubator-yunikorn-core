@@ -590,6 +590,7 @@ func (pc *PartitionContext) AddNode(node *objects.Node, existingAllocations []*o
 
 	custom.GetLBManager().AddNode(node)
 	custom.GetNodeUtilizationMonitor().AddNode(node)
+	custom.GetFairManager().AddNode(node.NodeID, node.GetCapacity)
 
 	// Add allocations that exist on the node when added
 	if len(existingAllocations) > 0 {
@@ -660,6 +661,7 @@ func (pc *PartitionContext) removeNodeFromList(nodeID string) *objects.Node {
 	pc.Lock()
 	defer pc.Unlock()
 	node := pc.nodes.RemoveNode(nodeID)
+	custom.GetFairManager().RemoveNode(node.NodeID)
 	if node == nil {
 		log.Logger().Debug("node was not found, node already removed",
 			zap.String("nodeID", nodeID),
