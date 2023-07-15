@@ -5,7 +5,7 @@ import (
 	"github.com/apache/yunikorn-core/pkg/custom/lb/node"
 )
 
-func CurrentTOPSIS(req *resources.Resource, nodes map[string]*node.SimpleNode) string {
+func TOPSIS(req *resources.Resource, nodes map[string]*node.SimpleNode) string {
 	MIGs := make([]float64, 0)
 	CPUUtilizations := make([]float64, 0)
 	MemoryUtilizations := make([]float64, 0)

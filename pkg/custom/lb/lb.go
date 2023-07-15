@@ -47,7 +47,7 @@ func (lb *LBManager) CurrentSchedule(input *objects.Application) string {
 	if len(nodes) == 0 {
 		return ""
 	}
-	return topsis.CurrentTOPSIS(res, nodes)
+	return topsis.TOPSIS(res, nodes)
 }
 
 func (lb *LBManager) GetNodesSimpleNodes(request *resources.Resource) map[string]*customnode.SimpleNode {
