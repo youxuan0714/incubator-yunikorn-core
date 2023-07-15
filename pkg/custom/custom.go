@@ -4,7 +4,6 @@ import (
 	"github.com/apache/yunikorn-core/pkg/custom/fair"
 	"github.com/apache/yunikorn-core/pkg/custom/lb"
 	"github.com/apache/yunikorn-core/pkg/custom/monitor"
-	"github.com/apache/yunikorn-core/pkg/custom/plan"
 )
 
 var GlobalFairManager *fair.FairManager
