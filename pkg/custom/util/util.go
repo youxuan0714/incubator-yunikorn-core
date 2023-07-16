@@ -12,33 +12,34 @@ import (
 	"go.uber.org/zap"
 )
 
+const (
+	ResourceType        = []string{sicommon.CPU, sicommon.Memory}
+	ResourceRequestType = []string{sicommon.CPU, sicommon.Memory, sicommon.Duration}
+)
+
 // Parse the vcore and memory in node
 func ParseNode(n *objects.Node) (nodeID string, avialble *resources.Resource, cap *resources.Resource) {
 	nodeID = n.NodeID
 	avialble = resources.NewResource()
 	cap = resources.NewResource()
-	resType := []string{sicommon.CPU, sicommon.Memory}
 
 	res := n.GetAvailableResource().Resources
-	for _, targetType := range resType {
+	for _, targetType := range ResourceType {
 		avialble.Resources[targetType] = res[targetType]
 	}
 
 	res = n.GetCapacity().Resources
-	for _, targetType := range resType {
+	for _, targetType := range ResourceType {
 		cap.Resources[targetType] = res[targetType]
 	}
-
 	return
 }
 
-//
 func ParseApp(a *objects.Application) (appID string, username string, resResult *resources.Resource) {
 	appID = a.ApplicationID
 	username = a.GetUser().User
 	resResult = resources.NewResource()
-	resType := []string{sicommon.CPU, sicommon.Memory, sicommon.Duration}
-	for _, key := range resType {
+	for _, key := range ResourceRequestType {
 		if value, err := strconv.ParseInt(a.GetTag(key), 10, 64); err != nil {
 			log.Logger().Info("Resource parsing fail", zap.String("key", key), zap.String("error", err.Error()))
 		} else {
@@ -50,8 +51,7 @@ func ParseApp(a *objects.Application) (appID string, username string, resResult 
 
 func ParseAppWithoutDuration(a *objects.Application) *resources.Resource {
 	resResult := resources.NewResource()
-	resType := []string{sicommon.CPU, sicommon.Memory}
-	for _, key := range resType {
+	for _, key := range ResourceType {
 		if value, err := strconv.ParseInt(a.GetTag(key), 10, 64); err != nil {
 			log.Logger().Info("Resource parsing fail", zap.String("key", key), zap.String("error", err.Error()))
 		} else {

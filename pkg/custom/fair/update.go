@@ -19,17 +19,17 @@ func (f *FairManager) UpdateScheduledApp(input *objects.Application) {
 	if h, ok := f.unscheduledApps[user]; !ok {
 		log.Logger().Error("Non existed app update", zap.String("app", appID), zap.String("user", user))
 	} else {
-		log.Logger().Info("Update scheduled app", zap.Int("heap", h.Len()))
+		// log.Logger().Info("Update scheduled app", zap.Int("heap", h.Len()))
 		bk := make([]*apps.AppInfo, 0)
 		for h.Len() > 0 || len(f.scheduledApps) > 0 {
 			target := heap.Pop(h).(*apps.AppInfo)
 			id := target.ApplicationID
 			if _, exist := f.scheduledApps[id]; !exist {
-				log.Logger().Info("Delete app is not in the heap", zap.String("appid", id))
+				// log.Logger().Info("Delete app is not in the heap", zap.String("appid", id))
 				bk = append(bk, target)
 			} else {
 				delete(f.scheduledApps, id)
-				log.Logger().Info("Delete app", zap.String("appid", id), zap.Int("heap", h.Len()))
+				// log.Logger().Info("Delete app", zap.String("appid", id), zap.Int("heap", h.Len()))
 			}
 		}
 
@@ -37,7 +37,7 @@ func (f *FairManager) UpdateScheduledApp(input *objects.Application) {
 			heap.Push(h, element)
 		}
 	}
-	f.GetTenants().UpdateUser(user, res)
+	f.GetTenants().Allocate(user, appID, res)
 }
 
 func (f *FairManager) AddNode(nodeID string, capicity *resources.Resource) {
@@ -66,14 +66,13 @@ func (f *FairManager) AddRunningApp(appID string, user string, req *resources.Re
 	}
 }
 
-func (f *FairManager) RemoveRunningApp(appID string) {
-	if _, ok := f.runningApps[appID]; ok {
-		delete(f.runningApps, appID)
-	}
-}
-
 func (f *FairManager) AddCompletedApp(input *objects.Application) {
 	appID, user, _ := util.ParseApp(input)
+	if _, ok := f.runningApps[appID]; ok {
+		delete(f.runningApps, appID)
+		f.GetTenants().Release(user, appID)
+	}
+
 	res := util.ParseAppWithoutDuration(input)
 	if _, ok := f.completedApps[appID]; !ok {
 		f.completedApps[appID] = NewAppInfo(user, res)

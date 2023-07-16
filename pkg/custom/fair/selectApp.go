@@ -7,7 +7,7 @@ import (
 )
 
 func (f *FairManager) NextAppToSchedule() (bool, string, string) {
-	user := f.GetTenants().GetMinResourceUser(f.unscheduledApps)
+	user := f.GetTenants().GetMinResourceUser(f.unscheduledApps, f.clusterResource)
 	h, ok := f.unscheduledApps[user]
 	if !ok {
 		f.unscheduledApps[user] = apps.NewAppsHeap()

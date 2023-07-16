@@ -2,13 +2,13 @@ package users
 
 type Score struct {
 	user   string
-	weight int64
+	weight float64
 }
 
-func NewScore(name string, num int64) *Score {
+func NewScore(name string, num float64) *Score {
 	weight := num
-	if weight < 0 {
-		weight = 0
+	if weight < 0.0 {
+		weight = 0.0
 	}
 
 	return &Score{
@@ -23,8 +23,4 @@ func (s *Score) GetUser() string {
 
 func (s *Score) GetWeight() int64 {
 	return s.weight
-}
-
-func (s *Score) AddWeight(weight int64) {
-	s.weight += weight
 }

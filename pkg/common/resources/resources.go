@@ -30,6 +30,7 @@ import (
 
 	"github.com/apache/yunikorn-core/pkg/log"
 	"github.com/apache/yunikorn-scheduler-interface/lib/go/common"
+	sicommon "github.com/apache/yunikorn-scheduler-interface/lib/go/common"
 	"github.com/apache/yunikorn-scheduler-interface/lib/go/si"
 )
 
@@ -1076,4 +1077,22 @@ func power(value Quantity, p float64) Quantity {
 	}
 	// not wrapped normal case
 	return Quantity(result)
+}
+
+func ComputGlobalDominantResource(apps []*Resource, clusterResource *Resource) float64 {
+	result := 0.0
+	for _, app := range apps {
+		result += computDominantResource(app, clusterResource)
+	}
+	return result
+}
+
+func computDominantResource(app *Resource, clusterResource *Resource) float64 {
+	max := 0.0
+	for _, resName := range []string{sicommon.CPU, sicommon.Memory} {
+		if tmp := float64(int64(app.Resources[resName])) / float64(int64(clusterResource.Resources[resName])); tmp > max {
+			max = tmp
+		}
+	}
+	return max
 }

@@ -12,38 +12,38 @@ import (
 )
 
 type UserResourceManager struct {
-	existedUser map[string]*users.Score
+	existedUser map[string]*userApps
 	priority    *users.UsersHeap
 }
 
 func NewURM() *UserResourceManager {
 	return &UserResourceManager{
-		existedUser: make(map[string]*users.Score, 0),
+		existedUser: make(map[string]*userApps, 0),
 		priority:    users.NewUserHeap(),
 	}
 }
 
 func (u *UserResourceManager) AddUser(name string) {
 	if _, ok := u.existedUser[name]; !ok {
-		s := users.NewScore(name, 0)
-		u.existedUser[name] = s
-		heap.Push(u.priority, s)
-		log.Logger().Info("Add user", zap.Int("user heap length", u.priority.Len()), zap.Int("user map length", len(u.existedUser)))
+		u.existedUser[name] = NewUserApps()
 	}
 }
 
-func (u *UserResourceManager) GetMinResourceUser(apps map[string]*apps.AppsHeap) string {
+func (u *UserResourceManager) GetMinResourceUser(apps map[string]*apps.AppsHeap, clusterResource *resources.Resource) string {
+	clusterRes := clusterResource.Clone()
+	for userName, apps := range u.existedUser {
+		heap.Push(u.priority, users.NewScore(userName, apps.ComputeGlobalDominantResource(clusterRes)))
+	}
+
 	if u.priority.Len() == 0 {
 		log.Logger().Warn("userheap should not be empty when getting min")
 		return ""
 	}
 
 	// return the user with min resource if this user has unscheduled apps
-	bk := make([]*users.Score, 0)
 	var s *users.Score
 	for u.priority.Len() > 0 {
 		tmp := heap.Pop(u.priority).(*users.Score)
-		bk = append(bk, tmp)
 		if requests, ok := apps[tmp.GetUser()]; ok {
 			if requests.Len() > 0 {
 				s = tmp
@@ -52,24 +52,18 @@ func (u *UserResourceManager) GetMinResourceUser(apps map[string]*apps.AppsHeap)
 		}
 	}
 
-	for _, element := range bk {
-		heap.Push(u.priority, element)
-	}
-
 	if s == nil {
 		return ""
 	}
 	return s.GetUser()
 }
 
-func (u *UserResourceManager) UpdateUser(user string, info *resources.Resource) error {
-	if u.priority.Len() == 0 {
-		return errors.New("userheap should not be empty when update min")
-	}
+func (u *UserResourceManager) Allocate(user string, appID string, res *resources.Resource) {
+	u.existedUser.RunApp(appID, res)
+}
 
-	s := heap.Pop(u.priority).(*users.Score)
-	s.AddWeight(int64(resources.MasterResource(info)))
-	// log.Logger().Info("wieght", zap.String("user", s.GetUser()), zap.Int64("weight", s.GetWeight()))
-	heap.Push(u.priority, s)
-	return nil
+func (u *UserResourceManager) Release(user string, appID string) {
+	if apps, ok := u.existedUser[user]; ok {
+		apps.CompeleteApp(appID)
+	}
 }
