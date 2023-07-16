@@ -13,8 +13,8 @@ import (
 )
 
 const (
-	ResourceType        = []string{sicommon.CPU, sicommon.Memory}
-	ResourceRequestType = []string{sicommon.CPU, sicommon.Memory, sicommon.Duration}
+	ResourceType        = [2]string{sicommon.CPU, sicommon.Memory}
+	ResourceRequestType = [3]string{sicommon.CPU, sicommon.Memory, sicommon.Duration}
 )
 
 // Parse the vcore and memory in node

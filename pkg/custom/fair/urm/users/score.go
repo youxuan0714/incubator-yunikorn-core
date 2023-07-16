@@ -21,6 +21,6 @@ func (s *Score) GetUser() string {
 	return s.user
 }
 
-func (s *Score) GetWeight() int64 {
+func (s *Score) GetWeight() float64 {
 	return s.weight
 }
