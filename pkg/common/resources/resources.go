@@ -1081,6 +1081,10 @@ func power(value Quantity, p float64) Quantity {
 
 func ComputGlobalDominantResource(apps []*Resource, clusterResource *Resource) float64 {
 	result := 0.0
+	if len(apps) == 0 {
+		return result
+	}
+
 	for _, app := range apps {
 		result += computDominantResource(app, clusterResource)
 	}

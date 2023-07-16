@@ -34,6 +34,10 @@ func (f *FairManager) GetTenants() *urm.UserResourceManager {
 	return f.tenants
 }
 
+func (f *FairManager) GetDRFs() map[string]float64 {
+	return f.GetTenants().DRF
+}
+
 func NewFairManager() *FairManager {
 	return &FairManager{
 		tenants:         urm.NewURM(),

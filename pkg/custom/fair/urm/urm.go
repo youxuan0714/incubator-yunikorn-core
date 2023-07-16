@@ -12,6 +12,7 @@ import (
 type UserResourceManager struct {
 	existedUser map[string]*userApps
 	priority    *users.UsersHeap
+	DRF         map[string]float64
 }
 
 func NewURM() *UserResourceManager {
@@ -30,7 +31,9 @@ func (u *UserResourceManager) AddUser(name string) {
 func (u *UserResourceManager) GetMinResourceUser(apps map[string]*apps.AppsHeap, clusterResource *resources.Resource) string {
 	clusterRes := clusterResource.Clone()
 	for userName, apps := range u.existedUser {
-		heap.Push(u.priority, users.NewScore(userName, apps.ComputeGlobalDominantResource(clusterRes)))
+		drf := apps.ComputeGlobalDominantResource(clusterRes)
+		u.DRF[userName] = drf
+		heap.Push(u.priority, users.NewScore(userName, drf))
 	}
 
 	if u.priority.Len() == 0 {
