@@ -20,13 +20,13 @@ type FairManager struct {
 
 type appInfo struct {
 	user string
-	res   *resources.Resource
+	res  *resources.Resource
 }
 
 func NewAppInfo(user string, res *resources.Resource) appInfo {
 	return appInfo{
 		user: id,
-		res: res.Clone()
+		res:  res.Clone(),
 	}
 }
 
