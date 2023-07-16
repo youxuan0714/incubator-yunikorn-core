@@ -9,46 +9,46 @@ func TOPSIS(req *resources.Resource, nodes map[string]*node.SimpleNode) string {
 	MIGs := make([]float64, 0)
 	CPUUtilizations := make([]float64, 0)
 	MemoryUtilizations := make([]float64, 0)
-	devs := make([]float64, 0)
+	//devs := make([]float64, 0)
 	nodesID := make([]string, 0)
 	for nodeID, targetNode := range nodes {
 		nodesID = append(nodesID, nodeID)
 		mig := GetMIG(req, targetNode)
 		usageOfResource := GetUsages(req, nodeID, nodes)
-		dev := GetDev(req, nodeID, nodes)
+		//dev := GetDev(req, nodeID, nodes)
 		MIGs = append(MIGs, mig)
 		CPUUtilizations = append(CPUUtilizations, usageOfResource[0])
 		MemoryUtilizations = append(MemoryUtilizations, usageOfResource[1])
-		devs = append(devs, dev)
+		//devs = append(devs, dev)
 	}
 
 	// Normalize
 	NorCPUs := Normalized(CPUUtilizations)
 	NorMems := Normalized(MemoryUtilizations)
 	NorMIGs := Normalized(MIGs)
-	NorDevs := Normalized(devs)
+	//NorDevs := Normalized(devs)
 
-	objectNames := []string{"CPUUtilization", "MemoryUtilization", "MIG", "deviation"}
+	objectNames := []string{"CPUUtilization", "MemoryUtilization", "MIG"}
 	weightedCPUs := Weight(NorCPUs, objectNames)
 	weightedMems := Weight(NorMems, objectNames)
 	weightedMIGs := Weight(NorMIGs, objectNames)
-	weightedDevs := Weight(NorDevs, objectNames)
+	//weightedDevs := Weight(NorDevs, objectNames)
 
 	// A+ and A-
 	APlustCPU := APlusOfUsages(weightedCPUs)
 	APlustMem := APlusOfUsages(weightedMems)
 	APlusMIG := APlus(weightedMIGs)
-	APlusDevs := APlus(weightedDevs)
+	//APlusDevs := APlus(weightedDevs)
 
 	AMinusCPU := AMinusOfUsages(weightedCPUs)
 	AMinusMem := AMinusOfUsages(weightedMems)
 	AMinusMIG := AMinus(weightedMIGs)
-	AMinusDevs := AMinus(weightedDevs)
+	//AMinusDevs := AMinus(weightedDevs)
 
 	// SM+ and SM-
-	weighted := [][]float64{weightedCPUs, weightedMems, weightedMIGs, weightedDevs}
-	APlusObjective := []float64{APlustCPU, APlustMem, APlusMIG, APlusDevs}
-	AMinusObjective := []float64{AMinusCPU, AMinusMem, AMinusMIG, AMinusDevs}
+	weighted := [][]float64{weightedCPUs, weightedMems, weightedMIGs}
+	APlusObjective := []float64{APlustCPU, APlustMem, APlusMIG}
+	AMinusObjective := []float64{AMinusCPU, AMinusMem, AMinusMIG}
 	SMPlusObject := SM(weighted, APlusObjective)
 	SMMinusObject := SM(weighted, AMinusObjective)
 
