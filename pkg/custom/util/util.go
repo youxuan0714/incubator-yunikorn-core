@@ -12,7 +12,7 @@ import (
 	"go.uber.org/zap"
 )
 
-const (
+var (
 	ResourceType        = [2]string{sicommon.CPU, sicommon.Memory}
 	ResourceRequestType = [3]string{sicommon.CPU, sicommon.Memory, sicommon.Duration}
 )
