@@ -74,7 +74,7 @@ func (f *FairManager) RemoveRunningApp(appID string) {
 
 func (f *FairManager) AddCompletedApp(input *objects.Application) {
 	appID, user, _ := util.ParseApp(input)
-	res := resources.ParseAppWithoutDuration(input)
+	res := util.ParseAppWithoutDuration(input)
 	if _, ok := f.completedApps[appID]; !ok {
 		f.completedApps[appID] = NewAppInfo(user, res)
 	}
