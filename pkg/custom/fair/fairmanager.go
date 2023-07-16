@@ -4,6 +4,7 @@ import (
 	"github.com/apache/yunikorn-core/pkg/common/resources"
 	"github.com/apache/yunikorn-core/pkg/custom/fair/urm"
 	"github.com/apache/yunikorn-core/pkg/custom/fair/urm/apps"
+	"sync"
 )
 
 type FairManager struct {
@@ -16,6 +17,8 @@ type FairManager struct {
 
 	nodesID         map[string]*resources.Resource
 	clusterResource *resources.Resource
+
+	sync.RWMutex
 }
 
 type appInfo struct {

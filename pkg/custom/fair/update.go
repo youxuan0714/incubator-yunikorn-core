@@ -41,6 +41,8 @@ func (f *FairManager) UpdateScheduledApp(input *objects.Application) {
 }
 
 func (f *FairManager) AddNode(nodeID string, capicity *resources.Resource) {
+	f.Lock()
+	defer f.Unlock()
 	tmp := f.clusterResource.Clone()
 	if cap, ok := f.nodesID[nodeID]; ok {
 		if !resources.StrictlyGreaterThanOrEquals(cap, capicity) {
@@ -54,6 +56,8 @@ func (f *FairManager) AddNode(nodeID string, capicity *resources.Resource) {
 }
 
 func (f *FairManager) RemoveNode(nodeID string) {
+	f.Lock()
+	defer f.Unlock()
 	if cap, ok := f.nodesID[nodeID]; ok {
 		f.clusterResource = resources.Sub(f.clusterResource, cap)
 		delete(f.nodesID, nodeID)
@@ -61,12 +65,16 @@ func (f *FairManager) RemoveNode(nodeID string) {
 }
 
 func (f *FairManager) AddRunningApp(appID string, user string, req *resources.Resource) {
+	f.Lock()
+	defer f.Unlock()
 	if _, ok := f.runningApps[appID]; !ok {
 		f.runningApps[appID] = NewAppInfo(user, req.Clone())
 	}
 }
 
 func (f *FairManager) AddCompletedApp(input *objects.Application) {
+	f.Lock()
+	defer f.Unlock()
 	appID, user, _ := util.ParseApp(input)
 	if _, ok := f.runningApps[appID]; ok {
 		delete(f.runningApps, appID)
