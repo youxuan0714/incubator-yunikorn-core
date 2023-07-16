@@ -12,8 +12,7 @@ type FairManager struct {
 	unscheduledApps map[string]*apps.AppsHeap
 	scheduledApps   map[string]bool
 
-	runningApps   map[string]appInfo
-	completedApps map[string]appInfo
+	runningApps map[string]appInfo
 
 	nodesID         map[string]*resources.Resource
 	clusterResource *resources.Resource
@@ -47,7 +46,6 @@ func NewFairManager() *FairManager {
 		unscheduledApps: make(map[string]*apps.AppsHeap, 0),
 		scheduledApps:   make(map[string]bool, 0),
 		runningApps:     make(map[string]appInfo, 0),
-		completedApps:   make(map[string]appInfo, 0),
 		nodesID:         make(map[string]*resources.Resource, 0),
 		clusterResource: resources.NewResource(),
 	}

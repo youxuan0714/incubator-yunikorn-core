@@ -7,6 +7,7 @@ import (
 	"github.com/apache/yunikorn-core/pkg/custom/fair/urm/apps"
 	"github.com/apache/yunikorn-core/pkg/custom/fair/urm/users"
 	"github.com/apache/yunikorn-core/pkg/log"
+	"go.uber.org/zap"
 )
 
 type UserResourceManager struct {
@@ -31,8 +32,10 @@ func (u *UserResourceManager) AddUser(name string) {
 
 func (u *UserResourceManager) GetMinResourceUser(apps map[string]*apps.AppsHeap, clusterResource *resources.Resource) string {
 	clusterRes := clusterResource.Clone()
+	log.Logger().Info("GetMinResourceUser")
 	for userName, apps := range u.existedUser {
 		drf := apps.ComputeGlobalDominantResource(clusterRes)
+		log.Logger().Info("DRF", zap.String("user", userName), zap.float64("drf", drf))
 		u.DRF[userName] = drf
 		heap.Push(u.priority, users.NewScore(userName, drf))
 	}

@@ -80,9 +80,4 @@ func (f *FairManager) AddCompletedApp(input *objects.Application) {
 		delete(f.runningApps, appID)
 		f.GetTenants().Release(user, appID)
 	}
-
-	res := util.ParseAppWithoutDuration(input)
-	if _, ok := f.completedApps[appID]; !ok {
-		f.completedApps[appID] = NewAppInfo(user, res)
-	}
 }
