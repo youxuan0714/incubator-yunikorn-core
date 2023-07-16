@@ -35,7 +35,7 @@ func (u *UserResourceManager) GetMinResourceUser(apps map[string]*apps.AppsHeap,
 	log.Logger().Info("GetMinResourceUser")
 	for userName, apps := range u.existedUser {
 		drf := apps.ComputeGlobalDominantResource(clusterRes)
-		log.Logger().Info("DRF", zap.String("user", userName), zap.float64("drf", drf))
+		log.Logger().Info("DRF", zap.String("user", userName), zap.Float64("drf", drf))
 		u.DRF[userName] = drf
 		heap.Push(u.priority, users.NewScore(userName, drf))
 	}
