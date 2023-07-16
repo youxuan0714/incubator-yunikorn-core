@@ -13,6 +13,7 @@ import (
 
 func (f *FairManager) UpdateScheduledApp(input *objects.Application) {
 	appID, user, res := util.ParseApp(input)
+	f.AddRunningApp(appID, user, res)
 	f.scheduledApps[appID] = true
 
 	if h, ok := f.unscheduledApps[user]; !ok {
@@ -56,5 +57,25 @@ func (f *FairManager) RemoveNode(nodeID string) {
 	if cap, ok := f.nodesID[nodeID]; ok {
 		f.clusterResource = resources.Sub(f.clusterResource, cap)
 		delete(f.nodesID, nodeID)
+	}
+}
+
+func (f *FairManager) AddRunningApp(appID string, user string, req *resources.Resource) {
+	if _, ok := f.runningApps[appID]; !ok {
+		f.runningApps[appID] = NewAppInfo(user, req.Clone())
+	}
+}
+
+func (f *FairManager) RemoveRunningApp(appID string) {
+	if _, ok := f.runningApps[appID]; ok {
+		delete(f.runningApps, appID)
+	}
+}
+
+func (f *FairManager) AddCompletedApp(input *objects.Application) {
+	appID, user, _ := util.ParseApp(input)
+	res := ParseAppWithoutDuration(input)
+	if _, ok := f.completedApps[appID]; !ok {
+		f.completedApps[appID] = NewAppInfo(user, res)
 	}
 }

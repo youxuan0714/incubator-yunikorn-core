@@ -11,8 +11,23 @@ type FairManager struct {
 	unscheduledApps map[string]*apps.AppsHeap
 	scheduledApps   map[string]bool
 
+	runningApps   map[string]appInfo
+	completedApps map[string]appInfo
+
 	nodesID         map[string]*resources.Resource
 	clusterResource *resources.Resource
+}
+
+type appInfo struct {
+	user string
+	res   *resources.Resource
+}
+
+func NewAppInfo(user string, res *resources.Resource) appInfo {
+	return appInfo{
+		user: id,
+		res: res.Clone()
+	}
 }
 
 func (f *FairManager) GetTenants() *urm.UserResourceManager {
@@ -24,6 +39,8 @@ func NewFairManager() *FairManager {
 		tenants:         urm.NewURM(),
 		unscheduledApps: make(map[string]*apps.AppsHeap, 0),
 		scheduledApps:   make(map[string]bool, 0),
+		runningApps:     make(map[string]appInfo, 0),
+		completedApps:   make(map[string]appInfo, 0),
 		nodesID:         make(map[string]*resources.Resource, 0),
 		clusterResource: resources.NewResource(),
 	}
