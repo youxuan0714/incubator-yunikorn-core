@@ -19,6 +19,7 @@ func NewURM() *UserResourceManager {
 	return &UserResourceManager{
 		existedUser: make(map[string]*userApps, 0),
 		priority:    users.NewUserHeap(),
+		DRF:         make(map[string]float64),
 	}
 }
 
