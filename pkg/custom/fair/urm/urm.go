@@ -2,13 +2,11 @@ package urm
 
 import (
 	"container/heap"
-	"errors"
 
 	"github.com/apache/yunikorn-core/pkg/common/resources"
 	"github.com/apache/yunikorn-core/pkg/custom/fair/urm/apps"
 	"github.com/apache/yunikorn-core/pkg/custom/fair/urm/users"
 	"github.com/apache/yunikorn-core/pkg/log"
-	"go.uber.org/zap"
 )
 
 type UserResourceManager struct {
@@ -59,7 +57,7 @@ func (u *UserResourceManager) GetMinResourceUser(apps map[string]*apps.AppsHeap,
 }
 
 func (u *UserResourceManager) Allocate(user string, appID string, res *resources.Resource) {
-	u.existedUser.RunApp(appID, res)
+	u.existedUser[user].RunApp(appID, res)
 }
 
 func (u *UserResourceManager) Release(user string, appID string) {

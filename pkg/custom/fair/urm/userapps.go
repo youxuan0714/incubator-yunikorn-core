@@ -2,7 +2,6 @@ package urm
 
 import (
 	"github.com/apache/yunikorn-core/pkg/common/resources"
-	"github.com/apache/yunikorn-core/pkg/custom/util"
 )
 
 type userApps struct {
@@ -31,7 +30,7 @@ func (u *userApps) CompeleteApp(appID string) {
 
 func (u *userApps) ComputeGlobalDominantResource(clusterResource *resources.Resource) float64 {
 	apps := make([]*resources.Resource, 0)
-	for appID, app := range u.apps {
+	for _, app := range u.apps {
 		apps = append(apps, app.Clone())
 	}
 	return resources.ComputGlobalDominantResource(apps, clusterResource)
