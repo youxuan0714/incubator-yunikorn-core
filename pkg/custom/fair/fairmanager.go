@@ -25,7 +25,7 @@ type appInfo struct {
 
 func NewAppInfo(user string, res *resources.Resource) appInfo {
 	return appInfo{
-		user: id,
+		user: user,
 		res:  res.Clone(),
 	}
 }
