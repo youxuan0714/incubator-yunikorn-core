@@ -143,9 +143,9 @@ func (m *FairnessMonitor) Save() {
 	// Write timestamps in A2,A3,A4...
 	// If tenants has a related value, such as B3. When A3 is writed, B3 will be writed too.
 	sort.Slice(m.eventsTimestamps, func(i, j int) bool { return m.eventsTimestamps[i] < m.eventsTimestamps[j] })
-	currentMasterResource := make(map[string]uint64)
+	currentMasterResource := make(map[string]float64)
 	for username, _ := range m.MasterResourceOfTenants {
-		currentMasterResource[username] = uint64(0)
+		currentMasterResource[username] = float64(0)
 	}
 
 	log.Logger().Info("Save file", zap.Int("Number of eventsTimesstamps", len(m.eventsTimestamps)))
