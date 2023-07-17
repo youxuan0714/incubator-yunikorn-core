@@ -138,7 +138,7 @@ func (cc *ClusterContext) customCurrentschedule() bool {
 				customutil.GetFairManager().UpdateScheduledApp(app)
 				starttime := time.Now()
 				//customutil.GetFairMonitor().UpdateTheTenantMasterResource(starttime, app)
-				customutil.GetFairMonitor(startTime, app, customutil.GetFairManager().GetDRFs, customutil.GetFairManager().GetClusterResource())
+				customutil.GetFairMonitor(starttime, app, customutil.GetFairManager().GetDRFs, customutil.GetFairManager().GetClusterResource())
 				customutil.GetNodeUtilizationMonitor().Allocate(nodeID, starttime, res.Clone())
 				if alloc.GetResult() == objects.Replaced {
 					// communicate the removal to the RM
