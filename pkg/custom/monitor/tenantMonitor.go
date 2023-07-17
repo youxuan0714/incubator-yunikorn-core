@@ -164,7 +164,7 @@ func (m *FairnessMonitor) Save() {
 				log.Logger().Info("add master resource in tenants trace", zap.String("tenant", username), zap.Float64("new master resource", masterResource))
 			}
 			masterResource := currentMasterResource[username]
-			log.Logger().Info("master resource of specific timestamp", zap.Uint64("timestamp", timestamp), zap.String("tenant", username), zap.String("cellName", cellName), zap.Uint64("master resource", masterResource))
+			log.Logger().Info("master resource of specific timestamp", zap.Uint64("timestamp", timestamp), zap.String("tenant", username), zap.String("cellName", cellName), zap.Float64("master resource", masterResource))
 			m.file.SetCellValue(fairness, cellName, math.Log10(float64(masterResource)))
 		}
 	}
