@@ -86,7 +86,7 @@ func (m *FairnessMonitor) UpdateTheTenantMasterResource(currentTime time.Time, a
 
 	// events: person
 	user := app.GetUser().User
-	res := resources.ParseAppWithoutDuration(app)
+	res := util.ParseAppWithoutDuration(app)
 	masterResource := resources.ComputDominantResource(res.CLone(), clusterResource.Clone())
 	for userName, drf := range drfs() {
 		if _, ok := m.Infos[userName]; !ok {
@@ -230,7 +230,7 @@ func (m *MasterResourceInfos) AddInfo(a *AddMasterResourceInfo) {
 	m.timestamps[a.TimeStamp] = a.MasterResource
 }
 
-func (m *MasterResourceInfos) MasterResourceAtTime(timestamp uint64) (uint64, bool) {
+func (m *MasterResourceInfos) MasterResourceAtTime(timestamp uint64) (float64, bool) {
 	if value, ok := m.timestamps[timestamp]; !ok {
 		return 0, false
 	} else {
