@@ -10,14 +10,14 @@ import (
 	"time"
 
 	"github.com/apache/yunikorn-core/pkg/common/configs"
+	"github.com/apache/yunikorn-core/pkg/common/resources"
+	"github.com/apache/yunikorn-core/pkg/custom/util"
 	customutil "github.com/apache/yunikorn-core/pkg/custom/util"
 	"github.com/apache/yunikorn-core/pkg/log"
 	"github.com/apache/yunikorn-core/pkg/scheduler/objects"
 	sicommon "github.com/apache/yunikorn-scheduler-interface/lib/go/common"
 	excel "github.com/xuri/excelize/v2"
 	"go.uber.org/zap"
-	"github.com/apache/yunikorn-core/pkg/common/resources"
-	"github.com/apache/yunikorn-core/pkg/custom/util"
 )
 
 type FairnessMonitor struct {
@@ -223,7 +223,7 @@ type MasterResourceInfos struct {
 
 func NewMasterResourceInfos() *MasterResourceInfos {
 	return &MasterResourceInfos{
-		 : make(map[uint64]float64),
+		timestamps: make(map[uint64]float64),
 	}
 }
 
