@@ -80,9 +80,8 @@ func (m *FairnessMonitor) UpdateTheTenantMasterResource(currentTime time.Time, a
 		m.startTime = currentTime
 		m.First = true
 	}
-	duration := SubTimeAndTranslateToMiliSecond(currentTime, m.startTime)
 	// log.Logger().Info("Add duration to excel", zap.Uint64("duration", duration))
-	m.AddEventTimeStamp(duration)
+	m.AddEventTimeStamp(SubTimeAndTranslateToSeoncd(currentTime, m.startTime))
 
 	// events: person
 	user := app.GetUser().User
@@ -96,25 +95,15 @@ func (m *FairnessMonitor) UpdateTheTenantMasterResource(currentTime time.Time, a
 		if userName == user {
 			drf += masterResource
 		}
+		log.Logger().Info()
 		h.AddInfo(NewAddMasterResourceInfo(user, duration, drf))
 	}
-	// log.Logger().Info("fairness print", zap.Any("apps", app.ApplicationID), zap.Any("tenants", m.MasterResourceOfTenants))
+
 	m.count++
-	// log.Logger().Info("save file: tenant", zap.Uint64("count", m.count))
 	if m.count == appNum {
 		m.Save()
 	}
 	return
-}
-
-// Add master resource to specific tenant
-func (m *FairnessMonitor) AddMasterResourceToTenant(user string, masterResource uint64) {
-	// log.Logger().Warn("Update master resource who is not paresd in config, add it", zap.String("user", user), zap.Uint64("masterResource", masterResource))
-	if _, ok := m.MasterResourceOfTenants[user]; !ok {
-		m.MasterResourceOfTenants[user] = masterResource
-	} else {
-		m.MasterResourceOfTenants[user] += masterResource
-	}
 }
 
 // Analyze the partition config and get the tenants

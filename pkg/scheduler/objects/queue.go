@@ -1054,6 +1054,36 @@ func (sq *Queue) TryAllocate(iterator func() NodeIterator, getnode func(string) 
 	return nil
 }
 
+func (sq *Queue) TrySpecifiedApplicationAllocate(AppID string, iterator func() NodeIterator, getnode func(string) *Node) *Allocation {
+	if sq.IsLeafQueue() {
+		// get the headroom
+		headRoom := sq.getHeadRoom()
+		// process the apps (filters out app without pending requests)
+		for _, app := range sq.sortApplications(true) {
+			if app.AppID != AppID {
+				continue
+			}
+			alloc := app.tryAllocate(headRoom, iterator, getnode)
+			if alloc != nil {
+				log.Logger().Debug("allocation found on queue",
+					zap.String("queueName", sq.QueuePath),
+					zap.String("appID", app.ApplicationID),
+					zap.String("allocation", alloc.String()))
+				return alloc
+			}
+		}
+	} else {
+		// process the child queues (filters out queues without pending requests)
+		for _, child := range sq.sortQueues() {
+			alloc := child.TryAllocate(iterator, getnode)
+			if alloc != nil {
+				return alloc
+			}
+		}
+	}
+	return nil
+}
+
 // TryPlaceholderAllocate tries to replace a placeholders with a real allocation.
 // This only gets called if there is a pending request on this queue or its children.
 // This is a depth first algorithm: descend into the depth of the queue tree first. Child queues are sorted based on

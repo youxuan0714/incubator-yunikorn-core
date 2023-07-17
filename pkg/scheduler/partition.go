@@ -848,6 +848,19 @@ func (pc *PartitionContext) tryAllocate() *objects.Allocation {
 	return nil
 }
 
+func (pc *PartitionContext) trySpecifiedAppAllocate(appId string) *objects.Allocation {
+	if !resources.StrictlyGreaterThanZero(pc.root.GetPendingResource()) {
+		// nothing to do just return
+		return nil
+	}
+	// try allocating from the root down
+	alloc := pc.root.TrySpecifiedApplicationAllocate(appID, pc.GetNodeIterator, pc.GetNode)
+	if alloc != nil {
+		return pc.allocate(alloc)
+	}
+	return nil
+}
+
 // Try process reservations for the partition
 // Lock free call this all locks are taken when needed in called functions
 func (pc *PartitionContext) tryReservedAllocate() *objects.Allocation {
