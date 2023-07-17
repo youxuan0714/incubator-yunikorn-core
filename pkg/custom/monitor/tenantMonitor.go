@@ -87,7 +87,7 @@ func (m *FairnessMonitor) UpdateTheTenantMasterResource(currentTime time.Time, a
 	// events: person
 	user := app.GetUser().User
 	res := util.ParseAppWithoutDuration(app)
-	masterResource := resources.ComputDominantResource(res.CLone(), clusterResource.Clone())
+	masterResource := resources.ComputDominantResource(res.Clone(), clusterResource.Clone())
 	for userName, drf := range drfs() {
 		if _, ok := m.Infos[userName]; !ok {
 			m.Infos[userName] = NewMasterResourceInfos()
@@ -160,7 +160,7 @@ func (m *FairnessMonitor) Save() {
 			idLetter := m.id[username]
 			cellName = fmt.Sprintf("%s%d", idLetter, placeNum)
 			if masterResource, existed := events.MasterResourceAtTime(timestamp); existed {
-				currentMasterResource[username] += masterResource
+				currentMasterResource[username] = masterResource
 				log.Logger().Info("add master resource in tenants trace", zap.String("tenant", username), zap.Uint64("new master resource", masterResource))
 			}
 			masterResource := currentMasterResource[username]
