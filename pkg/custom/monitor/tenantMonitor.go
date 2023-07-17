@@ -81,7 +81,8 @@ func (m *FairnessMonitor) UpdateTheTenantMasterResource(currentTime time.Time, a
 		m.First = true
 	}
 	// log.Logger().Info("Add duration to excel", zap.Uint64("duration", duration))
-	m.AddEventTimeStamp(SubTimeAndTranslateToSeoncd(currentTime, m.startTime))
+	duration := SubTimeAndTranslateToSeoncd(currentTime, m.startTime)
+	m.AddEventTimeStamp(duration)
 
 	// events: person
 	user := app.GetUser().User
@@ -95,7 +96,6 @@ func (m *FairnessMonitor) UpdateTheTenantMasterResource(currentTime time.Time, a
 		if userName == user {
 			drf += masterResource
 		}
-		log.Logger().Info()
 		h.AddInfo(NewAddMasterResourceInfo(user, duration, drf))
 	}
 
