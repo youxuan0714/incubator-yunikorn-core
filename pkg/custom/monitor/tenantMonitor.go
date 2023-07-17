@@ -92,10 +92,10 @@ func (m *FairnessMonitor) UpdateTheTenantMasterResource(currentTime time.Time, a
 		if _, ok := m.Infos[userName]; !ok {
 			m.Infos[userName] = NewMasterResourceInfos()
 		}
-		h := m.Infos[user]
 		if userName == user {
 			drf += masterResource
 		}
+		h := m.Infos[userName]
 		h.AddInfo(NewAddMasterResourceInfo(user, duration, drf))
 	}
 
