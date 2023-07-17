@@ -41,7 +41,7 @@ func (f *FairManager) GetDRFs() map[string]float64 {
 }
 
 func (f *FairManager) GetClusterResource() *resources.Resource {
-	return f.clusterResource.CLone()
+	return f.clusterResource.Clone()
 }
 
 func NewFairManager() *FairManager {
