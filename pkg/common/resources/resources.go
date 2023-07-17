@@ -1086,12 +1086,12 @@ func ComputGlobalDominantResource(apps []*Resource, clusterResource *Resource) f
 	}
 
 	for _, app := range apps {
-		result += computDominantResource(app, clusterResource)
+		result += ComputDominantResource(app, clusterResource)
 	}
 	return result
 }
 
-func computDominantResource(app *Resource, clusterResource *Resource) float64 {
+func ComputDominantResource(app *Resource, clusterResource *Resource) float64 {
 	max := 0.0
 	for _, resName := range []string{sicommon.CPU, sicommon.Memory} {
 		if tmp := float64(int64(app.Resources[resName])) / float64(int64(clusterResource.Resources[resName])); tmp > max {

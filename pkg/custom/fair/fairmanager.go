@@ -40,6 +40,10 @@ func (f *FairManager) GetDRFs() map[string]float64 {
 	return f.GetTenants().DRF
 }
 
+func (f *FairManager) GetClusterResource() *resources.Resource {
+	return f.clusterResource.CLone()
+}
+
 func NewFairManager() *FairManager {
 	return &FairManager{
 		tenants:         urm.NewURM(),

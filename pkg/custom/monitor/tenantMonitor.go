@@ -16,6 +16,8 @@ import (
 	sicommon "github.com/apache/yunikorn-scheduler-interface/lib/go/common"
 	excel "github.com/xuri/excelize/v2"
 	"go.uber.org/zap"
+	"github.com/apache/yunikorn-core/pkg/common/resources"
+	"github.com/apache/yunikorn-core/pkg/custom/util"
 )
 
 type FairnessMonitor struct {
@@ -66,15 +68,13 @@ func (m *FairnessMonitor) RecordUnScheduledApp(app *objects.Application) {
 }
 
 // this function would be called when application is in running status
-func (m *FairnessMonitor) UpdateTheTenantMasterResource(currentTime time.Time, app *objects.Application) {
+func (m *FairnessMonitor) UpdateTheTenantMasterResource(currentTime time.Time, app *objects.Application, drfs func() map[string]float64, clusterResource *resources.Resource) {
 	appID := app.ApplicationID
 	if _, ok := m.UnRunningApps[appID]; !ok {
 		// log.Logger().Info("fairness unrecord app", zap.String("app", appID))
 		return
 	}
 
-	user := app.GetUser().User
-	masterResource := CalculateMasterResourceOfApplication(app)
 	// events: global
 	if !m.First {
 		m.startTime = currentTime
@@ -85,13 +85,20 @@ func (m *FairnessMonitor) UpdateTheTenantMasterResource(currentTime time.Time, a
 	m.AddEventTimeStamp(duration)
 
 	// events: person
-	if _, ok := m.Infos[user]; !ok {
-		m.Infos[user] = NewMasterResourceInfos()
+	user := app.GetUser().User
+	appID, user, _ := util.ParseApp(input)
+	res := ParseAppWithoutDuration(input)
+	masterResource := resources.ComputDominantResource(res.CLone(), clusterResource.Clone())
+	for userName, drf := range drfs() {
+		if _, ok := m.Infos[userName]; !ok {
+			m.Infos[userName] = NewMasterResourceInfos()
+		}
+		h := m.Infos[user]
+		if userName == user {
+			drf += masterResource
+		}
+		h.AddInfo(NewAddMasterResourceInfo(user, duration, drf))
 	}
-	h := m.Infos[user]
-	h.AddInfo(NewAddMasterResourceInfo(user, duration, masterResource))
-	// stream
-	m.AddMasterResourceToTenant(user, masterResource)
 	// log.Logger().Info("fairness print", zap.Any("apps", app.ApplicationID), zap.Any("tenants", m.MasterResourceOfTenants))
 	m.count++
 	// log.Logger().Info("save file: tenant", zap.Uint64("count", m.count))
@@ -199,10 +206,10 @@ func CalculateMasterResourceOfApplication(app *objects.Application) uint64 {
 type AddMasterResourceInfo struct {
 	TenantID       string
 	TimeStamp      uint64
-	MasterResource uint64
+	MasterResource float64
 }
 
-func NewAddMasterResourceInfo(id string, d, masterResource uint64) *AddMasterResourceInfo {
+func NewAddMasterResourceInfo(id string, d, masterResource float64) *AddMasterResourceInfo {
 	return &AddMasterResourceInfo{
 		TenantID:       id,
 		TimeStamp:      d,
@@ -211,21 +218,17 @@ func NewAddMasterResourceInfo(id string, d, masterResource uint64) *AddMasterRes
 }
 
 type MasterResourceInfos struct {
-	timestamps map[uint64]uint64
+	timestamps map[uint64]float64
 }
 
 func NewMasterResourceInfos() *MasterResourceInfos {
 	return &MasterResourceInfos{
-		timestamps: make(map[uint64]uint64),
+		 : make(map[uint64]float64),
 	}
 }
 
 func (m *MasterResourceInfos) AddInfo(a *AddMasterResourceInfo) {
-	if _, ok := m.timestamps[a.TimeStamp]; !ok {
-		m.timestamps[a.TimeStamp] = a.MasterResource
-	} else {
-		m.timestamps[a.TimeStamp] += a.MasterResource
-	}
+	m.timestamps[a.TimeStamp] = a.MasterResource
 }
 
 func (m *MasterResourceInfos) MasterResourceAtTime(timestamp uint64) (uint64, bool) {
