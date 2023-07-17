@@ -167,11 +167,10 @@ func (cc *ClusterContext) fiarScheduleWithRecord() bool {
 		schedulingStart := time.Now()
 		scheduled, _, tenantAppID := customutil.GetFairManager().NextAppToSchedule()
 		if app := psc.GetApplication(tenantAppID); scheduled && app != nil {
-			if alloc := psc.trySpecifiedAppAllocate(app.ApplicartionID); alloc != nil {
+			if alloc := psc.trySpecifiedAppAllocate(app.ApplicationID); alloc != nil {
 				metrics.GetSchedulerMetrics().ObserveSchedulingLatency(schedulingStart)
-				starttime := time.Now()
 				_, _, res := util.ParseApp(app)
-				customutil.GetFairMonitor().UpdateTheTenantMasterResource(starttime, app, customutil.GetFairManager().GetDRFs, customutil.GetFairManager().GetClusterResource())
+				customutil.GetFairMonitor().UpdateTheTenantMasterResource(schedulingStart, app, customutil.GetFairManager().GetDRFs, customutil.GetFairManager().GetClusterResource())
 				customutil.GetNodeUtilizationMonitor().Allocate(alloc.GetNodeID(), schedulingStart, res.Clone())
 				if alloc.GetResult() == objects.Replaced {
 					// communicate the removal to the RM
@@ -206,7 +205,7 @@ func (cc *ClusterContext) scheduleWithRecord() bool {
 			_, _, res := util.ParseApp(app)
 
 			//customutil.GetFairMonitor().UpdateTheTenantMasterResource(schedulingStart, app)
-			customutil.GetFairMonitor().UpdateTheTenantMasterResource(starttime, app, customutil.GetFairManager().GetDRFs, customutil.GetFairManager().GetClusterResource())
+			customutil.GetFairMonitor().UpdateTheTenantMasterResource(schedulingStart, app, customutil.GetFairManager().GetDRFs, customutil.GetFairManager().GetClusterResource())
 			customutil.GetNodeUtilizationMonitor().Allocate(alloc.GetNodeID(), schedulingStart, res.Clone())
 			if alloc.GetResult() == objects.Replaced {
 				// communicate the removal to the RM

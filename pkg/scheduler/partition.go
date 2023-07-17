@@ -854,7 +854,7 @@ func (pc *PartitionContext) trySpecifiedAppAllocate(appId string) *objects.Alloc
 		return nil
 	}
 	// try allocating from the root down
-	alloc := pc.root.TrySpecifiedApplicationAllocate(appID, pc.GetNodeIterator, pc.GetNode)
+	alloc := pc.root.TrySpecifiedApplicationAllocate(appId, pc.GetNodeIterator, pc.GetNode)
 	if alloc != nil {
 		return pc.allocate(alloc)
 	}
