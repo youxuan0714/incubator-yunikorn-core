@@ -1060,7 +1060,7 @@ func (sq *Queue) TrySpecifiedApplicationAllocate(AppID string, iterator func() N
 		headRoom := sq.getHeadRoom()
 		// process the apps (filters out app without pending requests)
 		for _, app := range sq.sortApplications(true) {
-			if app.AppID != AppID {
+			if app.ApplicationID != AppID {
 				continue
 			}
 			alloc := app.tryAllocate(headRoom, iterator, getnode)
