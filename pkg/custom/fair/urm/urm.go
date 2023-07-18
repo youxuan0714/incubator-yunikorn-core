@@ -32,7 +32,6 @@ func (u *UserResourceManager) AddUser(name string) {
 
 func (u *UserResourceManager) GetMinResourceUser(apps map[string]*apps.AppsHeap, clusterResource *resources.Resource) string {
 	clusterRes := clusterResource.Clone()
-	log.Logger().Info("GetMinResourceUser")
 	for userName, apps := range u.existedUser {
 		drf := apps.ComputeGlobalDominantResource(clusterRes)
 		u.DRF[userName] = drf
