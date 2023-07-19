@@ -58,7 +58,7 @@ func (u *UserResourceManager) GetMinResourceUser(apps map[string]*apps.AppsHeap,
 	if s == nil {
 		return ""
 	}
-	log.Logger().Info("DRF", zap.String("user", s.GetUser()), zap.Any("users", u.DRF))
+	//log.Logger().Info("DRF", zap.String("user", s.GetUser()), zap.Any("users", u.DRF))
 	return s.GetUser()
 }
 

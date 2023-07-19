@@ -73,7 +73,7 @@ func (s *Scheduler) internalSchedule() {
 	for {
 		s.awaitActivity()
 		// customCurrentschedule, scheduleWithRecord, fiarScheduleWithRecord
-		if s.clusterContext.scheduleWithRecord() {
+		if s.clusterContext.customCurrentschedule() {
 			s.registerActivity()
 		}
 	}
