@@ -55,6 +55,10 @@ func (u *UserResourceManager) GetMinResourceUser(apps map[string]*apps.AppsHeap,
 		}
 	}
 
+	for u.priority.Len() > 0 {
+		heap.Pop(u.priority)
+	}
+
 	if s == nil {
 		return ""
 	}
