@@ -17,7 +17,7 @@ const (
 	utilizationfiltpath = "/tmp/utiliztion.xlsx"
 	tenantsfiltpath     = "/tmp/tenants.xlsx"
 	fairness            = "tenants"
-	appNum              = 400
+	appNum              = 300
 )
 
 var excelCol []string = []string{"B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"}
