@@ -168,6 +168,7 @@ func (cc *ClusterContext) scheduleWithRecord() bool {
 			metrics.GetSchedulerMetrics().ObserveSchedulingLatency(schedulingStart)
 			app := psc.GetApplication(alloc.GetApplicationID())
 			_, _, res := util.ParseApp(app)
+			customutil.GetFairManager().UpdateScheduledApp(app)
 			customutil.GetFairMonitor().UpdateTheTenantMasterResource(schedulingStart, app, customutil.GetFairManager().GetDRFs, customutil.GetFairManager().GetClusterResource())
 			customutil.GetNodeUtilizationMonitor().Allocate(alloc.GetNodeID(), schedulingStart, res.Clone())
 			if alloc.GetResult() == objects.Replaced {
