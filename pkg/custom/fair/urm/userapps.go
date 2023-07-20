@@ -20,6 +20,8 @@ func NewUserApps() *userApps {
 }
 
 func (u *userApps) RunApp(appID string, res *resources.Resource) {
+	u.Lock()
+	defer u.Unlock()
 	if val, ok := u.apps[appID]; ok {
 		if !resources.StrictlyGreaterThanOrEquals(val, res) {
 			u.apps[appID] = res.Clone()
@@ -30,16 +32,14 @@ func (u *userApps) RunApp(appID string, res *resources.Resource) {
 }
 
 func (u *userApps) CompeleteApp(appID string) {
+	u.Lock()
+	defer u.Unlock()
 	delete(u.apps, appID)
 }
 
 func (u *userApps) ComputeGlobalDominantResource(clusterResource *resources.Resource) float64 {
 	u.Lock()
 	defer u.Unlock()
-	for appID, _ := range u.CompletedApps {
-		delete(u.apps, appID)
-	}
-
 	apps := make([]*resources.Resource, 0)
 	for _, app := range u.apps {
 		apps = append(apps, app.Clone())
