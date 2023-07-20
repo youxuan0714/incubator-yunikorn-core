@@ -73,8 +73,8 @@ func (u *UserResourceManager) Allocate(user string, appID string, res *resources
 func (u *UserResourceManager) Release(user string, appID string) {
 	if apps, ok := u.existedUser[user]; ok {
 		apps.CompeleteApp(appID)
+		apps.CompletedApps[appID] = false
 	}
-	apps.CompletedApps[appID] = true
 }
 
 func (u *UserResourceManager) GetDRFs(cluster *resources.Resource) map[string]float64 {
