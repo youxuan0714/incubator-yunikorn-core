@@ -2,11 +2,14 @@ package urm
 
 import (
 	"github.com/apache/yunikorn-core/pkg/common/resources"
+	"sync"
 )
 
 type userApps struct {
 	apps          map[string]*resources.Resource
 	CompletedApps map[string]bool
+
+	sync.RWMutex
 }
 
 func NewUserApps() *userApps {
@@ -31,6 +34,8 @@ func (u *userApps) CompeleteApp(appID string) {
 }
 
 func (u *userApps) ComputeGlobalDominantResource(clusterResource *resources.Resource) float64 {
+	u.Lock()
+	defer u.Unlock()
 	for appID, _ := range u.CompletedApps {
 		delete(u.apps, appID)
 	}
