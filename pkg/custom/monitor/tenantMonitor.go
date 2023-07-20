@@ -90,18 +90,12 @@ func (m *FairnessMonitor) UpdateTheTenantMasterResource(currentTime time.Time, a
 	m.AddEventTimeStamp(duration)
 
 	// events: person
-	user := app.GetUser().User
-	res := util.ParseAppWithoutDuration(app)
-	masterResource := resources.ComputDominantResource(res.Clone(), clusterResource.Clone())
 	for userName, drf := range drfs() {
 		if _, ok := m.Infos[userName]; !ok {
 			m.Infos[userName] = NewMasterResourceInfos()
 		}
-		if userName == user {
-			drf += masterResource
-		}
 		h := m.Infos[userName]
-		h.AddInfo(NewAddMasterResourceInfo(user, duration, drf))
+		h.AddInfo(NewAddMasterResourceInfo(userName, duration, drf))
 	}
 
 	m.count++
