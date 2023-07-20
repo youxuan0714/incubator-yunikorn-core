@@ -114,7 +114,7 @@ func (m *FairnessMonitor) UpdateCompletedApp(results map[string]float64) {
 			m.Infos[userName] = NewMasterResourceInfos()
 		}
 		h := m.Infos[userName]
-		h.AddInfo(NewAddMasterResourceInfo(user, duration, drf))
+		h.AddInfo(NewAddMasterResourceInfo(userName, duration, drf))
 	}
 }
 

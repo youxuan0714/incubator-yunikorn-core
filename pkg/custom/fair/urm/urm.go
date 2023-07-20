@@ -7,7 +7,7 @@ import (
 	"github.com/apache/yunikorn-core/pkg/custom/fair/urm/apps"
 	"github.com/apache/yunikorn-core/pkg/custom/fair/urm/users"
 	"github.com/apache/yunikorn-core/pkg/log"
-	"go.uber.org/zap"
+	// "go.uber.org/zap"
 )
 
 type UserResourceManager struct {
@@ -78,8 +78,9 @@ func (u *UserResourceManager) Release(user string, appID string) {
 
 func (u *UserResourceManager) GetDRFs(cluster *resources.Resource) map[string]float64 {
 	result := make(map[string]float64, 0)
-	for userName, drf := range u.existedUser {
-		result[userName] = drf
+	for userName, apps := range u.existedUser {
+		drf := apps.ComputeGlobalDominantResource(clusterRes)
+		u.DRF[userName] = drf
 	}
 	return result
 }
