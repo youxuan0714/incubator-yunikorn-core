@@ -80,7 +80,7 @@ func (u *UserResourceManager) GetDRFs(cluster *resources.Resource) map[string]fl
 		if drf >= 1.0 {
 			log.Logger().Info("DRF", zap.String("user", userName), zap.Any("users", drf))
 		}
-		result = append(result, drf)
+		result[userName] = drf
 	}
 	return result
 }
