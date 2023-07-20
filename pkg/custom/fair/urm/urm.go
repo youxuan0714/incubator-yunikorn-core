@@ -81,6 +81,9 @@ func (u *UserResourceManager) GetDRFs(cluster *resources.Resource) map[string]fl
 	result := make(map[string]float64, 0)
 	for userName, apps := range u.existedUser {
 		drf := apps.ComputeGlobalDominantResource(cluster)
+		if drf >= 1 {
+			log.Logger().Info("DRF", zap.String("user", userName), zap.Any("users", u.DRF))
+		}
 		u.DRF[userName] = drf
 	}
 	return result
