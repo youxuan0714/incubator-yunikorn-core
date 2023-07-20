@@ -395,7 +395,6 @@ func (pc *PartitionContext) removeApplication(appID string) []*objects.Allocatio
 	if app == nil {
 		return nil
 	}
-	customutil.GetFairManager().AddCompletedApp(app)
 	// Remove all asks and thus all reservations and pending resources (queue included)
 	_ = app.RemoveAllocationAsk("")
 	// Remove app from queue
