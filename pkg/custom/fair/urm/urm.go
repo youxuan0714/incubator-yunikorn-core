@@ -7,7 +7,7 @@ import (
 	"github.com/apache/yunikorn-core/pkg/custom/fair/urm/apps"
 	"github.com/apache/yunikorn-core/pkg/custom/fair/urm/users"
 	"github.com/apache/yunikorn-core/pkg/log"
-	// "go.uber.org/zap"
+	"go.uber.org/zap"
 )
 
 type UserResourceManager struct {
