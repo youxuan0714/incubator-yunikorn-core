@@ -4,7 +4,6 @@ import (
 	"container/heap"
 
 	"github.com/apache/yunikorn-core/pkg/custom/fair/urm/apps"
-	"github.com/apache/yunikorn-core/pkg/log"
 )
 
 func (f *FairManager) NextAppToSchedule() (bool, string, string) {
