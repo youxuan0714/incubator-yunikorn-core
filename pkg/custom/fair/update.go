@@ -29,7 +29,7 @@ func (f *FairManager) UpdateScheduledApp(input *objects.Application) {
 				bk = append(bk, target)
 			} else {
 				delete(f.scheduledApps, id)
-				// log.Logger().Info("Delete app", zap.String("appid", id), zap.Int("heap", h.Len()))
+				log.Logger().Info("Delete app", zap.String("appid", id), zap.Int("heap", h.Len()))
 			}
 		}
 

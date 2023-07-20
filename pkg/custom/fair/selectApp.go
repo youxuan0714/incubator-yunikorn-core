@@ -5,13 +5,9 @@ import (
 
 	"github.com/apache/yunikorn-core/pkg/custom/fair/urm/apps"
 	"github.com/apache/yunikorn-core/pkg/log"
-	"go.uber.org/zap"
 )
 
 func (f *FairManager) NextAppToSchedule() (bool, string, string) {
-	for user, h := range f.unscheduledApps {
-		log.Logger().Info("apps", zap.String("user", user), zap.Int("len", h.Len()))
-	}
 	user := f.GetTenants().GetMinResourceUser(f.unscheduledApps, f.clusterResource)
 	h, ok := f.unscheduledApps[user]
 	if !ok {
