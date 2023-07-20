@@ -94,9 +94,7 @@ func (m *FairnessMonitor) ParseTenantsInPartitionConfig(conf configs.PartitionCo
 func (m *FairnessMonitor) UpdateTheTenantMasterResource(currentTime time.Time, app *objects.Application, drfs func() map[string]float64, clusterResource *resources.Resource) {
 	m.Lock()
 	defer m.Unlock()
-	appID := app.ApplicationID
-	if _, ok := m.UnRunningApps[appID]; !ok {
-		// log.Logger().Info("fairness unrecord app", zap.String("app", appID))
+	if _, ok := m.UnRunningApps[app.ApplicationID]; !ok {
 		return
 	}
 
@@ -104,7 +102,7 @@ func (m *FairnessMonitor) UpdateTheTenantMasterResource(currentTime time.Time, a
 		m.startTime = currentTime
 		m.First = true
 	}
-	// log.Logger().Info("Add duration to excel", zap.Uint64("duration", duration))
+
 	m.AddInfo(drfs(), SubTimeAndTranslateToSeoncd(currentTime, m.startTime))
 
 	m.count++
@@ -123,6 +121,9 @@ func (m *FairnessMonitor) AddInfo(results map[string]float64, duration uint64) {
 	for userName, drf := range results {
 		if _, ok := m.Infos[userName]; !ok {
 			m.Infos[userName] = NewMasterResourceInfos()
+		}
+		if drf > 1.0 {
+			log.Logger().Info("Wrong value", zap.Float64("drf", drf))
 		}
 		m.Infos[userName].AddInfo(NewAddMasterResourceInfo(userName, duration, drf))
 	}
