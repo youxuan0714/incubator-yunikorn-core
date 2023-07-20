@@ -34,15 +34,27 @@ func (u *userApps) RunApp(appID string, res *resources.Resource) {
 func (u *userApps) CompeleteApp(appID string) {
 	u.Lock()
 	defer u.Unlock()
-	delete(u.apps, appID)
+	if _, ok := u.apps[appID]; ok {
+		delete(u.apps, appID)
+		u.CompletedApps[appID] = true
+	} else {
+		u.CompletedApps[appID] = false
+	}
 }
 
 func (u *userApps) ComputeGlobalDominantResource(clusterResource *resources.Resource) float64 {
 	u.Lock()
 	defer u.Unlock()
+	for appID, del := range u.CompletedApps {
+		if !del {
+			if _, exist := u.apps[appID]; exist {
+				u.CompeleteApp(appID)
+			}
+		}
+	}
 	apps := make([]*resources.Resource, 0)
 	for _, app := range u.apps {
 		apps = append(apps, app.Clone())
 	}
-	return resources.ComputGlobalDominantResource(apps, clusterResource)
+	return resources.ComputGlobalDominantResource(apps, clusterResource.Clone())
 }

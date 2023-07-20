@@ -72,13 +72,12 @@ func (f *FairManager) AddRunningApp(appID string, user string, req *resources.Re
 	}
 }
 
-func (f *FairManager) AddCompletedApp(input *objects.Application) {
+func (f *FairManager) AddCompletedApp(appID string) {
 	f.Lock()
 	defer f.Unlock()
-	appID, user, _ := util.ParseApp(input)
-	if _, ok := f.runningApps[appID]; ok {
+	if info, ok := f.runningApps[appID]; ok {
 		delete(f.runningApps, appID)
-		f.GetTenants().Release(user, appID)
+		f.GetTenants().Release(info.user, appID)
 		f.GetDRFsWhenComplete(f.GetTenants().GetDRFs(f.clusterResource.Clone()))
 	}
 }
