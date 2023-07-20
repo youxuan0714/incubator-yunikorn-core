@@ -17,6 +17,8 @@ type FairManager struct {
 	nodesID         map[string]*resources.Resource
 	clusterResource *resources.Resource
 
+	GetDRFs func(results map[string]float64)
+
 	sync.RWMutex
 }
 

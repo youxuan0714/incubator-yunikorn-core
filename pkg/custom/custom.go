@@ -16,6 +16,7 @@ func init() {
 	GlobalLBManager = lb.NewLBManager()
 	GlobalFairnessMonitor = monitor.NewFairnessMonitor()
 	GlobalNodeUtilizationMonitor = monitor.NewUtilizationMonitor()
+	GlobalFairManager.GetDRFs = GlobalFairnessMonitor.UpdateCompletedApp
 }
 
 func GetFairManager() *fair.FairManager {

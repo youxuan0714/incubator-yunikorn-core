@@ -106,6 +106,18 @@ func (m *FairnessMonitor) UpdateTheTenantMasterResource(currentTime time.Time, a
 	return
 }
 
+func (m *FairnessMonitor) UpdateCompletedApp(results map[string]float64) {
+	currentTime := time.Now()
+	duration := SubTimeAndTranslateToSeoncd(currentTime, m.startTime)
+	for userName, drf := range results {
+		if _, ok := m.Infos[userName]; !ok {
+			m.Infos[userName] = NewMasterResourceInfos()
+		}
+		h := m.Infos[userName]
+		h.AddInfo(NewAddMasterResourceInfo(user, duration, drf))
+	}
+}
+
 // Analyze the partition config and get the tenants
 func (m *FairnessMonitor) ParseTenantsInPartitionConfig(conf configs.PartitionConfig) {
 	users := customutil.ParseUsersInPartitionConfig(conf)
