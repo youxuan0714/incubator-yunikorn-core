@@ -79,6 +79,6 @@ func (f *FairManager) AddCompletedApp(input *objects.Application) {
 	if _, ok := f.runningApps[appID]; ok {
 		delete(f.runningApps, appID)
 		f.GetTenants().Release(user, appID)
-		f.GetDRFs(f.GetTenants().GetDRFs())
+		f.GetDRFsWhenComplete(f.GetTenants().GetDRFs())
 	}
 }
