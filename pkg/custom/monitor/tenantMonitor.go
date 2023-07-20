@@ -94,6 +94,9 @@ func (m *FairnessMonitor) UpdateTheTenantMasterResource(currentTime time.Time, a
 			m.Infos[userName] = NewMasterResourceInfos()
 		}
 		h := m.Infos[userName]
+		if drf < 0 {
+			log.Logger("Nagative drf:Update", zap.String("user", userName), zap.Float64("drf", drf))
+		}
 		h.AddInfo(NewAddMasterResourceInfo(userName, duration, drf))
 	}
 
@@ -114,6 +117,9 @@ func (m *FairnessMonitor) UpdateCompletedApp(results map[string]float64) {
 			m.Infos[userName] = NewMasterResourceInfos()
 		}
 		h := m.Infos[userName]
+		if drf < 0 {
+			log.Logger("Nagative drf:Complete", zap.String("user", userName), zap.Float64("drf", drf))
+		}
 		h.AddInfo(NewAddMasterResourceInfo(userName, duration, drf))
 	}
 }
