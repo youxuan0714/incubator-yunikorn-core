@@ -102,7 +102,7 @@ func (m *FairnessMonitor) UpdateTheTenantMasterResource(currentTime time.Time, a
 		m.First = true
 	}
 
-	m.AddInfo(drfs(), SubTimeAndTranslateToSeoncd(currentTime, m.startTime))
+	m.AddInfo(drfs(), SubTimeAndTranslateToMiliSecond(currentTime, m.startTime))
 
 	m.count++
 	if m.count == appNum {
@@ -112,7 +112,7 @@ func (m *FairnessMonitor) UpdateTheTenantMasterResource(currentTime time.Time, a
 }
 
 func (m *FairnessMonitor) UpdateCompletedApp(results map[string]float64) {
-	m.AddInfo(results, SubTimeAndTranslateToSeoncd(time.Now(), m.startTime))
+	m.AddInfo(results, SubTimeAndTranslateToMiliSecond(time.Now(), m.startTime))
 }
 
 func (m *FairnessMonitor) AddInfo(results map[string]float64, duration uint64) {
