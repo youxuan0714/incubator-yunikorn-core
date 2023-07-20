@@ -13,14 +13,12 @@ import (
 type UserResourceManager struct {
 	existedUser map[string]*userApps
 	priority    *users.UsersHeap
-	DRF         map[string]float64
 }
 
 func NewURM() *UserResourceManager {
 	return &UserResourceManager{
 		existedUser: make(map[string]*userApps, 0),
 		priority:    users.NewUserHeap(),
-		DRF:         make(map[string]float64),
 	}
 }
 
@@ -34,7 +32,6 @@ func (u *UserResourceManager) GetMinResourceUser(apps map[string]*apps.AppsHeap,
 	clusterRes := clusterResource.Clone()
 	for userName, apps := range u.existedUser {
 		drf := apps.ComputeGlobalDominantResource(clusterRes)
-		u.DRF[userName] = drf
 		heap.Push(u.priority, users.NewScore(userName, drf))
 	}
 
@@ -62,7 +59,6 @@ func (u *UserResourceManager) GetMinResourceUser(apps map[string]*apps.AppsHeap,
 	if s == nil {
 		return ""
 	}
-	//log.Logger().Info("DRF", zap.String("user", s.GetUser()), zap.Any("users", u.DRF))
 	return s.GetUser()
 }
 
@@ -82,9 +78,9 @@ func (u *UserResourceManager) GetDRFs(cluster *resources.Resource) map[string]fl
 	for userName, apps := range u.existedUser {
 		drf := apps.ComputeGlobalDominantResource(cluster)
 		if drf >= 1.0 {
-			log.Logger().Info("DRF", zap.String("user", userName), zap.Any("users", u.DRF))
+			log.Logger().Info("DRF", zap.String("user", userName), zap.Any("users", drf))
 		}
-		u.DRF[userName] = drf
+		result = append(result, drf)
 	}
 	return result
 }

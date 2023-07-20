@@ -39,7 +39,7 @@ func (f *FairManager) GetTenants() *urm.UserResourceManager {
 }
 
 func (f *FairManager) GetDRFs() map[string]float64 {
-	return f.GetTenants().DRF
+	return f.GetTenants().GetDRFs(f.clusterResource.Clone())
 }
 
 func (f *FairManager) GetClusterResource() *resources.Resource {

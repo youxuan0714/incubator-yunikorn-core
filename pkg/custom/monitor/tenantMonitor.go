@@ -68,7 +68,6 @@ func (m *FairnessMonitor) RecordUnScheduledApp(app *objects.Application) {
 			// write tenant id in B1, C1, D1 ...
 			idLetter := m.id[username]
 			m.file.SetCellValue(fairness, fmt.Sprintf("%s%d", idLetter, 1), username)
-			// log.Logger().Info("dynamic set tenant ID", zap.String("tenant name", username), zap.String("tenant ID", idLetter), zap.String("next idLetter", excelCol[len(m.MasterResourceOfTenants)]))
 		}
 	}
 }
