@@ -18,6 +18,7 @@ import (
 	sicommon "github.com/apache/yunikorn-scheduler-interface/lib/go/common"
 	excel "github.com/xuri/excelize/v2"
 	"go.uber.org/zap"
+	"sync"
 )
 
 type FairnessMonitor struct {
@@ -31,6 +32,8 @@ type FairnessMonitor struct {
 	startTime               time.Time
 	count                   uint64
 	First                   bool
+
+	sync.RWMutex
 }
 
 // Initialize the tenant Monitor
@@ -69,6 +72,8 @@ func (m *FairnessMonitor) RecordUnScheduledApp(app *objects.Application) {
 
 // this function would be called when application is in running status
 func (m *FairnessMonitor) UpdateTheTenantMasterResource(currentTime time.Time, app *objects.Application, drfs func() map[string]float64, clusterResource *resources.Resource) {
+	m.Lock()
+	defer m.Unlock()
 	appID := app.ApplicationID
 	if _, ok := m.UnRunningApps[appID]; !ok {
 		// log.Logger().Info("fairness unrecord app", zap.String("app", appID))
@@ -107,6 +112,8 @@ func (m *FairnessMonitor) UpdateTheTenantMasterResource(currentTime time.Time, a
 }
 
 func (m *FairnessMonitor) UpdateCompletedApp(results map[string]float64) {
+	m.Lock()
+	defer m.Lock()
 	currentTime := time.Now()
 	duration := SubTimeAndTranslateToSeoncd(currentTime, m.startTime)
 	for userName, drf := range results {

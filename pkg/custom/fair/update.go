@@ -75,8 +75,6 @@ func (f *FairManager) AddRunningApp(appID string, user string, req *resources.Re
 }
 
 func (f *FairManager) AddCompletedApp(input *objects.Application) {
-	f.Lock()
-	defer f.Unlock()
 	appID, user, _ := util.ParseApp(input)
 	if _, ok := f.runningApps[appID]; ok {
 		delete(f.runningApps, appID)
