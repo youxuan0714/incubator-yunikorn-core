@@ -11,8 +11,7 @@ import (
 
 	"github.com/apache/yunikorn-core/pkg/common/configs"
 	"github.com/apache/yunikorn-core/pkg/common/resources"
-	"github.com/apache/yunikorn-core/pkg/custom/util"
-	// customutil "github.com/apache/yunikorn-core/pkg/custom/util"
+	customutil "github.com/apache/yunikorn-core/pkg/custom/util"
 	"github.com/apache/yunikorn-core/pkg/log"
 	"github.com/apache/yunikorn-core/pkg/scheduler/objects"
 	sicommon "github.com/apache/yunikorn-scheduler-interface/lib/go/common"
