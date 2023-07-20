@@ -12,6 +12,8 @@ import (
 )
 
 func (f *FairManager) UpdateScheduledApp(input *objects.Application) {
+	f.Lock()
+	defer f.Unlock()
 	appID, user, res := util.ParseApp(input)
 	f.AddRunningApp(appID, user, res)
 	f.scheduledApps[appID] = true

@@ -7,6 +7,8 @@ import (
 )
 
 func (f *FairManager) NextAppToSchedule() (bool, string, string) {
+	f.Lock()
+	defer f.Unlock()
 	user := f.GetTenants().GetMinResourceUser(f.unscheduledApps, f.clusterResource)
 	h, ok := f.unscheduledApps[user]
 	if !ok {
