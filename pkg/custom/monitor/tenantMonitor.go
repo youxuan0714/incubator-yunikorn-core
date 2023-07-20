@@ -1,7 +1,7 @@
 package monitor
 
 import (
-	"strconv"
+	// "strconv"
 
 	"fmt"
 	// "math"
@@ -14,7 +14,7 @@ import (
 	customutil "github.com/apache/yunikorn-core/pkg/custom/util"
 	"github.com/apache/yunikorn-core/pkg/log"
 	"github.com/apache/yunikorn-core/pkg/scheduler/objects"
-	sicommon "github.com/apache/yunikorn-scheduler-interface/lib/go/common"
+	// sicommon "github.com/apache/yunikorn-scheduler-interface/lib/go/common"
 	excel "github.com/xuri/excelize/v2"
 	"go.uber.org/zap"
 	"sync"
@@ -105,7 +105,7 @@ func (m *FairnessMonitor) UpdateTheTenantMasterResource(currentTime time.Time, a
 		m.First = true
 	}
 	// log.Logger().Info("Add duration to excel", zap.Uint64("duration", duration))
-	f.AddInfo(drfs(), SubTimeAndTranslateToSeoncd(currentTime, m.startTime))
+	m.AddInfo(drfs(), SubTimeAndTranslateToSeoncd(currentTime, m.startTime))
 
 	m.count++
 	if m.count == appNum {
@@ -135,7 +135,6 @@ func (m *FairnessMonitor) Save() {
 	// setting timestamps
 	// Write timestamps in A2,A3,A4...
 	// If tenants has a related value, such as B3. When A3 is writed, B3 will be writed too.
-	var cellName string
 	for index, timestamp := range m.eventsTimestamps {
 		// A is timestamp.
 		// B,C,D and so on is tenant master resource
@@ -164,9 +163,9 @@ func (m *FairnessMonitor) AddEventTimeStamp(timestamp uint64) {
 }
 
 type AddMasterResourceInfo struct {
-	TenantID       string
-	TimeStamp      uint64
-	MasterResource float64
+	TenantID  string
+	TimeStamp uint64
+	DRF       float64
 }
 
 func NewAddMasterResourceInfo(id string, duration uint64, drf float64) *AddMasterResourceInfo {
