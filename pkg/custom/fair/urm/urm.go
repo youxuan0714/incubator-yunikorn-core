@@ -79,7 +79,7 @@ func (u *UserResourceManager) Release(user string, appID string) {
 func (u *UserResourceManager) GetDRFs(cluster *resources.Resource) map[string]float64 {
 	result := make(map[string]float64, 0)
 	for userName, apps := range u.existedUser {
-		drf := apps.ComputeGlobalDominantResource(clusterRes)
+		drf := apps.ComputeGlobalDominantResource(cluster)
 		u.DRF[userName] = drf
 	}
 	return result
