@@ -20,6 +20,10 @@ import (
 	"sync"
 )
 
+const (
+	DATASTART = 2
+)
+
 type FairnessMonitor struct {
 	UnRunningApps           map[string]*objects.Application
 	MasterResourceOfTenants map[string]uint64
@@ -63,64 +67,9 @@ func (m *FairnessMonitor) RecordUnScheduledApp(app *objects.Application) {
 			m.MasterResourceOfTenants[username] = uint64(0)
 			// write tenant id in B1, C1, D1 ...
 			idLetter := m.id[username]
-			log.Logger().Info("dynamic set tenant ID", zap.String("tenant name", username), zap.String("tenant ID", idLetter), zap.String("next idLetter", excelCol[len(m.MasterResourceOfTenants)]))
 			m.file.SetCellValue(fairness, fmt.Sprintf("%s%d", idLetter, 1), username)
+			// log.Logger().Info("dynamic set tenant ID", zap.String("tenant name", username), zap.String("tenant ID", idLetter), zap.String("next idLetter", excelCol[len(m.MasterResourceOfTenants)]))
 		}
-	}
-}
-
-// this function would be called when application is in running status
-func (m *FairnessMonitor) UpdateTheTenantMasterResource(currentTime time.Time, app *objects.Application, drfs func() map[string]float64, clusterResource *resources.Resource) {
-	m.Lock()
-	defer m.Unlock()
-	appID := app.ApplicationID
-	if _, ok := m.UnRunningApps[appID]; !ok {
-		// log.Logger().Info("fairness unrecord app", zap.String("app", appID))
-		return
-	}
-
-	// events: global
-	if !m.First {
-		m.startTime = currentTime
-		m.First = true
-	}
-	// log.Logger().Info("Add duration to excel", zap.Uint64("duration", duration))
-	duration := SubTimeAndTranslateToSeoncd(currentTime, m.startTime)
-	m.AddEventTimeStamp(duration)
-
-	// events: person
-	for userName, drf := range drfs() {
-		if _, ok := m.Infos[userName]; !ok {
-			m.Infos[userName] = NewMasterResourceInfos()
-		}
-		h := m.Infos[userName]
-		if drf >= 1 {
-			log.Logger().Info("Nagative drf:Update", zap.String("user", userName), zap.Float64("drf", drf))
-		}
-		h.AddInfo(NewAddMasterResourceInfo(userName, duration, drf))
-	}
-
-	m.count++
-	if m.count == appNum {
-		m.Save()
-	}
-	return
-}
-
-func (m *FairnessMonitor) UpdateCompletedApp(results map[string]float64) {
-	m.Lock()
-	defer m.Lock()
-	currentTime := time.Now()
-	duration := SubTimeAndTranslateToSeoncd(currentTime, m.startTime)
-	for userName, drf := range results {
-		if _, ok := m.Infos[userName]; !ok {
-			m.Infos[userName] = NewMasterResourceInfos()
-		}
-		h := m.Infos[userName]
-		if drf >= 1.0 {
-			log.Logger().Info("Nagative drf:Complete", zap.String("user", userName), zap.Float64("drf", drf))
-		}
-		h.AddInfo(NewAddMasterResourceInfo(userName, duration, drf))
 	}
 }
 
@@ -136,43 +85,66 @@ func (m *FairnessMonitor) ParseTenantsInPartitionConfig(conf configs.PartitionCo
 			m.MasterResourceOfTenants[userNameInConfig] = uint64(0)
 			// write tenant id in B1, C1, D1 ...
 			idLetter := m.id[userNameInConfig]
-			// log.Logger().Info("Set tenant ID", zap.String("tenant ID", idLetter), zap.String("next idLetter", excelCol[len(m.MasterResourceOfTenants)]))
 			m.file.SetCellValue(fairness, fmt.Sprintf("%s%d", idLetter, 1), userNameInConfig)
 		}
 	}
 }
 
+// this function would be called when application is in running status
+func (m *FairnessMonitor) UpdateTheTenantMasterResource(currentTime time.Time, app *objects.Application, drfs func() map[string]float64, clusterResource *resources.Resource) {
+	m.Lock()
+	defer m.Unlock()
+	appID := app.ApplicationID
+	if _, ok := m.UnRunningApps[appID]; !ok {
+		// log.Logger().Info("fairness unrecord app", zap.String("app", appID))
+		return
+	}
+
+	if !m.First {
+		m.startTime = currentTime
+		m.First = true
+	}
+	// log.Logger().Info("Add duration to excel", zap.Uint64("duration", duration))
+	f.AddInfo(drfs(), SubTimeAndTranslateToSeoncd(currentTime, m.startTime))
+
+	m.count++
+	if m.count == appNum {
+		m.Save()
+	}
+	return
+}
+
+func (m *FairnessMonitor) UpdateCompletedApp(results map[string]float64) {
+	m.AddInfo(results, SubTimeAndTranslateToSeoncd(time.Now(), m.startTime))
+}
+
+func (m *FairnessMonitor) AddInfo(results map[string]float64, duration uint64) {
+	m.AddEventTimeStamp(duration)
+	for userName, drf := range results {
+		if _, ok := m.Infos[userName]; !ok {
+			m.Infos[userName] = NewMasterResourceInfos()
+		}
+		m.Infos[userName].AddInfo(NewAddMasterResourceInfo(userName, duration, drf))
+	}
+}
+
 // Save excel file
 func (m *FairnessMonitor) Save() {
-	var cellName string
 	DeleteExistedFile(tenantsfiltpath)
+	sort.Slice(m.eventsTimestamps, func(i, j int) bool { return m.eventsTimestamps[i] < m.eventsTimestamps[j] })
 	// setting timestamps
 	// Write timestamps in A2,A3,A4...
 	// If tenants has a related value, such as B3. When A3 is writed, B3 will be writed too.
-	sort.Slice(m.eventsTimestamps, func(i, j int) bool { return m.eventsTimestamps[i] < m.eventsTimestamps[j] })
-	currentMasterResource := make(map[string]float64)
-	for username, _ := range m.MasterResourceOfTenants {
-		currentMasterResource[username] = float64(0)
-	}
-
-	log.Logger().Info("Save file", zap.Int("Number of eventsTimesstamps", len(m.eventsTimestamps)))
+	var cellName string
 	for index, timestamp := range m.eventsTimestamps {
 		// A is timestamp.
 		// B,C,D and so on is tenant master resource
-		placeNum := uint64(index + 2)
-		cellName = fmt.Sprintf("%s%d", TimeStampLetter, placeNum)
-		log.Logger().Info("specific timestamp", zap.String("cellName", cellName), zap.Uint64("timestamp", timestamp))
-		m.file.SetCellValue(fairness, cellName, timestamp)
+		placeNum := uint64(index + DATASTART)
+		m.file.SetCellValue(fairness, fmt.Sprintf("%s%d", TimeStampLetter, placeNum), timestamp)
 		for username, events := range m.Infos {
-			idLetter := m.id[username]
-			cellName = fmt.Sprintf("%s%d", idLetter, placeNum)
-			if masterResource, existed := events.MasterResourceAtTime(timestamp); existed {
-				currentMasterResource[username] = masterResource
-				log.Logger().Info("add master resource in tenants trace", zap.String("tenant", username), zap.Float64("new master resource", masterResource))
+			if drf, existed := events.MasterResourceAtTime(timestamp); existed {
+				m.file.SetCellValue(fairness, fmt.Sprintf("%s%d", m.id[username], placeNum), drf)
 			}
-			masterResource := currentMasterResource[username]
-			log.Logger().Info("master resource of specific timestamp", zap.Uint64("timestamp", timestamp), zap.String("tenant", username), zap.String("cellName", cellName), zap.Float64("master resource", masterResource))
-			m.file.SetCellValue(fairness, cellName, float64(masterResource))
 		}
 	}
 	_ = os.Remove(tenantsfiltpath)
@@ -191,35 +163,17 @@ func (m *FairnessMonitor) AddEventTimeStamp(timestamp uint64) {
 	m.eventsTimestamps = append(m.eventsTimestamps, timestamp)
 }
 
-// Calulate master resource of a application
-func CalculateMasterResourceOfApplication(app *objects.Application) uint64 {
-	var duration, cpu, memory uint64
-	duration, err := strconv.ParseUint(app.GetTag(sicommon.Duration), 10, 64)
-	if err != nil {
-		log.Logger().Warn("tenant monitor fail parsing duration", zap.Any("err message", err))
-	}
-	cpu, err = strconv.ParseUint(app.GetTag(sicommon.CPU), 10, 64)
-	if err != nil {
-		log.Logger().Warn("tenant monitor fail parsing cpu", zap.Any("err message", err))
-	}
-	memory, err = strconv.ParseUint(app.GetTag(sicommon.Memory), 10, 64)
-	if err != nil {
-		log.Logger().Warn("tenant monitor fail parsing memory", zap.Any("err message", err))
-	}
-	return duration * cpu * memory
-}
-
 type AddMasterResourceInfo struct {
 	TenantID       string
 	TimeStamp      uint64
 	MasterResource float64
 }
 
-func NewAddMasterResourceInfo(id string, d uint64, masterResource float64) *AddMasterResourceInfo {
+func NewAddMasterResourceInfo(id string, duration uint64, drf float64) *AddMasterResourceInfo {
 	return &AddMasterResourceInfo{
-		TenantID:       id,
-		TimeStamp:      d,
-		MasterResource: masterResource,
+		TenantID:  id,
+		TimeStamp: duration,
+		DRF:       drf,
 	}
 }
 
@@ -234,7 +188,7 @@ func NewMasterResourceInfos() *MasterResourceInfos {
 }
 
 func (m *MasterResourceInfos) AddInfo(a *AddMasterResourceInfo) {
-	m.timestamps[a.TimeStamp] = a.MasterResource
+	m.timestamps[a.TimeStamp] = a.DRF
 }
 
 func (m *MasterResourceInfos) MasterResourceAtTime(timestamp uint64) (float64, bool) {
