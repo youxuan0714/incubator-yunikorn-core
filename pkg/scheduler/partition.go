@@ -804,7 +804,6 @@ func (pc *PartitionContext) removeNodeAllocations(node *objects.Node) ([]*object
 				zap.String("nodeID", node.NodeID))
 			continue
 		}
-		customutil.GetFairManager().AddCompletedApp(app.ApplicationID)
 		if err := app.GetQueue().DecAllocatedResource(alloc.GetAllocatedResource()); err != nil {
 			log.Logger().Warn("failed to release resources from queue",
 				zap.String("appID", alloc.GetApplicationID()),
@@ -1292,6 +1291,7 @@ func (pc *PartitionContext) removeAllocation(release *si.AllocationRelease) ([]*
 	appID := release.ApplicationID
 	uuid := release.GetUUID()
 	app := pc.getApplication(appID)
+	customutil.GetFairManager().AddCompletedApp(appID)
 	// no app nothing to do everything should already be clean
 	if app == nil {
 		log.Logger().Info("Application not found while releasing allocation",
@@ -1501,7 +1501,7 @@ func (pc *PartitionContext) moveTerminatedApp(appID string) {
 		return
 	}
 
-	// customutil.GetFairManager().AddCompletedApp(appID)
+	customutil.GetFairManager().AddCompletedApp(appID)
 	app.UnSetQueue()
 	// new ID as completedApplications map key, use negative value to get a divider
 	newID := appID + strconv.FormatInt(-(time.Now()).Unix(), 10)
