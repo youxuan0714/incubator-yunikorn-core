@@ -1291,6 +1291,7 @@ func (pc *PartitionContext) removeAllocation(release *si.AllocationRelease) ([]*
 	appID := release.ApplicationID
 	uuid := release.GetUUID()
 	app := pc.getApplication(appID)
+	customutil.GetFairManager().AddCompletedApp(appID)
 	// no app nothing to do everything should already be clean
 	if app == nil {
 		log.Logger().Info("Application not found while releasing allocation",
