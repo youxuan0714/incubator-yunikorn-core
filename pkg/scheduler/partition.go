@@ -1501,7 +1501,7 @@ func (pc *PartitionContext) moveTerminatedApp(appID string) {
 		return
 	}
 
-	customutil.GetFairManager().AddCompletedApp(appID)
+	//customutil.GetFairManager().AddCompletedApp(appID)
 	app.UnSetQueue()
 	// new ID as completedApplications map key, use negative value to get a divider
 	newID := appID + strconv.FormatInt(-(time.Now()).Unix(), 10)
