@@ -804,7 +804,7 @@ func (pc *PartitionContext) removeNodeAllocations(node *objects.Node) ([]*object
 				zap.String("nodeID", node.NodeID))
 			continue
 		}
-		customutil.GetFairManager().AddCompletedApp(appID)
+		customutil.GetFairManager().AddCompletedApp(app.ApplicationID)
 		if err := app.GetQueue().DecAllocatedResource(alloc.GetAllocatedResource()); err != nil {
 			log.Logger().Warn("failed to release resources from queue",
 				zap.String("appID", alloc.GetApplicationID()),
