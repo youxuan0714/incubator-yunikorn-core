@@ -601,6 +601,7 @@ func (sa *Application) AddAllocationAsk(ask *AllocationAsk) error {
 		zap.Bool("placeholder", ask.IsPlaceholder()),
 		zap.String("pendingDelta", delta.String()))
 
+
 	return nil
 }
 
@@ -799,7 +800,7 @@ func (sa *Application) canAskReserve(ask *AllocationAsk) bool {
 // Sort the request for the app in order based on the priority of the request.
 // The sorted list only contains candidates that have an outstanding repeat.
 // No locking must be called while holding the lock
-func (sa *Application) sortRequests(ascending bool) {
+func (sa *Application) sortRequests(ascending bool, callByTry bool) {
 	sa.sortedRequests = nil
 	for _, request := range sa.requests {
 		if request.GetPendingAskRepeat() == 0 {
@@ -816,7 +817,7 @@ func (sa *Application) sortRequests(ascending bool) {
 func (sa *Application) getOutstandingRequests(headRoom *resources.Resource, total *[]*AllocationAsk) {
 	// make sure the request are sorted
 	sa.Lock()
-	sa.sortRequests(false)
+	sa.sortRequests(false,false)
 	sa.Unlock()
 
 	sa.RLock()
@@ -849,7 +850,14 @@ func (sa *Application) canReplace(request *AllocationAsk) bool {
 func (sa *Application) TrySpecifiedNode(requiredNode string, getNodeFn func(string) *Node) *Allocation {
 	sa.Lock()
 	sa.Unlock()
-	sa.sortRequests(false)
+	sa.sortRequests(false,true)
+	if len(sa.sortedRequests) > 0 {
+		fmt.Print("TrySpecifiedNode")
+		for _, request := range sa.sortedRequests {
+			fmt.Print("Request: ")
+			fmt.Println(request)
+		}
+	}
 	for _, request := range sa.sortedRequests {
 		if sa.canReplace(request) {
 			continue
@@ -864,6 +872,7 @@ func (sa *Application) TrySpecifiedNode(requiredNode string, getNodeFn func(stri
 						zap.String("event message", message),
 						zap.Error(err))
 				} else {
+
 					eventCache.AddEvent(event)
 				}
 			}
@@ -895,7 +904,7 @@ func (sa *Application) TrySpecifiedNode(requiredNode string, getNodeFn func(stri
 					zap.String("AllocationResult", alloc.GetResult().String()))
 				return alloc
 			}
-			//log.Logger().Info("current node resource is not enough", zap.String("node Id", node.NodeID), zap.String("Node avalable", node.GetAvailableResource().String()), zap.String("req", request.GetAllocatedResource().String()))
+			log.Logger().Info("current node resource is not enough", zap.String("node Id", node.NodeID), zap.String("Node avalable", node.GetAvailableResource().String()), zap.String("req", request.GetAllocatedResource().String()))
 			//return newReservedAllocation(Reserved, node.NodeID, request)
 		}
 	}
@@ -907,7 +916,7 @@ func (sa *Application) tryAllocate(headRoom *resources.Resource, nodeIterator fu
 	sa.Lock()
 	defer sa.Unlock()
 	// make sure the request are sorted
-	sa.sortRequests(false)
+	sa.sortRequests(false,false)
 	// get all the requests from the app sorted in order
 	for _, request := range sa.sortedRequests {
 		// check if there is a replacement possible
@@ -985,7 +994,7 @@ func (sa *Application) tryPlaceholderAllocate(nodeIterator func() NodeIterator, 
 		return nil
 	}
 	// make sure the request are sorted
-	sa.sortRequests(false)
+	sa.sortRequests(false,false)
 	// keep the first fits for later
 	var phFit *Allocation
 	var reqFit *AllocationAsk

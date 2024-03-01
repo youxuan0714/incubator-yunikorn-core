@@ -125,13 +125,12 @@ func (cc *ClusterContext) customCurrentschedule() bool {
 		}
 
 		schedulingStart := time.Now()
-		scheduled, _, tenantAppID := customutil.GetFairManager().NextAppToSchedule()
+		scheduled, _, tenantAppID := customutil.GetFairManager().NextAppToScheduleByHRRN()
 		if app := psc.GetApplication(tenantAppID); scheduled && app != nil {
 			nodeID := customutil.GetLBManager().CurrentSchedule(app)
 			if nodeID == "" {
 				continue
 			}
-
 			if alloc := app.TrySpecifiedNode(nodeID, psc.GetNode); alloc != nil {
 				metrics.GetSchedulerMetrics().ObserveSchedulingLatency(schedulingStart)
 				_, _, res := util.ParseApp(app)

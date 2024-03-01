@@ -2,7 +2,7 @@ package fair
 
 import (
 	"container/heap"
-
+	"fmt"
 	"github.com/apache/yunikorn-core/pkg/common/resources"
 	"github.com/apache/yunikorn-core/pkg/custom/fair/urm/apps"
 	"github.com/apache/yunikorn-core/pkg/custom/util"
@@ -12,6 +12,7 @@ import (
 )
 
 func (f *FairManager) UpdateScheduledApp(input *objects.Application) {
+	fmt.Println("Enter UpdateScheduledApp")
 	appID, user, res := util.ParseApp(input)
 	f.AddRunningApp(appID, user, res)
 	f.scheduledApps[appID] = true

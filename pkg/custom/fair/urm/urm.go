@@ -83,3 +83,8 @@ func (u *UserResourceManager) GetDRFs(cluster *resources.Resource) map[string]fl
 	}
 	return result
 }
+
+
+func (u *UserResourceManager) GetExistedUser() map[string]*userApps {
+	return u.existedUser
+}

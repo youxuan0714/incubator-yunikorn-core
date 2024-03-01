@@ -383,7 +383,6 @@ func (pc *PartitionContext) AddApplication(app *objects.Application) error {
 	app.SetQueue(queue)
 	app.SetTerminatedCallback(pc.moveTerminatedApp)
 	pc.applications[appID] = app
-
 	return nil
 }
 

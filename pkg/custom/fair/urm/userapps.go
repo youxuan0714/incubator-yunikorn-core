@@ -58,3 +58,7 @@ func (u *userApps) ComputeGlobalDominantResource(clusterResource *resources.Reso
 	}
 	return resources.ComputGlobalDominantResource(apps, clusterResource.Clone())
 }
+
+func (u *userApps) GetApps() map[string]*resources.Resource{
+	return u.apps
+}

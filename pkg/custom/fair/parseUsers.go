@@ -2,7 +2,7 @@ package fair
 
 import (
 	"container/heap"
-
+	"strconv"
 	"github.com/apache/yunikorn-core/pkg/common/configs"
 	"github.com/apache/yunikorn-core/pkg/custom/fair/urm/apps"
 	"github.com/apache/yunikorn-core/pkg/custom/util"
@@ -23,14 +23,14 @@ func (f *FairManager) ParseUsersInPartitionConfig(conf configs.PartitionConfig) 
 
 // If there is a new tenant's name in the new submitted application, add the username to the fairmanager
 func (f *FairManager) ParseUserInApp(input *objects.Application) {
-	appID, user, _ := util.ParseApp(input)
+	appID, user, res := util.ParseApp(input)
 	f.GetTenants().AddUser(user)
 	if _, ok := f.unscheduledApps[user]; !ok {
 		f.unscheduledApps[user] = apps.NewAppsHeap()
 	}
-
+	duration := strconv.FormatInt(int64(res.Resources["duration"]),10)
 	h := f.unscheduledApps[user]
-	info := apps.NewAppInfo(appID, input.SubmissionTime)
+	info := apps.NewAppInfo(appID, input.SubmissionTime, duration)
 	heap.Push(h, info)
-	log.Logger().Info("Add application in fair manager", zap.String("user", user), zap.String("applicationID", appID), zap.Int("heap", h.Len()))
+	log.Logger().Info("Add application in fair manager", zap.String("user", user), zap.String("applicationID", appID), zap.String("Duration", duration), zap.Int("heap", h.Len()))
 }

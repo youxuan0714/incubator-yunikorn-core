@@ -1,0 +1,1025 @@
+2024-03-01T13:29:22.631Z	INFO	log/logger.go:89	scheduler configuration, pretty print	{"configs": "{\n \"schedulerName\": \"yunikorn\",\n \"clusterId\": \"mycluster\",\n \"clusterVersion\": \"latest\",\n \"policyGroup\": \"queues\",\n \"schedulingIntervalSecond\": 1000000000,\n \"absoluteKubeConfigFilePath\": \"\",\n \"loggingLevel\": 0,\n \"logEncoding\": \"console\",\n \"logFilePath\": \"\",\n \"volumeBindTimeout\": 10000000000,\n \"testMode\": false,\n \"eventChannelCapacity\": 1048576,\n \"dispatchTimeout\": 300000000000,\n \"kubeQPS\": 1000,\n \"kubeBurst\": 1000,\n \"predicates\": \"\",\n \"operatorPlugins\": \"general\",\n \"enableConfigHotRefresh\": true,\n \"disableGangScheduling\": false,\n \"userLabelKey\": \"\",\n \"placeHolderImage\": \"k8s.gcr.io/pause\"\n}"}
+2024-03-01T13:29:22.631Z	INFO	shim/main.go:42	Build info	{"version": "latest", "date": "2024-03-01T21:25:58+0800"}
+2024-03-01T13:29:22.631Z	INFO	shim/main.go:43	starting scheduler	{"name": "yunikorn"}
+2024-03-01T13:29:22.631Z	INFO	log/logger.go:60	Using an already initialized logger
+2024-03-01T13:29:22.631Z	INFO	entrypoint/entrypoint.go:43	ServiceContext start all services
+2024-03-01T13:29:22.635Z	INFO	entrypoint/entrypoint.go:89	ServiceContext start scheduling services
+2024-03-01T13:29:22.635Z	INFO	entrypoint/entrypoint.go:106	creating InternalMetricsHistory
+2024-03-01T13:29:22.635Z	INFO	entrypoint/entrypoint.go:113	ServiceContext start web application service
+2024-03-01T13:29:22.636Z	INFO	webservice/webservice.go:71	web-app started	{"port": 9080}
+2024-03-01T13:29:22.639Z	INFO	appmgmt/appmgmt.go:55	Initializing new AppMgmt service
+2024-03-01T13:29:22.639Z	INFO	appmgmt/appmgmt.go:58	Registering Spark operator with the AppMgmt service
+2024-03-01T13:29:22.639Z	INFO	appmgmt/appmgmt.go:88	registering app management service	{"serviceName": "general"}
+2024-03-01T13:29:22.639Z	INFO	appmgmt/appmgmt.go:92	skip registering app management service	{"serviceName": "spark-k8s-operator"}
+2024-03-01T13:29:22.639Z	INFO	appmgmt/appmgmt.go:92	skip registering app management service	{"serviceName": "yunikorn-app"}
+2024-03-01T13:29:22.639Z	INFO	dispatcher/dispatcher.go:78	Init dispatcher	{"EventChannelCapacity": 1048576, "AsyncDispatchLimit": 104857, "DispatchTimeoutInSeconds": 300}
+2024-03-01T13:29:22.639Z	WARN	appmgmt/appmgmt.go:138	App manager is not registered	{"app manager name": "yunikorn-app"}
+2024-03-01T13:29:22.639Z	INFO	dispatcher/dispatcher.go:181	starting the dispatcher
+2024-03-01T13:29:22.639Z	INFO	cache/placeholder_manager.go:155	starting the PlaceholderManager
+2024-03-01T13:29:23.640Z	INFO	shim/scheduler.go:223	register RM to the scheduler	{"clusterID": "mycluster", "clusterVersion": "latest", "policyGroup": "queues", "buildInfo": {"buildDate":"2024-03-01T21:25:58+0800","buildVersion":"latest","isPluginVersion":"false"}}
+2024-03-01T13:29:23.640Z	INFO	appmgmt/appmgmt.go:108	starting app management service	{"serviceName": "general"}
+2024-03-01T13:29:23.640Z	INFO	appmgmt/appmgmt.go:117	app management service started	{"serviceName": "general"}
+2024-03-01T13:29:23.641Z	INFO	scheduler/context.go:430	added partitions	{"partitionName": "[mycluster]default"}
+2024-03-01T13:29:23.641Z	INFO	util/util.go:72	User in config	{"user": "user1"}
+2024-03-01T13:29:23.641Z	INFO	util/util.go:72	User in config	{"user": "user2"}
+2024-03-01T13:29:23.641Z	INFO	util/util.go:72	User in config	{"user": "user3"}
+2024-03-01T13:29:23.641Z	INFO	util/util.go:72	User in config	{"user": "user4"}
+2024-03-01T13:29:23.641Z	INFO	objects/queue.go:114	configured queue added to scheduler	{"queueName": "root"}
+2024-03-01T13:29:23.641Z	INFO	objects/queue.go:114	configured queue added to scheduler	{"queueName": "root.sandbox"}
+2024-03-01T13:29:23.641Z	INFO	scheduler/partition.go:126	root queue added	{"partitionName": "[mycluster]default", "rmID": "mycluster"}
+2024-03-01T13:29:23.641Z	INFO	security/usergroup.go:79	creating UserGroupCache without resolver
+2024-03-01T13:29:23.641Z	INFO	security/usergroup.go:83	starting UserGroupCache cleaner	{"cleanerInterval": "1m0s"}
+2024-03-01T13:29:23.641Z	INFO	scheduler/partition.go:154	NodeSorting policy set from config	{"policyName": "fair"}
+2024-03-01T13:29:23.641Z	INFO	scheduler/partition_manager.go:63	starting partition manager	{"partition": "[mycluster]default", "cleanRootInterval": "10s"}
+2024-03-01T13:29:23.641Z	INFO	plugins/plugins.go:36	register scheduler plugin: ResourceManagerCallback
+2024-03-01T13:29:23.641Z	INFO	shim/scheduler.go:157	recovering scheduler states
+2024-03-01T13:29:23.641Z	INFO	appmgmt/appmgmt_recovery.go:48	Starting app recovery
+2024-03-01T13:29:23.641Z	INFO	general/general.go:223	Retrieving pod list
+2024-03-01T13:29:23.641Z	INFO	general/general.go:229	Pod list retrieved from api server	{"nr of pods": 50}
+2024-03-01T13:29:23.641Z	INFO	general/general.go:250	Application recovery statistics	{"nr of recoverable apps": 0, "nr of total pods": 50, "nr of pods without application metadata": 0, "nr of pods to be recovered": 0}
+2024-03-01T13:29:23.641Z	INFO	appmgmt/appmgmt_recovery.go:66	Recovery finished
+2024-03-01T13:29:23.641Z	INFO	general/podevent_handler.go:105	No async pod events to process
+2024-03-01T13:29:23.641Z	INFO	cache/nodes.go:111	adding node to context	{"nodeName": "master", "nodeLabels": "{\"beta.kubernetes.io/arch\":\"amd64\",\"beta.kubernetes.io/os\":\"linux\",\"kubernetes.io/arch\":\"amd64\",\"kubernetes.io/hostname\":\"master\",\"kubernetes.io/os\":\"linux\",\"node-role.kubernetes.io/control-plane\":\"\",\"node-role.kubernetes.io/master\":\"\",\"node.kubernetes.io/exclude-from-external-load-balancers\":\"\"}", "schedulable": true}
+2024-03-01T13:29:23.806Z	INFO	cache/node.go:81	add node occupied resource	{"nodeID": "master", "occupied": "resources:<key:\"memory\" value:<value:2432404864 > > resources:<key:\"vcore\" value:<value:4750 > > "}
+2024-03-01T13:29:23.806Z	INFO	cache/context_recovery.go:169	node state	{"nodeName": "master", "nodeState": "New"}
+2024-03-01T13:29:23.806Z	INFO	cache/context_recovery.go:184	node state	{"nodeName": "master", "nodeState": "New"}
+2024-03-01T13:29:23.806Z	INFO	cache/context_recovery.go:202	still waiting for recovering nodes	{"totalNodes": 1, "recoveredNodes": 0}
+2024-03-01T13:29:23.806Z	INFO	cache/node.go:138	node recovering	{"nodeID": "master", "schedulable": true}
+2024-03-01T13:29:23.806Z	INFO	scheduler/partition.go:580	adding node to partition	{"partition": "[mycluster]default", "nodeID": "master"}
+2024-03-01T13:29:23.806Z	INFO	objects/queue.go:1017	updating root queue max resources	{"current max": "nil resource", "new max": "map[ephemeral-storage:884538805627 hugepages-1Gi:0 hugepages-2Mi:0 memory:24869199872 pods:110 vcore:12000]"}
+2024-03-01T13:29:23.806Z	INFO	scheduler/partition.go:649	Updated available resources from added node	{"partitionName": "[mycluster]default", "nodeID": "master", "partitionResource": "map[ephemeral-storage:884538805627 hugepages-1Gi:0 hugepages-2Mi:0 memory:24869199872 pods:110 vcore:12000]"}
+2024-03-01T13:29:23.806Z	INFO	lb/lb.go:30	LB AddNode	{"node ID": "master", "capicity": "map[memory:22436795008 vcore:7250]"}
+2024-03-01T13:29:23.806Z	INFO	monitor/utilizationMonitor.go:84	node get id	{"nodeID": "B", "cellName": "B1"}
+2024-03-01T13:29:23.806Z	INFO	scheduler/context.go:687	successfully added node	{"nodeID": "master", "partition": "[mycluster]default"}
+2024-03-01T13:29:24.806Z	INFO	cache/context_recovery.go:184	node state	{"nodeName": "master", "nodeState": "Healthy"}
+2024-03-01T13:29:24.806Z	INFO	cache/context_recovery.go:198	nodes recovery is successful	{"recoveredNodes": 1}
+2024-03-01T13:29:24.806Z	INFO	shim/scheduler.go:191	scheduler recovery succeed
+2024-03-01T13:29:24.806Z	INFO	shim/scheduler.go:314	No outstanding apps found for a while	{"timeout": "2m0s"}
+2024-03-01T13:29:24.806Z	INFO	cache/nodes.go:238	scheduler node event 	{"name": "master", "current state ": "New", "transition to ": "RecoverNode"}
+2024-03-01T13:29:24.807Z	INFO	cache/context.go:322	trigger scheduler configuration reloading
+2024-03-01T13:29:33.739Z	INFO	utils/utils.go:224	Found user name from pod labels.	{"userLabel": "", "user": "user1"}
+2024-03-01T13:29:33.739Z	INFO	cache/context.go:635	app added	{"appID": "app-user1-000001"}
+2024-03-01T13:29:33.739Z	INFO	cache/context.go:712	task added	{"appID": "app-user1-000001", "taskID": "cfa00841-9a6d-4b45-89fb-5735942dc93f", "taskState": "New"}
+2024-03-01T13:29:33.739Z	INFO	cache/context.go:722	app request originating pod added	{"appID": "app-user1-000001", "original task": "cfa00841-9a6d-4b45-89fb-5735942dc93f"}
+2024-03-01T13:29:33.796Z	INFO	utils/utils.go:224	Found user name from pod labels.	{"userLabel": "", "user": "user1"}
+2024-03-01T13:29:33.797Z	INFO	cache/context.go:635	app added	{"appID": "app-user1-000002"}
+2024-03-01T13:29:33.797Z	INFO	cache/context.go:712	task added	{"appID": "app-user1-000002", "taskID": "37395f3f-3b45-4e82-9476-ec4b9438684f", "taskState": "New"}
+2024-03-01T13:29:33.797Z	INFO	cache/context.go:722	app request originating pod added	{"appID": "app-user1-000002", "original task": "37395f3f-3b45-4e82-9476-ec4b9438684f"}
+2024-03-01T13:29:33.809Z	INFO	cache/application.go:412	handle app submission	{"app": "applicationID: app-user1-000001, queue: root.sandbox, partition: default, totalNumOfTasks: 1, currentState: Submitted", "clusterID": "mycluster"}
+2024-03-01T13:29:33.810Z	INFO	utils/utils.go:224	Found user name from pod labels.	{"userLabel": "", "user": "user1"}
+2024-03-01T13:29:33.810Z	INFO	cache/application.go:412	handle app submission	{"app": "applicationID: app-user1-000002, queue: root.sandbox, partition: default, totalNumOfTasks: 1, currentState: Submitted", "clusterID": "mycluster"}
+2024-03-01T13:29:33.810Z	INFO	cache/context.go:635	app added	{"appID": "app-user1-000003"}
+2024-03-01T13:29:33.810Z	INFO	cache/context.go:712	task added	{"appID": "app-user1-000003", "taskID": "a2f21d9e-ac75-4cd0-9391-0fa5c75a62de", "taskState": "New"}
+2024-03-01T13:29:33.810Z	INFO	cache/context.go:722	app request originating pod added	{"appID": "app-user1-000003", "original task": "a2f21d9e-ac75-4cd0-9391-0fa5c75a62de"}
+2024-03-01T13:29:33.810Z	INFO	fair/parseUsers.go:35	Add application in fair manager	{"user": "user1", "applicationID": "app-user1-000002", "Duration": "50", "heap": 1}
+2024-03-01T13:29:33.810Z	INFO	scheduler/context.go:604	Added application to partition	{"applicationID": "app-user1-000002", "partitionName": "[mycluster]default", "requested queue": "root.sandbox", "placed queue": "root.sandbox"}
+2024-03-01T13:29:33.810Z	INFO	fair/parseUsers.go:35	Add application in fair manager	{"user": "user1", "applicationID": "app-user1-000001", "Duration": "50", "heap": 2}
+2024-03-01T13:29:33.810Z	INFO	scheduler/context.go:604	Added application to partition	{"applicationID": "app-user1-000001", "partitionName": "[mycluster]default", "requested queue": "root.sandbox", "placed queue": "root.sandbox"}
+2024-03-01T13:29:33.810Z	INFO	callback/scheduler_callback.go:113	Accepting app	{"appID": "app-user1-000002"}
+2024-03-01T13:29:33.810Z	INFO	callback/scheduler_callback.go:113	Accepting app	{"appID": "app-user1-000001"}
+2024-03-01T13:29:33.891Z	INFO	utils/utils.go:224	Found user name from pod labels.	{"userLabel": "", "user": "user1"}
+2024-03-01T13:29:33.892Z	INFO	cache/context.go:635	app added	{"appID": "app-user1-000004"}
+2024-03-01T13:29:33.892Z	INFO	cache/context.go:712	task added	{"appID": "app-user1-000004", "taskID": "888d6298-4247-45c9-8b2a-272dbf41b03d", "taskState": "New"}
+2024-03-01T13:29:33.892Z	INFO	cache/context.go:722	app request originating pod added	{"appID": "app-user1-000004", "original task": "888d6298-4247-45c9-8b2a-272dbf41b03d"}
+2024-03-01T13:29:33.910Z	INFO	utils/utils.go:224	Found user name from pod labels.	{"userLabel": "", "user": "user1"}
+2024-03-01T13:29:33.910Z	INFO	cache/context.go:635	app added	{"appID": "app-user1-000005"}
+2024-03-01T13:29:33.910Z	INFO	cache/context.go:712	task added	{"appID": "app-user1-000005", "taskID": "a4d6653c-bdd0-4750-9525-57371d51b372", "taskState": "New"}
+2024-03-01T13:29:33.910Z	INFO	cache/context.go:722	app request originating pod added	{"appID": "app-user1-000005", "original task": "a4d6653c-bdd0-4750-9525-57371d51b372"}
+2024-03-01T13:29:33.938Z	INFO	utils/utils.go:224	Found user name from pod labels.	{"userLabel": "", "user": "user1"}
+2024-03-01T13:29:33.938Z	INFO	cache/context.go:635	app added	{"appID": "app-user1-000006"}
+2024-03-01T13:29:33.938Z	INFO	cache/context.go:712	task added	{"appID": "app-user1-000006", "taskID": "568749aa-28c6-408b-a6aa-33b9f6de35de", "taskState": "New"}
+2024-03-01T13:29:33.938Z	INFO	cache/context.go:722	app request originating pod added	{"appID": "app-user1-000006", "original task": "568749aa-28c6-408b-a6aa-33b9f6de35de"}
+2024-03-01T13:29:33.952Z	INFO	utils/utils.go:224	Found user name from pod labels.	{"userLabel": "", "user": "user1"}
+2024-03-01T13:29:33.952Z	INFO	cache/context.go:635	app added	{"appID": "app-user1-000007"}
+2024-03-01T13:29:33.952Z	INFO	cache/context.go:712	task added	{"appID": "app-user1-000007", "taskID": "f9c6c3d7-bf5d-4a88-a7e8-13a395aba11a", "taskState": "New"}
+2024-03-01T13:29:33.952Z	INFO	cache/context.go:722	app request originating pod added	{"appID": "app-user1-000007", "original task": "f9c6c3d7-bf5d-4a88-a7e8-13a395aba11a"}
+2024-03-01T13:29:33.960Z	INFO	utils/utils.go:224	Found user name from pod labels.	{"userLabel": "", "user": "user1"}
+2024-03-01T13:29:33.960Z	INFO	cache/context.go:635	app added	{"appID": "app-user1-000008"}
+2024-03-01T13:29:33.960Z	INFO	cache/context.go:712	task added	{"appID": "app-user1-000008", "taskID": "59b1e332-4424-4d2a-a0cd-a7df48701bf1", "taskState": "New"}
+2024-03-01T13:29:33.960Z	INFO	cache/context.go:722	app request originating pod added	{"appID": "app-user1-000008", "original task": "59b1e332-4424-4d2a-a0cd-a7df48701bf1"}
+2024-03-01T13:29:33.988Z	INFO	utils/utils.go:224	Found user name from pod labels.	{"userLabel": "", "user": "user1"}
+2024-03-01T13:29:33.988Z	INFO	cache/context.go:635	app added	{"appID": "app-user1-000009"}
+2024-03-01T13:29:33.988Z	INFO	cache/context.go:712	task added	{"appID": "app-user1-000009", "taskID": "a68634d1-4aa2-47a5-8c6f-e117dba7f996", "taskState": "New"}
+2024-03-01T13:29:33.988Z	INFO	cache/context.go:722	app request originating pod added	{"appID": "app-user1-000009", "original task": "a68634d1-4aa2-47a5-8c6f-e117dba7f996"}
+2024-03-01T13:29:34.130Z	INFO	utils/utils.go:224	Found user name from pod labels.	{"userLabel": "", "user": "user1"}
+2024-03-01T13:29:34.130Z	INFO	cache/context.go:635	app added	{"appID": "app-user1-000010"}
+2024-03-01T13:29:34.130Z	INFO	cache/context.go:712	task added	{"appID": "app-user1-000010", "taskID": "0060e0ba-94fd-4bec-ac3a-f72d3ceea5a3", "taskState": "New"}
+2024-03-01T13:29:34.130Z	INFO	cache/context.go:722	app request originating pod added	{"appID": "app-user1-000010", "original task": "0060e0ba-94fd-4bec-ac3a-f72d3ceea5a3"}
+2024-03-01T13:29:34.137Z	INFO	utils/utils.go:224	Found user name from pod labels.	{"userLabel": "", "user": "user2"}
+2024-03-01T13:29:34.137Z	INFO	cache/context.go:635	app added	{"appID": "app-user2-000001"}
+2024-03-01T13:29:34.137Z	INFO	cache/context.go:712	task added	{"appID": "app-user2-000001", "taskID": "65c401eb-f5ce-46f2-b538-113130fdf253", "taskState": "New"}
+2024-03-01T13:29:34.137Z	INFO	cache/context.go:722	app request originating pod added	{"appID": "app-user2-000001", "original task": "65c401eb-f5ce-46f2-b538-113130fdf253"}
+2024-03-01T13:29:34.152Z	INFO	utils/utils.go:224	Found user name from pod labels.	{"userLabel": "", "user": "user2"}
+2024-03-01T13:29:34.152Z	INFO	cache/context.go:635	app added	{"appID": "app-user2-000002"}
+2024-03-01T13:29:34.152Z	INFO	cache/context.go:712	task added	{"appID": "app-user2-000002", "taskID": "80e47661-4b25-4f18-8adb-25c84069e323", "taskState": "New"}
+2024-03-01T13:29:34.152Z	INFO	cache/context.go:722	app request originating pod added	{"appID": "app-user2-000002", "original task": "80e47661-4b25-4f18-8adb-25c84069e323"}
+2024-03-01T13:29:34.335Z	INFO	utils/utils.go:224	Found user name from pod labels.	{"userLabel": "", "user": "user2"}
+2024-03-01T13:29:34.335Z	INFO	cache/context.go:635	app added	{"appID": "app-user2-000003"}
+2024-03-01T13:29:34.335Z	INFO	cache/context.go:712	task added	{"appID": "app-user2-000003", "taskID": "d01333a1-3e7c-41d4-8803-98e2721eac82", "taskState": "New"}
+2024-03-01T13:29:34.335Z	INFO	cache/context.go:722	app request originating pod added	{"appID": "app-user2-000003", "original task": "d01333a1-3e7c-41d4-8803-98e2721eac82"}
+2024-03-01T13:29:34.527Z	INFO	utils/utils.go:224	Found user name from pod labels.	{"userLabel": "", "user": "user2"}
+2024-03-01T13:29:34.527Z	INFO	cache/context.go:635	app added	{"appID": "app-user2-000004"}
+2024-03-01T13:29:34.527Z	INFO	cache/context.go:712	task added	{"appID": "app-user2-000004", "taskID": "dccc8888-5f2d-4d5c-bb97-ffd19b8a82f1", "taskState": "New"}
+2024-03-01T13:29:34.527Z	INFO	cache/context.go:722	app request originating pod added	{"appID": "app-user2-000004", "original task": "dccc8888-5f2d-4d5c-bb97-ffd19b8a82f1"}
+2024-03-01T13:29:34.726Z	INFO	utils/utils.go:224	Found user name from pod labels.	{"userLabel": "", "user": "user2"}
+2024-03-01T13:29:34.726Z	INFO	cache/context.go:635	app added	{"appID": "app-user2-000005"}
+2024-03-01T13:29:34.726Z	INFO	cache/context.go:712	task added	{"appID": "app-user2-000005", "taskID": "b4e7de69-dbe0-47f0-821e-96e5ac036dda", "taskState": "New"}
+2024-03-01T13:29:34.726Z	INFO	cache/context.go:722	app request originating pod added	{"appID": "app-user2-000005", "original task": "b4e7de69-dbe0-47f0-821e-96e5ac036dda"}
+2024-03-01T13:29:34.810Z	INFO	cache/application.go:508	Skip the reservation stage	{"appID": "app-user1-000001"}
+2024-03-01T13:29:34.810Z	INFO	cache/application.go:412	handle app submission	{"app": "applicationID: app-user1-000004, queue: root.sandbox, partition: default, totalNumOfTasks: 1, currentState: Submitted", "clusterID": "mycluster"}
+2024-03-01T13:29:34.810Z	INFO	cache/application.go:412	handle app submission	{"app": "applicationID: app-user1-000008, queue: root.sandbox, partition: default, totalNumOfTasks: 1, currentState: Submitted", "clusterID": "mycluster"}
+2024-03-01T13:29:34.810Z	INFO	cache/application.go:412	handle app submission	{"app": "applicationID: app-user1-000010, queue: root.sandbox, partition: default, totalNumOfTasks: 1, currentState: Submitted", "clusterID": "mycluster"}
+2024-03-01T13:29:34.810Z	INFO	cache/application.go:412	handle app submission	{"app": "applicationID: app-user2-000002, queue: root.sandbox, partition: default, totalNumOfTasks: 1, currentState: Submitted", "clusterID": "mycluster"}
+2024-03-01T13:29:34.810Z	INFO	cache/application.go:412	handle app submission	{"app": "applicationID: app-user2-000004, queue: root.sandbox, partition: default, totalNumOfTasks: 1, currentState: Submitted", "clusterID": "mycluster"}
+2024-03-01T13:29:34.810Z	INFO	cache/application.go:508	Skip the reservation stage	{"appID": "app-user1-000002"}
+2024-03-01T13:29:34.810Z	INFO	cache/application.go:412	handle app submission	{"app": "applicationID: app-user1-000005, queue: root.sandbox, partition: default, totalNumOfTasks: 1, currentState: Submitted", "clusterID": "mycluster"}
+2024-03-01T13:29:34.810Z	INFO	cache/application.go:412	handle app submission	{"app": "applicationID: app-user1-000007, queue: root.sandbox, partition: default, totalNumOfTasks: 1, currentState: Submitted", "clusterID": "mycluster"}
+2024-03-01T13:29:34.810Z	INFO	cache/application.go:412	handle app submission	{"app": "applicationID: app-user1-000009, queue: root.sandbox, partition: default, totalNumOfTasks: 1, currentState: Submitted", "clusterID": "mycluster"}
+2024-03-01T13:29:34.810Z	INFO	cache/application.go:412	handle app submission	{"app": "applicationID: app-user2-000003, queue: root.sandbox, partition: default, totalNumOfTasks: 1, currentState: Submitted", "clusterID": "mycluster"}
+2024-03-01T13:29:34.810Z	INFO	cache/application.go:412	handle app submission	{"app": "applicationID: app-user1-000003, queue: root.sandbox, partition: default, totalNumOfTasks: 1, currentState: Submitted", "clusterID": "mycluster"}
+2024-03-01T13:29:34.810Z	INFO	cache/application.go:412	handle app submission	{"app": "applicationID: app-user1-000006, queue: root.sandbox, partition: default, totalNumOfTasks: 1, currentState: Submitted", "clusterID": "mycluster"}
+2024-03-01T13:29:34.810Z	INFO	cache/application.go:412	handle app submission	{"app": "applicationID: app-user2-000001, queue: root.sandbox, partition: default, totalNumOfTasks: 1, currentState: Submitted", "clusterID": "mycluster"}
+2024-03-01T13:29:34.810Z	INFO	cache/application.go:412	handle app submission	{"app": "applicationID: app-user2-000005, queue: root.sandbox, partition: default, totalNumOfTasks: 1, currentState: Submitted", "clusterID": "mycluster"}
+2024-03-01T13:29:34.810Z	INFO	fair/parseUsers.go:35	Add application in fair manager	{"user": "user1", "applicationID": "app-user1-000008", "Duration": "50", "heap": 3}
+2024-03-01T13:29:34.810Z	INFO	scheduler/context.go:604	Added application to partition	{"applicationID": "app-user1-000008", "partitionName": "[mycluster]default", "requested queue": "root.sandbox", "placed queue": "root.sandbox"}
+2024-03-01T13:29:34.810Z	INFO	fair/parseUsers.go:35	Add application in fair manager	{"user": "user2", "applicationID": "app-user2-000004", "Duration": "100", "heap": 1}
+2024-03-01T13:29:34.810Z	INFO	scheduler/context.go:604	Added application to partition	{"applicationID": "app-user2-000004", "partitionName": "[mycluster]default", "requested queue": "root.sandbox", "placed queue": "root.sandbox"}
+2024-03-01T13:29:34.810Z	INFO	fair/parseUsers.go:35	Add application in fair manager	{"user": "user1", "applicationID": "app-user1-000010", "Duration": "50", "heap": 4}
+2024-03-01T13:29:34.810Z	INFO	scheduler/context.go:604	Added application to partition	{"applicationID": "app-user1-000010", "partitionName": "[mycluster]default", "requested queue": "root.sandbox", "placed queue": "root.sandbox"}
+2024-03-01T13:29:34.810Z	INFO	fair/parseUsers.go:35	Add application in fair manager	{"user": "user1", "applicationID": "app-user1-000007", "Duration": "50", "heap": 5}
+2024-03-01T13:29:34.810Z	INFO	callback/scheduler_callback.go:113	Accepting app	{"appID": "app-user1-000008"}
+2024-03-01T13:29:34.810Z	INFO	scheduler/context.go:604	Added application to partition	{"applicationID": "app-user1-000007", "partitionName": "[mycluster]default", "requested queue": "root.sandbox", "placed queue": "root.sandbox"}
+2024-03-01T13:29:34.810Z	INFO	callback/scheduler_callback.go:113	Accepting app	{"appID": "app-user2-000004"}
+2024-03-01T13:29:34.810Z	INFO	callback/scheduler_callback.go:113	Accepting app	{"appID": "app-user1-000010"}
+2024-03-01T13:29:34.810Z	INFO	fair/parseUsers.go:35	Add application in fair manager	{"user": "user2", "applicationID": "app-user2-000002", "Duration": "100", "heap": 2}
+2024-03-01T13:29:34.810Z	INFO	callback/scheduler_callback.go:113	Accepting app	{"appID": "app-user1-000007"}
+2024-03-01T13:29:34.810Z	INFO	scheduler/context.go:604	Added application to partition	{"applicationID": "app-user2-000002", "partitionName": "[mycluster]default", "requested queue": "root.sandbox", "placed queue": "root.sandbox"}
+2024-03-01T13:29:34.810Z	INFO	fair/parseUsers.go:35	Add application in fair manager	{"user": "user1", "applicationID": "app-user1-000005", "Duration": "50", "heap": 6}
+2024-03-01T13:29:34.810Z	INFO	scheduler/context.go:604	Added application to partition	{"applicationID": "app-user1-000005", "partitionName": "[mycluster]default", "requested queue": "root.sandbox", "placed queue": "root.sandbox"}
+2024-03-01T13:29:34.810Z	INFO	fair/parseUsers.go:35	Add application in fair manager	{"user": "user1", "applicationID": "app-user1-000004", "Duration": "50", "heap": 7}
+2024-03-01T13:29:34.810Z	INFO	scheduler/context.go:604	Added application to partition	{"applicationID": "app-user1-000004", "partitionName": "[mycluster]default", "requested queue": "root.sandbox", "placed queue": "root.sandbox"}
+2024-03-01T13:29:34.810Z	INFO	callback/scheduler_callback.go:113	Accepting app	{"appID": "app-user2-000002"}
+2024-03-01T13:29:34.810Z	INFO	callback/scheduler_callback.go:113	Accepting app	{"appID": "app-user1-000005"}
+2024-03-01T13:29:34.810Z	INFO	fair/parseUsers.go:35	Add application in fair manager	{"user": "user1", "applicationID": "app-user1-000009", "Duration": "50", "heap": 8}
+2024-03-01T13:29:34.810Z	INFO	callback/scheduler_callback.go:113	Accepting app	{"appID": "app-user1-000004"}
+2024-03-01T13:29:34.810Z	INFO	scheduler/context.go:604	Added application to partition	{"applicationID": "app-user1-000009", "partitionName": "[mycluster]default", "requested queue": "root.sandbox", "placed queue": "root.sandbox"}
+2024-03-01T13:29:34.810Z	INFO	fair/parseUsers.go:35	Add application in fair manager	{"user": "user1", "applicationID": "app-user1-000003", "Duration": "50", "heap": 9}
+2024-03-01T13:29:34.810Z	INFO	scheduler/context.go:604	Added application to partition	{"applicationID": "app-user1-000003", "partitionName": "[mycluster]default", "requested queue": "root.sandbox", "placed queue": "root.sandbox"}
+2024-03-01T13:29:34.810Z	INFO	fair/parseUsers.go:35	Add application in fair manager	{"user": "user1", "applicationID": "app-user1-000006", "Duration": "50", "heap": 10}
+2024-03-01T13:29:34.810Z	INFO	scheduler/context.go:604	Added application to partition	{"applicationID": "app-user1-000006", "partitionName": "[mycluster]default", "requested queue": "root.sandbox", "placed queue": "root.sandbox"}
+2024-03-01T13:29:34.810Z	INFO	callback/scheduler_callback.go:113	Accepting app	{"appID": "app-user1-000009"}
+2024-03-01T13:29:34.810Z	INFO	callback/scheduler_callback.go:113	Accepting app	{"appID": "app-user1-000003"}
+2024-03-01T13:29:34.810Z	INFO	callback/scheduler_callback.go:113	Accepting app	{"appID": "app-user1-000006"}
+2024-03-01T13:29:34.810Z	INFO	fair/parseUsers.go:35	Add application in fair manager	{"user": "user2", "applicationID": "app-user2-000001", "Duration": "100", "heap": 3}
+2024-03-01T13:29:34.810Z	INFO	scheduler/context.go:604	Added application to partition	{"applicationID": "app-user2-000001", "partitionName": "[mycluster]default", "requested queue": "root.sandbox", "placed queue": "root.sandbox"}
+2024-03-01T13:29:34.810Z	INFO	fair/parseUsers.go:35	Add application in fair manager	{"user": "user2", "applicationID": "app-user2-000005", "Duration": "100", "heap": 3}
+2024-03-01T13:29:34.810Z	INFO	scheduler/context.go:604	Added application to partition	{"applicationID": "app-user2-000005", "partitionName": "[mycluster]default", "requested queue": "root.sandbox", "placed queue": "root.sandbox"}
+2024-03-01T13:29:34.810Z	INFO	fair/parseUsers.go:35	Add application in fair manager	{"user": "user2", "applicationID": "app-user2-000003", "Duration": "100", "heap": 4}
+2024-03-01T13:29:34.810Z	INFO	scheduler/context.go:604	Added application to partition	{"applicationID": "app-user2-000003", "partitionName": "[mycluster]default", "requested queue": "root.sandbox", "placed queue": "root.sandbox"}
+2024-03-01T13:29:34.810Z	INFO	callback/scheduler_callback.go:113	Accepting app	{"appID": "app-user2-000001"}
+2024-03-01T13:29:34.810Z	INFO	callback/scheduler_callback.go:113	Accepting app	{"appID": "app-user2-000005"}
+2024-03-01T13:29:34.810Z	INFO	callback/scheduler_callback.go:113	Accepting app	{"appID": "app-user2-000003"}
+2024-03-01T13:29:35.269Z	INFO	utils/utils.go:224	Found user name from pod labels.	{"userLabel": "", "user": "user2"}
+2024-03-01T13:29:35.269Z	INFO	cache/context.go:635	app added	{"appID": "app-user2-000006"}
+2024-03-01T13:29:35.269Z	INFO	cache/context.go:712	task added	{"appID": "app-user2-000006", "taskID": "88fdf5f3-e522-44d1-a6e4-3ad259336eca", "taskState": "New"}
+2024-03-01T13:29:35.269Z	INFO	cache/context.go:722	app request originating pod added	{"appID": "app-user2-000006", "original task": "88fdf5f3-e522-44d1-a6e4-3ad259336eca"}
+2024-03-01T13:29:35.601Z	INFO	utils/utils.go:224	Found user name from pod labels.	{"userLabel": "", "user": "user2"}
+2024-03-01T13:29:35.601Z	INFO	cache/context.go:635	app added	{"appID": "app-user2-000007"}
+2024-03-01T13:29:35.601Z	INFO	cache/context.go:712	task added	{"appID": "app-user2-000007", "taskID": "7a741cf4-f5e1-4dd5-8129-3cbec4b4c3a1", "taskState": "New"}
+2024-03-01T13:29:35.601Z	INFO	cache/context.go:722	app request originating pod added	{"appID": "app-user2-000007", "original task": "7a741cf4-f5e1-4dd5-8129-3cbec4b4c3a1"}
+2024-03-01T13:29:35.683Z	INFO	utils/utils.go:224	Found user name from pod labels.	{"userLabel": "", "user": "user2"}
+2024-03-01T13:29:35.683Z	INFO	cache/context.go:635	app added	{"appID": "app-user2-000008"}
+2024-03-01T13:29:35.683Z	INFO	cache/context.go:712	task added	{"appID": "app-user2-000008", "taskID": "f4397e75-6b2c-4c0b-bfa6-0515d7410bc6", "taskState": "New"}
+2024-03-01T13:29:35.683Z	INFO	cache/context.go:722	app request originating pod added	{"appID": "app-user2-000008", "original task": "f4397e75-6b2c-4c0b-bfa6-0515d7410bc6"}
+2024-03-01T13:29:35.810Z	INFO	cache/application.go:508	Skip the reservation stage	{"appID": "app-user1-000009"}
+2024-03-01T13:29:35.810Z	INFO	cache/application.go:508	Skip the reservation stage	{"appID": "app-user2-000003"}
+2024-03-01T13:29:35.810Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "New", "destination": "Pending", "event": "InitTask"}
+2024-03-01T13:29:35.810Z	INFO	cache/application.go:508	Skip the reservation stage	{"appID": "app-user1-000005"}
+2024-03-01T13:29:35.810Z	INFO	cache/application.go:508	Skip the reservation stage	{"appID": "app-user1-000007"}
+2024-03-01T13:29:35.810Z	INFO	cache/application.go:508	Skip the reservation stage	{"appID": "app-user2-000005"}
+2024-03-01T13:29:35.810Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "Pending", "destination": "Scheduling", "event": "SubmitTask"}
+2024-03-01T13:29:35.810Z	INFO	cache/application.go:508	Skip the reservation stage	{"appID": "app-user1-000003"}
+2024-03-01T13:29:35.810Z	INFO	cache/application.go:508	Skip the reservation stage	{"appID": "app-user1-000006"}
+2024-03-01T13:29:35.810Z	INFO	cache/application.go:508	Skip the reservation stage	{"appID": "app-user2-000001"}
+2024-03-01T13:29:35.810Z	INFO	cache/application.go:508	Skip the reservation stage	{"appID": "app-user1-000010"}
+2024-03-01T13:29:35.810Z	INFO	cache/application.go:508	Skip the reservation stage	{"appID": "app-user2-000002"}
+2024-03-01T13:29:35.810Z	INFO	cache/application.go:412	handle app submission	{"app": "applicationID: app-user2-000008, queue: root.sandbox, partition: default, totalNumOfTasks: 1, currentState: Submitted", "clusterID": "mycluster"}
+2024-03-01T13:29:35.810Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "New", "destination": "Pending", "event": "InitTask"}
+2024-03-01T13:29:35.810Z	INFO	cache/application.go:508	Skip the reservation stage	{"appID": "app-user1-000004"}
+2024-03-01T13:29:35.810Z	INFO	cache/application.go:508	Skip the reservation stage	{"appID": "app-user1-000008"}
+2024-03-01T13:29:35.810Z	INFO	cache/application.go:508	Skip the reservation stage	{"appID": "app-user2-000004"}
+2024-03-01T13:29:35.810Z	INFO	cache/application.go:412	handle app submission	{"app": "applicationID: app-user2-000006, queue: root.sandbox, partition: default, totalNumOfTasks: 1, currentState: Submitted", "clusterID": "mycluster"}
+2024-03-01T13:29:35.810Z	INFO	cache/application.go:412	handle app submission	{"app": "applicationID: app-user2-000007, queue: root.sandbox, partition: default, totalNumOfTasks: 1, currentState: Submitted", "clusterID": "mycluster"}
+2024-03-01T13:29:35.810Z	INFO	fair/parseUsers.go:35	Add application in fair manager	{"user": "user2", "applicationID": "app-user2-000007", "Duration": "100", "heap": 1}
+2024-03-01T13:29:35.810Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "Pending", "destination": "Scheduling", "event": "SubmitTask"}
+2024-03-01T13:29:35.810Z	INFO	scheduler/context.go:604	Added application to partition	{"applicationID": "app-user2-000007", "partitionName": "[mycluster]default", "requested queue": "root.sandbox", "placed queue": "root.sandbox"}
+2024-03-01T13:29:35.810Z	INFO	fair/parseUsers.go:35	Add application in fair manager	{"user": "user2", "applicationID": "app-user2-000008", "Duration": "100", "heap": 1}
+2024-03-01T13:29:35.810Z	INFO	scheduler/context.go:604	Added application to partition	{"applicationID": "app-user2-000008", "partitionName": "[mycluster]default", "requested queue": "root.sandbox", "placed queue": "root.sandbox"}
+2024-03-01T13:29:35.810Z	INFO	callback/scheduler_callback.go:113	Accepting app	{"appID": "app-user2-000007"}
+2024-03-01T13:29:35.810Z	INFO	objects/application_state.go:129	Application state transition	{"appID": "app-user1-000002", "source": "New", "destination": "Accepted", "event": "runApplication"}
+2024-03-01T13:29:35.810Z	INFO	callback/scheduler_callback.go:113	Accepting app	{"appID": "app-user2-000008"}
+2024-03-01T13:29:35.810Z	INFO	objects/application.go:598	ask added successfully to application	{"appID": "app-user1-000002", "ask": "37395f3f-3b45-4e82-9476-ec4b9438684f", "placeholder": false, "pendingDelta": "map[memory:8000000000 vcore:2000]"}
+2024-03-01T13:29:35.810Z	INFO	fair/parseUsers.go:35	Add application in fair manager	{"user": "user2", "applicationID": "app-user2-000006", "Duration": "100", "heap": 1}
+2024-03-01T13:29:35.810Z	INFO	scheduler/context.go:604	Added application to partition	{"applicationID": "app-user2-000006", "partitionName": "[mycluster]default", "requested queue": "root.sandbox", "placed queue": "root.sandbox"}
+2024-03-01T13:29:35.810Z	INFO	objects/application_state.go:129	Application state transition	{"appID": "app-user1-000001", "source": "New", "destination": "Accepted", "event": "runApplication"}
+2024-03-01T13:29:35.810Z	INFO	objects/application.go:598	ask added successfully to application	{"appID": "app-user1-000001", "ask": "cfa00841-9a6d-4b45-89fb-5735942dc93f", "placeholder": false, "pendingDelta": "map[memory:8000000000 vcore:2000]"}
+2024-03-01T13:29:35.811Z	INFO	callback/scheduler_callback.go:113	Accepting app	{"appID": "app-user2-000006"}
+2024-03-01T13:29:35.817Z	INFO	utils/utils.go:224	Found user name from pod labels.	{"userLabel": "", "user": "user2"}
+2024-03-01T13:29:35.817Z	INFO	cache/context.go:635	app added	{"appID": "app-user2-000009"}
+2024-03-01T13:29:35.817Z	INFO	cache/context.go:712	task added	{"appID": "app-user2-000009", "taskID": "de54abe6-0005-48e0-84fc-16e5aecd87c6", "taskState": "New"}
+2024-03-01T13:29:35.817Z	INFO	cache/context.go:722	app request originating pod added	{"appID": "app-user2-000009", "original task": "de54abe6-0005-48e0-84fc-16e5aecd87c6"}
+2024-03-01T13:29:35.851Z	INFO	utils/utils.go:224	Found user name from pod labels.	{"userLabel": "", "user": "user2"}
+2024-03-01T13:29:35.851Z	INFO	cache/context.go:635	app added	{"appID": "app-user2-000010"}
+2024-03-01T13:29:35.851Z	INFO	cache/context.go:712	task added	{"appID": "app-user2-000010", "taskID": "ba6bd2a0-d507-4ff4-befd-c812825af0d7", "taskState": "New"}
+2024-03-01T13:29:35.851Z	INFO	cache/context.go:722	app request originating pod added	{"appID": "app-user2-000010", "original task": "ba6bd2a0-d507-4ff4-befd-c812825af0d7"}
+2024-03-01T13:29:36.025Z	INFO	utils/utils.go:224	Found user name from pod labels.	{"userLabel": "", "user": "user3"}
+2024-03-01T13:29:36.026Z	INFO	cache/context.go:635	app added	{"appID": "app-user3-000001"}
+2024-03-01T13:29:36.026Z	INFO	cache/context.go:712	task added	{"appID": "app-user3-000001", "taskID": "d938f3cd-8b5f-4a20-94d1-04ae3fafd6d7", "taskState": "New"}
+2024-03-01T13:29:36.026Z	INFO	cache/context.go:722	app request originating pod added	{"appID": "app-user3-000001", "original task": "d938f3cd-8b5f-4a20-94d1-04ae3fafd6d7"}
+2024-03-01T13:29:36.201Z	INFO	utils/utils.go:224	Found user name from pod labels.	{"userLabel": "", "user": "user3"}
+2024-03-01T13:29:36.201Z	INFO	cache/context.go:635	app added	{"appID": "app-user3-000002"}
+2024-03-01T13:29:36.201Z	INFO	cache/context.go:712	task added	{"appID": "app-user3-000002", "taskID": "4a154d4a-a962-4cfd-adec-b33b25b77ef8", "taskState": "New"}
+2024-03-01T13:29:36.201Z	INFO	cache/context.go:722	app request originating pod added	{"appID": "app-user3-000002", "original task": "4a154d4a-a962-4cfd-adec-b33b25b77ef8"}
+2024-03-01T13:29:36.359Z	INFO	utils/utils.go:224	Found user name from pod labels.	{"userLabel": "", "user": "user3"}
+2024-03-01T13:29:36.359Z	INFO	cache/context.go:635	app added	{"appID": "app-user3-000003"}
+2024-03-01T13:29:36.359Z	INFO	cache/context.go:712	task added	{"appID": "app-user3-000003", "taskID": "21d83858-d46e-4c57-8a24-2c7e8c4aed3b", "taskState": "New"}
+2024-03-01T13:29:36.359Z	INFO	cache/context.go:722	app request originating pod added	{"appID": "app-user3-000003", "original task": "21d83858-d46e-4c57-8a24-2c7e8c4aed3b"}
+2024-03-01T13:29:36.528Z	INFO	utils/utils.go:224	Found user name from pod labels.	{"userLabel": "", "user": "user3"}
+2024-03-01T13:29:36.528Z	INFO	cache/context.go:635	app added	{"appID": "app-user3-000004"}
+2024-03-01T13:29:36.528Z	INFO	cache/context.go:712	task added	{"appID": "app-user3-000004", "taskID": "f3383378-a43b-4579-aa99-3ae48a6697e4", "taskState": "New"}
+2024-03-01T13:29:36.528Z	INFO	cache/context.go:722	app request originating pod added	{"appID": "app-user3-000004", "original task": "f3383378-a43b-4579-aa99-3ae48a6697e4"}
+Request not zero
+Request not zero
+2024-03-01T13:29:36.752Z	INFO	utils/utils.go:224	Found user name from pod labels.	{"userLabel": "", "user": "user3"}
+2024-03-01T13:29:36.752Z	INFO	cache/context.go:635	app added	{"appID": "app-user3-000005"}
+2024-03-01T13:29:36.752Z	INFO	cache/context.go:712	task added	{"appID": "app-user3-000005", "taskID": "870f3725-328b-45e9-9ae3-1bffb4f93bdc", "taskState": "New"}
+2024-03-01T13:29:36.752Z	INFO	cache/context.go:722	app request originating pod added	{"appID": "app-user3-000005", "original task": "870f3725-328b-45e9-9ae3-1bffb4f93bdc"}
+2024-03-01T13:29:36.810Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "New", "destination": "Pending", "event": "InitTask"}
+2024-03-01T13:29:36.810Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "New", "destination": "Pending", "event": "InitTask"}
+2024-03-01T13:29:36.810Z	INFO	cache/application.go:412	handle app submission	{"app": "applicationID: app-user3-000003, queue: root.sandbox, partition: default, totalNumOfTasks: 1, currentState: Submitted", "clusterID": "mycluster"}
+2024-03-01T13:29:36.810Z	INFO	cache/application.go:412	handle app submission	{"app": "applicationID: app-user3-000004, queue: root.sandbox, partition: default, totalNumOfTasks: 1, currentState: Submitted", "clusterID": "mycluster"}
+2024-03-01T13:29:36.810Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "New", "destination": "Pending", "event": "InitTask"}
+2024-03-01T13:29:36.810Z	INFO	cache/application.go:412	handle app submission	{"app": "applicationID: app-user3-000002, queue: root.sandbox, partition: default, totalNumOfTasks: 1, currentState: Submitted", "clusterID": "mycluster"}
+2024-03-01T13:29:36.810Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "New", "destination": "Pending", "event": "InitTask"}
+2024-03-01T13:29:36.811Z	INFO	cache/application.go:508	Skip the reservation stage	{"appID": "app-user2-000008"}
+2024-03-01T13:29:36.811Z	INFO	cache/application.go:412	handle app submission	{"app": "applicationID: app-user2-000010, queue: root.sandbox, partition: default, totalNumOfTasks: 1, currentState: Submitted", "clusterID": "mycluster"}
+2024-03-01T13:29:36.811Z	INFO	cache/application.go:412	handle app submission	{"app": "applicationID: app-user3-000001, queue: root.sandbox, partition: default, totalNumOfTasks: 1, currentState: Submitted", "clusterID": "mycluster"}
+2024-03-01T13:29:36.811Z	INFO	cache/application.go:508	Skip the reservation stage	{"appID": "app-user2-000006"}
+2024-03-01T13:29:36.811Z	INFO	cache/application.go:508	Skip the reservation stage	{"appID": "app-user2-000007"}
+2024-03-01T13:29:36.811Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "Pending", "destination": "Scheduling", "event": "SubmitTask"}
+2024-03-01T13:29:36.811Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "New", "destination": "Pending", "event": "InitTask"}
+2024-03-01T13:29:36.811Z	INFO	fair/parseUsers.go:35	Add application in fair manager	{"user": "user3", "applicationID": "app-user3-000003", "Duration": "25", "heap": 1}
+2024-03-01T13:29:36.811Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "New", "destination": "Pending", "event": "InitTask"}
+2024-03-01T13:29:36.811Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "Pending", "destination": "Scheduling", "event": "SubmitTask"}
+2024-03-01T13:29:36.811Z	INFO	cache/application.go:412	handle app submission	{"app": "applicationID: app-user2-000009, queue: root.sandbox, partition: default, totalNumOfTasks: 1, currentState: Submitted", "clusterID": "mycluster"}
+2024-03-01T13:29:36.811Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "New", "destination": "Pending", "event": "InitTask"}
+2024-03-01T13:29:36.811Z	INFO	scheduler/context.go:604	Added application to partition	{"applicationID": "app-user3-000003", "partitionName": "[mycluster]default", "requested queue": "root.sandbox", "placed queue": "root.sandbox"}
+2024-03-01T13:29:36.811Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "New", "destination": "Pending", "event": "InitTask"}
+2024-03-01T13:29:36.811Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "Pending", "destination": "Scheduling", "event": "SubmitTask"}
+2024-03-01T13:29:36.811Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "New", "destination": "Pending", "event": "InitTask"}
+2024-03-01T13:29:36.811Z	INFO	cache/application.go:412	handle app submission	{"app": "applicationID: app-user3-000005, queue: root.sandbox, partition: default, totalNumOfTasks: 1, currentState: Submitted", "clusterID": "mycluster"}
+2024-03-01T13:29:36.811Z	INFO	fair/parseUsers.go:35	Add application in fair manager	{"user": "user3", "applicationID": "app-user3-000004", "Duration": "25", "heap": 1}
+2024-03-01T13:29:36.811Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "New", "destination": "Pending", "event": "InitTask"}
+2024-03-01T13:29:36.811Z	INFO	scheduler/context.go:604	Added application to partition	{"applicationID": "app-user3-000004", "partitionName": "[mycluster]default", "requested queue": "root.sandbox", "placed queue": "root.sandbox"}
+2024-03-01T13:29:36.811Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "New", "destination": "Pending", "event": "InitTask"}
+2024-03-01T13:29:36.811Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "Pending", "destination": "Scheduling", "event": "SubmitTask"}
+2024-03-01T13:29:36.811Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "New", "destination": "Pending", "event": "InitTask"}
+2024-03-01T13:29:36.811Z	INFO	fair/parseUsers.go:35	Add application in fair manager	{"user": "user2", "applicationID": "app-user2-000010", "Duration": "100", "heap": 1}
+2024-03-01T13:29:36.811Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "New", "destination": "Pending", "event": "InitTask"}
+2024-03-01T13:29:36.811Z	INFO	callback/scheduler_callback.go:113	Accepting app	{"appID": "app-user3-000003"}
+2024-03-01T13:29:36.811Z	INFO	scheduler/context.go:604	Added application to partition	{"applicationID": "app-user2-000010", "partitionName": "[mycluster]default", "requested queue": "root.sandbox", "placed queue": "root.sandbox"}
+2024-03-01T13:29:36.811Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "Pending", "destination": "Scheduling", "event": "SubmitTask"}
+2024-03-01T13:29:36.811Z	INFO	callback/scheduler_callback.go:113	Accepting app	{"appID": "app-user3-000004"}
+2024-03-01T13:29:36.811Z	INFO	fair/parseUsers.go:35	Add application in fair manager	{"user": "user3", "applicationID": "app-user3-000002", "Duration": "25", "heap": 2}
+2024-03-01T13:29:36.811Z	INFO	callback/scheduler_callback.go:113	Accepting app	{"appID": "app-user2-000010"}
+2024-03-01T13:29:36.811Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "Pending", "destination": "Scheduling", "event": "SubmitTask"}
+2024-03-01T13:29:36.811Z	INFO	scheduler/context.go:604	Added application to partition	{"applicationID": "app-user3-000002", "partitionName": "[mycluster]default", "requested queue": "root.sandbox", "placed queue": "root.sandbox"}
+2024-03-01T13:29:36.811Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "Pending", "destination": "Scheduling", "event": "SubmitTask"}
+2024-03-01T13:29:36.812Z	INFO	callback/scheduler_callback.go:113	Accepting app	{"appID": "app-user3-000002"}
+2024-03-01T13:29:36.812Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "Pending", "destination": "Scheduling", "event": "SubmitTask"}
+2024-03-01T13:29:36.812Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "Pending", "destination": "Scheduling", "event": "SubmitTask"}
+2024-03-01T13:29:36.812Z	INFO	fair/parseUsers.go:35	Add application in fair manager	{"user": "user3", "applicationID": "app-user3-000001", "Duration": "25", "heap": 1}
+2024-03-01T13:29:36.812Z	INFO	scheduler/context.go:604	Added application to partition	{"applicationID": "app-user3-000001", "partitionName": "[mycluster]default", "requested queue": "root.sandbox", "placed queue": "root.sandbox"}
+2024-03-01T13:29:36.812Z	INFO	objects/application_state.go:129	Application state transition	{"appID": "app-user1-000007", "source": "New", "destination": "Accepted", "event": "runApplication"}
+2024-03-01T13:29:36.812Z	INFO	objects/application.go:598	ask added successfully to application	{"appID": "app-user1-000007", "ask": "f9c6c3d7-bf5d-4a88-a7e8-13a395aba11a", "placeholder": false, "pendingDelta": "map[memory:8000000000 vcore:2000]"}
+2024-03-01T13:29:36.812Z	INFO	fair/parseUsers.go:35	Add application in fair manager	{"user": "user2", "applicationID": "app-user2-000009", "Duration": "100", "heap": 1}
+2024-03-01T13:29:36.812Z	INFO	scheduler/context.go:604	Added application to partition	{"applicationID": "app-user2-000009", "partitionName": "[mycluster]default", "requested queue": "root.sandbox", "placed queue": "root.sandbox"}
+2024-03-01T13:29:36.812Z	INFO	fair/parseUsers.go:35	Add application in fair manager	{"user": "user3", "applicationID": "app-user3-000005", "Duration": "25", "heap": 1}
+2024-03-01T13:29:36.812Z	INFO	scheduler/context.go:604	Added application to partition	{"applicationID": "app-user3-000005", "partitionName": "[mycluster]default", "requested queue": "root.sandbox", "placed queue": "root.sandbox"}
+2024-03-01T13:29:36.812Z	INFO	objects/application_state.go:129	Application state transition	{"appID": "app-user2-000001", "source": "New", "destination": "Accepted", "event": "runApplication"}
+2024-03-01T13:29:36.812Z	INFO	objects/application.go:598	ask added successfully to application	{"appID": "app-user2-000001", "ask": "65c401eb-f5ce-46f2-b538-113130fdf253", "placeholder": false, "pendingDelta": "map[memory:4000000000 vcore:1000]"}
+2024-03-01T13:29:36.812Z	INFO	objects/application_state.go:129	Application state transition	{"appID": "app-user2-000003", "source": "New", "destination": "Accepted", "event": "runApplication"}
+2024-03-01T13:29:36.812Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "Pending", "destination": "Scheduling", "event": "SubmitTask"}
+2024-03-01T13:29:36.812Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "Pending", "destination": "Scheduling", "event": "SubmitTask"}
+2024-03-01T13:29:36.812Z	INFO	callback/scheduler_callback.go:113	Accepting app	{"appID": "app-user3-000001"}
+2024-03-01T13:29:36.812Z	INFO	callback/scheduler_callback.go:113	Accepting app	{"appID": "app-user2-000009"}
+2024-03-01T13:29:36.812Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "Pending", "destination": "Scheduling", "event": "SubmitTask"}
+2024-03-01T13:29:36.813Z	INFO	callback/scheduler_callback.go:113	Accepting app	{"appID": "app-user3-000005"}
+2024-03-01T13:29:36.812Z	INFO	objects/application.go:598	ask added successfully to application	{"appID": "app-user2-000003", "ask": "d01333a1-3e7c-41d4-8803-98e2721eac82", "placeholder": false, "pendingDelta": "map[memory:4000000000 vcore:1000]"}
+2024-03-01T13:29:36.813Z	INFO	objects/application_state.go:129	Application state transition	{"appID": "app-user1-000010", "source": "New", "destination": "Accepted", "event": "runApplication"}
+2024-03-01T13:29:36.813Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "Pending", "destination": "Scheduling", "event": "SubmitTask"}
+2024-03-01T13:29:36.813Z	INFO	objects/application.go:598	ask added successfully to application	{"appID": "app-user1-000010", "ask": "0060e0ba-94fd-4bec-ac3a-f72d3ceea5a3", "placeholder": false, "pendingDelta": "map[memory:8000000000 vcore:2000]"}
+2024-03-01T13:29:36.813Z	INFO	objects/application_state.go:129	Application state transition	{"appID": "app-user1-000005", "source": "New", "destination": "Accepted", "event": "runApplication"}
+2024-03-01T13:29:36.813Z	INFO	objects/application.go:598	ask added successfully to application	{"appID": "app-user1-000005", "ask": "a4d6653c-bdd0-4750-9525-57371d51b372", "placeholder": false, "pendingDelta": "map[memory:8000000000 vcore:2000]"}
+2024-03-01T13:29:36.813Z	INFO	objects/application_state.go:129	Application state transition	{"appID": "app-user1-000009", "source": "New", "destination": "Accepted", "event": "runApplication"}
+2024-03-01T13:29:36.813Z	INFO	objects/application.go:598	ask added successfully to application	{"appID": "app-user1-000009", "ask": "a68634d1-4aa2-47a5-8c6f-e117dba7f996", "placeholder": false, "pendingDelta": "map[memory:8000000000 vcore:2000]"}
+2024-03-01T13:29:36.813Z	INFO	objects/application_state.go:129	Application state transition	{"appID": "app-user1-000003", "source": "New", "destination": "Accepted", "event": "runApplication"}
+2024-03-01T13:29:36.813Z	INFO	objects/application.go:598	ask added successfully to application	{"appID": "app-user1-000003", "ask": "a2f21d9e-ac75-4cd0-9391-0fa5c75a62de", "placeholder": false, "pendingDelta": "map[memory:8000000000 vcore:2000]"}
+2024-03-01T13:29:36.813Z	INFO	objects/application_state.go:129	Application state transition	{"appID": "app-user1-000006", "source": "New", "destination": "Accepted", "event": "runApplication"}
+2024-03-01T13:29:36.813Z	INFO	objects/application.go:598	ask added successfully to application	{"appID": "app-user1-000006", "ask": "568749aa-28c6-408b-a6aa-33b9f6de35de", "placeholder": false, "pendingDelta": "map[memory:8000000000 vcore:2000]"}
+2024-03-01T13:29:36.813Z	INFO	objects/application_state.go:129	Application state transition	{"appID": "app-user2-000005", "source": "New", "destination": "Accepted", "event": "runApplication"}
+2024-03-01T13:29:36.813Z	INFO	objects/application.go:598	ask added successfully to application	{"appID": "app-user2-000005", "ask": "b4e7de69-dbe0-47f0-821e-96e5ac036dda", "placeholder": false, "pendingDelta": "map[memory:4000000000 vcore:1000]"}
+2024-03-01T13:29:36.813Z	INFO	objects/application_state.go:129	Application state transition	{"appID": "app-user1-000004", "source": "New", "destination": "Accepted", "event": "runApplication"}
+2024-03-01T13:29:36.813Z	INFO	objects/application.go:598	ask added successfully to application	{"appID": "app-user1-000004", "ask": "888d6298-4247-45c9-8b2a-272dbf41b03d", "placeholder": false, "pendingDelta": "map[memory:8000000000 vcore:2000]"}
+2024-03-01T13:29:36.813Z	INFO	objects/application_state.go:129	Application state transition	{"appID": "app-user2-000002", "source": "New", "destination": "Accepted", "event": "runApplication"}
+2024-03-01T13:29:36.813Z	INFO	objects/application.go:598	ask added successfully to application	{"appID": "app-user2-000002", "ask": "80e47661-4b25-4f18-8adb-25c84069e323", "placeholder": false, "pendingDelta": "map[memory:4000000000 vcore:1000]"}
+2024-03-01T13:29:36.813Z	INFO	objects/application_state.go:129	Application state transition	{"appID": "app-user2-000004", "source": "New", "destination": "Accepted", "event": "runApplication"}
+2024-03-01T13:29:36.813Z	INFO	objects/application.go:598	ask added successfully to application	{"appID": "app-user2-000004", "ask": "dccc8888-5f2d-4d5c-bb97-ffd19b8a82f1", "placeholder": false, "pendingDelta": "map[memory:4000000000 vcore:1000]"}
+2024-03-01T13:29:36.813Z	INFO	objects/application_state.go:129	Application state transition	{"appID": "app-user1-000008", "source": "New", "destination": "Accepted", "event": "runApplication"}
+2024-03-01T13:29:36.813Z	INFO	objects/application.go:598	ask added successfully to application	{"appID": "app-user1-000008", "ask": "59b1e332-4424-4d2a-a0cd-a7df48701bf1", "placeholder": false, "pendingDelta": "map[memory:8000000000 vcore:2000]"}
+2024-03-01T13:29:37.028Z	INFO	utils/utils.go:224	Found user name from pod labels.	{"userLabel": "", "user": "user3"}
+2024-03-01T13:29:37.028Z	INFO	cache/context.go:635	app added	{"appID": "app-user3-000006"}
+2024-03-01T13:29:37.028Z	INFO	cache/context.go:712	task added	{"appID": "app-user3-000006", "taskID": "8b99b08a-fd9f-4b63-acb5-f4a32a2b7702", "taskState": "New"}
+2024-03-01T13:29:37.028Z	INFO	cache/context.go:722	app request originating pod added	{"appID": "app-user3-000006", "original task": "8b99b08a-fd9f-4b63-acb5-f4a32a2b7702"}
+2024-03-01T13:29:37.252Z	INFO	utils/utils.go:224	Found user name from pod labels.	{"userLabel": "", "user": "user3"}
+2024-03-01T13:29:37.252Z	INFO	cache/context.go:635	app added	{"appID": "app-user3-000007"}
+2024-03-01T13:29:37.252Z	INFO	cache/context.go:712	task added	{"appID": "app-user3-000007", "taskID": "1938f37c-41a8-43de-b877-6ad1332cea2a", "taskState": "New"}
+2024-03-01T13:29:37.252Z	INFO	cache/context.go:722	app request originating pod added	{"appID": "app-user3-000007", "original task": "1938f37c-41a8-43de-b877-6ad1332cea2a"}
+2024-03-01T13:29:37.330Z	INFO	utils/utils.go:224	Found user name from pod labels.	{"userLabel": "", "user": "user3"}
+2024-03-01T13:29:37.330Z	INFO	cache/context.go:635	app added	{"appID": "app-user3-000008"}
+2024-03-01T13:29:37.330Z	INFO	cache/context.go:712	task added	{"appID": "app-user3-000008", "taskID": "5fc0164d-d7a8-4510-a0a4-9a1979a7d4bb", "taskState": "New"}
+2024-03-01T13:29:37.330Z	INFO	cache/context.go:722	app request originating pod added	{"appID": "app-user3-000008", "original task": "5fc0164d-d7a8-4510-a0a4-9a1979a7d4bb"}
+2024-03-01T13:29:37.528Z	INFO	utils/utils.go:224	Found user name from pod labels.	{"userLabel": "", "user": "user3"}
+2024-03-01T13:29:37.528Z	INFO	cache/context.go:635	app added	{"appID": "app-user3-000009"}
+2024-03-01T13:29:37.528Z	INFO	cache/context.go:712	task added	{"appID": "app-user3-000009", "taskID": "8b66ade9-98e7-4499-9950-f90e8decbfea", "taskState": "New"}
+2024-03-01T13:29:37.528Z	INFO	cache/context.go:722	app request originating pod added	{"appID": "app-user3-000009", "original task": "8b66ade9-98e7-4499-9950-f90e8decbfea"}
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+2024-03-01T13:29:37.812Z	INFO	cache/application.go:508	Skip the reservation stage	{"appID": "app-user3-000004"}
+2024-03-01T13:29:37.812Z	INFO	cache/application.go:508	Skip the reservation stage	{"appID": "app-user2-000010"}
+2024-03-01T13:29:37.812Z	INFO	cache/application.go:508	Skip the reservation stage	{"appID": "app-user3-000001"}
+2024-03-01T13:29:37.812Z	INFO	cache/application.go:508	Skip the reservation stage	{"appID": "app-user3-000002"}
+2024-03-01T13:29:37.812Z	INFO	cache/application.go:412	handle app submission	{"app": "applicationID: app-user3-000009, queue: root.sandbox, partition: default, totalNumOfTasks: 1, currentState: Submitted", "clusterID": "mycluster"}
+2024-03-01T13:29:37.812Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "New", "destination": "Pending", "event": "InitTask"}
+2024-03-01T13:29:37.812Z	INFO	cache/application.go:412	handle app submission	{"app": "applicationID: app-user3-000007, queue: root.sandbox, partition: default, totalNumOfTasks: 1, currentState: Submitted", "clusterID": "mycluster"}
+2024-03-01T13:29:37.812Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "New", "destination": "Pending", "event": "InitTask"}
+2024-03-01T13:29:37.812Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "Pending", "destination": "Scheduling", "event": "SubmitTask"}
+2024-03-01T13:29:37.812Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "New", "destination": "Pending", "event": "InitTask"}
+2024-03-01T13:29:37.812Z	INFO	cache/application.go:508	Skip the reservation stage	{"appID": "app-user2-000009"}
+2024-03-01T13:29:37.812Z	INFO	cache/application.go:412	handle app submission	{"app": "applicationID: app-user3-000008, queue: root.sandbox, partition: default, totalNumOfTasks: 1, currentState: Submitted", "clusterID": "mycluster"}
+2024-03-01T13:29:37.812Z	INFO	cache/application.go:508	Skip the reservation stage	{"appID": "app-user3-000005"}
+2024-03-01T13:29:37.812Z	INFO	cache/application.go:412	handle app submission	{"app": "applicationID: app-user3-000006, queue: root.sandbox, partition: default, totalNumOfTasks: 1, currentState: Submitted", "clusterID": "mycluster"}
+2024-03-01T13:29:37.812Z	INFO	fair/parseUsers.go:35	Add application in fair manager	{"user": "user3", "applicationID": "app-user3-000009", "Duration": "25", "heap": 1}
+2024-03-01T13:29:37.812Z	INFO	cache/application.go:508	Skip the reservation stage	{"appID": "app-user3-000003"}
+2024-03-01T13:29:37.812Z	INFO	scheduler/context.go:604	Added application to partition	{"applicationID": "app-user3-000009", "partitionName": "[mycluster]default", "requested queue": "root.sandbox", "placed queue": "root.sandbox"}
+2024-03-01T13:29:37.812Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "Pending", "destination": "Scheduling", "event": "SubmitTask"}
+2024-03-01T13:29:37.812Z	INFO	fair/parseUsers.go:35	Add application in fair manager	{"user": "user3", "applicationID": "app-user3-000006", "Duration": "25", "heap": 1}
+2024-03-01T13:29:37.812Z	INFO	scheduler/context.go:604	Added application to partition	{"applicationID": "app-user3-000006", "partitionName": "[mycluster]default", "requested queue": "root.sandbox", "placed queue": "root.sandbox"}
+2024-03-01T13:29:37.812Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "Pending", "destination": "Scheduling", "event": "SubmitTask"}
+2024-03-01T13:29:37.812Z	INFO	fair/parseUsers.go:35	Add application in fair manager	{"user": "user3", "applicationID": "app-user3-000007", "Duration": "25", "heap": 1}
+2024-03-01T13:29:37.812Z	INFO	scheduler/context.go:604	Added application to partition	{"applicationID": "app-user3-000007", "partitionName": "[mycluster]default", "requested queue": "root.sandbox", "placed queue": "root.sandbox"}
+2024-03-01T13:29:37.812Z	INFO	callback/scheduler_callback.go:113	Accepting app	{"appID": "app-user3-000009"}
+2024-03-01T13:29:37.812Z	INFO	fair/parseUsers.go:35	Add application in fair manager	{"user": "user3", "applicationID": "app-user3-000008", "Duration": "25", "heap": 2}
+2024-03-01T13:29:37.812Z	INFO	callback/scheduler_callback.go:113	Accepting app	{"appID": "app-user3-000006"}
+2024-03-01T13:29:37.812Z	INFO	scheduler/context.go:604	Added application to partition	{"applicationID": "app-user3-000008", "partitionName": "[mycluster]default", "requested queue": "root.sandbox", "placed queue": "root.sandbox"}
+2024-03-01T13:29:37.812Z	INFO	callback/scheduler_callback.go:113	Accepting app	{"appID": "app-user3-000007"}
+2024-03-01T13:29:37.812Z	INFO	objects/application_state.go:129	Application state transition	{"appID": "app-user2-000008", "source": "New", "destination": "Accepted", "event": "runApplication"}
+2024-03-01T13:29:37.812Z	INFO	callback/scheduler_callback.go:113	Accepting app	{"appID": "app-user3-000008"}
+2024-03-01T13:29:37.812Z	INFO	objects/application.go:598	ask added successfully to application	{"appID": "app-user2-000008", "ask": "f4397e75-6b2c-4c0b-bfa6-0515d7410bc6", "placeholder": false, "pendingDelta": "map[memory:4000000000 vcore:1000]"}
+2024-03-01T13:29:37.812Z	INFO	objects/application_state.go:129	Application state transition	{"appID": "app-user2-000006", "source": "New", "destination": "Accepted", "event": "runApplication"}
+2024-03-01T13:29:37.812Z	INFO	objects/application.go:598	ask added successfully to application	{"appID": "app-user2-000006", "ask": "88fdf5f3-e522-44d1-a6e4-3ad259336eca", "placeholder": false, "pendingDelta": "map[memory:4000000000 vcore:1000]"}
+2024-03-01T13:29:37.812Z	INFO	objects/application_state.go:129	Application state transition	{"appID": "app-user2-000007", "source": "New", "destination": "Accepted", "event": "runApplication"}
+2024-03-01T13:29:37.812Z	INFO	objects/application.go:598	ask added successfully to application	{"appID": "app-user2-000007", "ask": "7a741cf4-f5e1-4dd5-8129-3cbec4b4c3a1", "placeholder": false, "pendingDelta": "map[memory:4000000000 vcore:1000]"}
+2024-03-01T13:29:37.904Z	INFO	utils/utils.go:224	Found user name from pod labels.	{"userLabel": "", "user": "user3"}
+2024-03-01T13:29:37.904Z	INFO	cache/context.go:635	app added	{"appID": "app-user3-000010"}
+2024-03-01T13:29:37.904Z	INFO	cache/context.go:712	task added	{"appID": "app-user3-000010", "taskID": "5e6ca307-8d90-4e8d-bb83-6936228cfc34", "taskState": "New"}
+2024-03-01T13:29:37.904Z	INFO	cache/context.go:722	app request originating pod added	{"appID": "app-user3-000010", "original task": "5e6ca307-8d90-4e8d-bb83-6936228cfc34"}
+2024-03-01T13:29:37.962Z	INFO	utils/utils.go:224	Found user name from pod labels.	{"userLabel": "", "user": "user4"}
+2024-03-01T13:29:37.963Z	INFO	cache/context.go:635	app added	{"appID": "app-user4-000001"}
+2024-03-01T13:29:37.963Z	INFO	cache/context.go:712	task added	{"appID": "app-user4-000001", "taskID": "71fe4a59-4bf8-43d8-9dbe-305deb6eb700", "taskState": "New"}
+2024-03-01T13:29:37.963Z	INFO	cache/context.go:722	app request originating pod added	{"appID": "app-user4-000001", "original task": "71fe4a59-4bf8-43d8-9dbe-305deb6eb700"}
+2024-03-01T13:29:38.372Z	INFO	utils/utils.go:224	Found user name from pod labels.	{"userLabel": "", "user": "user4"}
+2024-03-01T13:29:38.372Z	INFO	cache/context.go:635	app added	{"appID": "app-user4-000002"}
+2024-03-01T13:29:38.372Z	INFO	cache/context.go:712	task added	{"appID": "app-user4-000002", "taskID": "6085d5c6-b7d7-4448-9671-2df6318024d9", "taskState": "New"}
+2024-03-01T13:29:38.372Z	INFO	cache/context.go:722	app request originating pod added	{"appID": "app-user4-000002", "original task": "6085d5c6-b7d7-4448-9671-2df6318024d9"}
+2024-03-01T13:29:38.404Z	INFO	utils/utils.go:224	Found user name from pod labels.	{"userLabel": "", "user": "user4"}
+2024-03-01T13:29:38.404Z	INFO	cache/context.go:635	app added	{"appID": "app-user4-000003"}
+2024-03-01T13:29:38.404Z	INFO	cache/context.go:712	task added	{"appID": "app-user4-000003", "taskID": "2a863177-d740-4911-94ff-0df7960c023b", "taskState": "New"}
+2024-03-01T13:29:38.404Z	INFO	cache/context.go:722	app request originating pod added	{"appID": "app-user4-000003", "original task": "2a863177-d740-4911-94ff-0df7960c023b"}
+2024-03-01T13:29:38.698Z	INFO	utils/utils.go:224	Found user name from pod labels.	{"userLabel": "", "user": "user4"}
+2024-03-01T13:29:38.698Z	INFO	cache/context.go:635	app added	{"appID": "app-user4-000004"}
+2024-03-01T13:29:38.698Z	INFO	cache/context.go:712	task added	{"appID": "app-user4-000004", "taskID": "1810070e-1743-43ea-9bbc-c1c186242fbb", "taskState": "New"}
+2024-03-01T13:29:38.698Z	INFO	cache/context.go:722	app request originating pod added	{"appID": "app-user4-000004", "original task": "1810070e-1743-43ea-9bbc-c1c186242fbb"}
+2024-03-01T13:29:38.813Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "New", "destination": "Pending", "event": "InitTask"}
+2024-03-01T13:29:38.813Z	INFO	cache/application.go:508	Skip the reservation stage	{"appID": "app-user3-000009"}
+2024-03-01T13:29:38.813Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "New", "destination": "Pending", "event": "InitTask"}
+2024-03-01T13:29:38.813Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "New", "destination": "Pending", "event": "InitTask"}
+2024-03-01T13:29:38.813Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "New", "destination": "Pending", "event": "InitTask"}
+2024-03-01T13:29:38.813Z	INFO	cache/application.go:508	Skip the reservation stage	{"appID": "app-user3-000007"}
+2024-03-01T13:29:38.813Z	INFO	cache/application.go:412	handle app submission	{"app": "applicationID: app-user4-000001, queue: root.sandbox, partition: default, totalNumOfTasks: 1, currentState: Submitted", "clusterID": "mycluster"}
+2024-03-01T13:29:38.813Z	INFO	cache/application.go:412	handle app submission	{"app": "applicationID: app-user4-000003, queue: root.sandbox, partition: default, totalNumOfTasks: 1, currentState: Submitted", "clusterID": "mycluster"}
+2024-03-01T13:29:38.813Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "New", "destination": "Pending", "event": "InitTask"}
+2024-03-01T13:29:38.813Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "Pending", "destination": "Scheduling", "event": "SubmitTask"}
+2024-03-01T13:29:38.813Z	INFO	cache/application.go:412	handle app submission	{"app": "applicationID: app-user3-000010, queue: root.sandbox, partition: default, totalNumOfTasks: 1, currentState: Submitted", "clusterID": "mycluster"}
+2024-03-01T13:29:38.813Z	INFO	cache/application.go:508	Skip the reservation stage	{"appID": "app-user3-000008"}
+2024-03-01T13:29:38.813Z	INFO	fair/parseUsers.go:35	Add application in fair manager	{"user": "user4", "applicationID": "app-user4-000003", "Duration": "75", "heap": 1}
+2024-03-01T13:29:38.813Z	INFO	cache/application.go:412	handle app submission	{"app": "applicationID: app-user4-000004, queue: root.sandbox, partition: default, totalNumOfTasks: 1, currentState: Submitted", "clusterID": "mycluster"}
+2024-03-01T13:29:38.813Z	INFO	cache/application.go:508	Skip the reservation stage	{"appID": "app-user3-000006"}
+2024-03-01T13:29:38.813Z	INFO	scheduler/context.go:604	Added application to partition	{"applicationID": "app-user4-000003", "partitionName": "[mycluster]default", "requested queue": "root.sandbox", "placed queue": "root.sandbox"}
+2024-03-01T13:29:38.813Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "New", "destination": "Pending", "event": "InitTask"}
+2024-03-01T13:29:38.813Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "Pending", "destination": "Scheduling", "event": "SubmitTask"}
+2024-03-01T13:29:38.813Z	INFO	fair/parseUsers.go:35	Add application in fair manager	{"user": "user4", "applicationID": "app-user4-000001", "Duration": "75", "heap": 1}
+2024-03-01T13:29:38.813Z	INFO	cache/application.go:412	handle app submission	{"app": "applicationID: app-user4-000002, queue: root.sandbox, partition: default, totalNumOfTasks: 1, currentState: Submitted", "clusterID": "mycluster"}
+2024-03-01T13:29:38.813Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "New", "destination": "Pending", "event": "InitTask"}
+2024-03-01T13:29:38.813Z	INFO	scheduler/context.go:604	Added application to partition	{"applicationID": "app-user4-000001", "partitionName": "[mycluster]default", "requested queue": "root.sandbox", "placed queue": "root.sandbox"}
+2024-03-01T13:29:38.813Z	INFO	callback/scheduler_callback.go:113	Accepting app	{"appID": "app-user4-000003"}
+2024-03-01T13:29:38.813Z	INFO	callback/scheduler_callback.go:113	Accepting app	{"appID": "app-user4-000001"}
+2024-03-01T13:29:38.813Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "Pending", "destination": "Scheduling", "event": "SubmitTask"}
+2024-03-01T13:29:38.813Z	INFO	fair/parseUsers.go:35	Add application in fair manager	{"user": "user3", "applicationID": "app-user3-000010", "Duration": "25", "heap": 1}
+2024-03-01T13:29:38.813Z	INFO	scheduler/context.go:604	Added application to partition	{"applicationID": "app-user3-000010", "partitionName": "[mycluster]default", "requested queue": "root.sandbox", "placed queue": "root.sandbox"}
+2024-03-01T13:29:38.813Z	INFO	fair/parseUsers.go:35	Add application in fair manager	{"user": "user4", "applicationID": "app-user4-000004", "Duration": "75", "heap": 1}
+2024-03-01T13:29:38.813Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "Pending", "destination": "Scheduling", "event": "SubmitTask"}
+2024-03-01T13:29:38.813Z	INFO	callback/scheduler_callback.go:113	Accepting app	{"appID": "app-user3-000010"}
+2024-03-01T13:29:38.813Z	INFO	scheduler/context.go:604	Added application to partition	{"applicationID": "app-user4-000004", "partitionName": "[mycluster]default", "requested queue": "root.sandbox", "placed queue": "root.sandbox"}
+2024-03-01T13:29:38.813Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "Pending", "destination": "Scheduling", "event": "SubmitTask"}
+2024-03-01T13:29:38.813Z	INFO	fair/parseUsers.go:35	Add application in fair manager	{"user": "user4", "applicationID": "app-user4-000002", "Duration": "75", "heap": 1}
+2024-03-01T13:29:38.813Z	INFO	scheduler/context.go:604	Added application to partition	{"applicationID": "app-user4-000002", "partitionName": "[mycluster]default", "requested queue": "root.sandbox", "placed queue": "root.sandbox"}
+2024-03-01T13:29:38.813Z	INFO	callback/scheduler_callback.go:113	Accepting app	{"appID": "app-user4-000004"}
+2024-03-01T13:29:38.813Z	INFO	objects/application_state.go:129	Application state transition	{"appID": "app-user2-000010", "source": "New", "destination": "Accepted", "event": "runApplication"}
+2024-03-01T13:29:38.813Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "Pending", "destination": "Scheduling", "event": "SubmitTask"}
+2024-03-01T13:29:38.813Z	INFO	callback/scheduler_callback.go:113	Accepting app	{"appID": "app-user4-000002"}
+2024-03-01T13:29:38.813Z	INFO	objects/application.go:598	ask added successfully to application	{"appID": "app-user2-000010", "ask": "ba6bd2a0-d507-4ff4-befd-c812825af0d7", "placeholder": false, "pendingDelta": "map[memory:4000000000 vcore:1000]"}
+2024-03-01T13:29:38.813Z	INFO	objects/application_state.go:129	Application state transition	{"appID": "app-user3-000004", "source": "New", "destination": "Accepted", "event": "runApplication"}
+2024-03-01T13:29:38.813Z	INFO	objects/application.go:598	ask added successfully to application	{"appID": "app-user3-000004", "ask": "f3383378-a43b-4579-aa99-3ae48a6697e4", "placeholder": false, "pendingDelta": "map[memory:2000000000 vcore:8000]"}
+2024-03-01T13:29:38.813Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "Pending", "destination": "Scheduling", "event": "SubmitTask"}
+2024-03-01T13:29:38.813Z	INFO	objects/application_state.go:129	Application state transition	{"appID": "app-user3-000002", "source": "New", "destination": "Accepted", "event": "runApplication"}
+2024-03-01T13:29:38.813Z	INFO	objects/application.go:598	ask added successfully to application	{"appID": "app-user3-000002", "ask": "4a154d4a-a962-4cfd-adec-b33b25b77ef8", "placeholder": false, "pendingDelta": "map[memory:2000000000 vcore:8000]"}
+2024-03-01T13:29:38.813Z	INFO	objects/application_state.go:129	Application state transition	{"appID": "app-user3-000001", "source": "New", "destination": "Accepted", "event": "runApplication"}
+2024-03-01T13:29:38.813Z	INFO	objects/application.go:598	ask added successfully to application	{"appID": "app-user3-000001", "ask": "d938f3cd-8b5f-4a20-94d1-04ae3fafd6d7", "placeholder": false, "pendingDelta": "map[memory:2000000000 vcore:8000]"}
+2024-03-01T13:29:38.813Z	INFO	objects/application_state.go:129	Application state transition	{"appID": "app-user3-000005", "source": "New", "destination": "Accepted", "event": "runApplication"}
+2024-03-01T13:29:38.813Z	INFO	objects/application.go:598	ask added successfully to application	{"appID": "app-user3-000005", "ask": "870f3725-328b-45e9-9ae3-1bffb4f93bdc", "placeholder": false, "pendingDelta": "map[memory:2000000000 vcore:8000]"}
+2024-03-01T13:29:38.813Z	INFO	objects/application_state.go:129	Application state transition	{"appID": "app-user3-000003", "source": "New", "destination": "Accepted", "event": "runApplication"}
+2024-03-01T13:29:38.813Z	INFO	objects/application.go:598	ask added successfully to application	{"appID": "app-user3-000003", "ask": "21d83858-d46e-4c57-8a24-2c7e8c4aed3b", "placeholder": false, "pendingDelta": "map[memory:2000000000 vcore:8000]"}
+2024-03-01T13:29:38.813Z	INFO	objects/application_state.go:129	Application state transition	{"appID": "app-user2-000009", "source": "New", "destination": "Accepted", "event": "runApplication"}
+2024-03-01T13:29:38.813Z	INFO	objects/application.go:598	ask added successfully to application	{"appID": "app-user2-000009", "ask": "de54abe6-0005-48e0-84fc-16e5aecd87c6", "placeholder": false, "pendingDelta": "map[memory:4000000000 vcore:1000]"}
+2024-03-01T13:29:38.965Z	INFO	utils/utils.go:224	Found user name from pod labels.	{"userLabel": "", "user": "user4"}
+2024-03-01T13:29:38.965Z	INFO	cache/context.go:635	app added	{"appID": "app-user4-000005"}
+2024-03-01T13:29:38.965Z	INFO	cache/context.go:712	task added	{"appID": "app-user4-000005", "taskID": "59e4cf8a-401b-48a6-8391-c62412e5258d", "taskState": "New"}
+2024-03-01T13:29:38.965Z	INFO	cache/context.go:722	app request originating pod added	{"appID": "app-user4-000005", "original task": "59e4cf8a-401b-48a6-8391-c62412e5258d"}
+2024-03-01T13:29:39.229Z	INFO	utils/utils.go:224	Found user name from pod labels.	{"userLabel": "", "user": "user4"}
+2024-03-01T13:29:39.230Z	INFO	cache/context.go:635	app added	{"appID": "app-user4-000006"}
+2024-03-01T13:29:39.230Z	INFO	cache/context.go:712	task added	{"appID": "app-user4-000006", "taskID": "8f8e1eb4-6656-486b-8610-b0f275d4755a", "taskState": "New"}
+2024-03-01T13:29:39.230Z	INFO	cache/context.go:722	app request originating pod added	{"appID": "app-user4-000006", "original task": "8f8e1eb4-6656-486b-8610-b0f275d4755a"}
+2024-03-01T13:29:39.248Z	INFO	utils/utils.go:224	Found user name from pod labels.	{"userLabel": "", "user": "user4"}
+2024-03-01T13:29:39.248Z	INFO	cache/context.go:635	app added	{"appID": "app-user4-000007"}
+2024-03-01T13:29:39.248Z	INFO	cache/context.go:712	task added	{"appID": "app-user4-000007", "taskID": "056063c4-ac0a-4062-b438-dd22fb325937", "taskState": "New"}
+2024-03-01T13:29:39.248Z	INFO	cache/context.go:722	app request originating pod added	{"appID": "app-user4-000007", "original task": "056063c4-ac0a-4062-b438-dd22fb325937"}
+2024-03-01T13:29:39.328Z	INFO	utils/utils.go:224	Found user name from pod labels.	{"userLabel": "", "user": "user4"}
+2024-03-01T13:29:39.328Z	INFO	cache/context.go:635	app added	{"appID": "app-user4-000008"}
+2024-03-01T13:29:39.328Z	INFO	cache/context.go:712	task added	{"appID": "app-user4-000008", "taskID": "5bee4398-138c-4cc5-a79d-244c3784f341", "taskState": "New"}
+2024-03-01T13:29:39.328Z	INFO	cache/context.go:722	app request originating pod added	{"appID": "app-user4-000008", "original task": "5bee4398-138c-4cc5-a79d-244c3784f341"}
+2024-03-01T13:29:39.527Z	INFO	utils/utils.go:224	Found user name from pod labels.	{"userLabel": "", "user": "user4"}
+2024-03-01T13:29:39.528Z	INFO	cache/context.go:635	app added	{"appID": "app-user4-000009"}
+2024-03-01T13:29:39.528Z	INFO	cache/context.go:712	task added	{"appID": "app-user4-000009", "taskID": "fb300635-77dd-406d-9f0a-20d17624a6e4", "taskState": "New"}
+2024-03-01T13:29:39.528Z	INFO	cache/context.go:722	app request originating pod added	{"appID": "app-user4-000009", "original task": "fb300635-77dd-406d-9f0a-20d17624a6e4"}
+2024-03-01T13:29:39.763Z	INFO	utils/utils.go:224	Found user name from pod labels.	{"userLabel": "", "user": "user4"}
+2024-03-01T13:29:39.763Z	INFO	cache/context.go:635	app added	{"appID": "app-user4-000010"}
+2024-03-01T13:29:39.763Z	INFO	cache/context.go:712	task added	{"appID": "app-user4-000010", "taskID": "6728efd1-91c8-4e77-b5f7-e3c059b2619e", "taskState": "New"}
+2024-03-01T13:29:39.763Z	INFO	cache/context.go:722	app request originating pod added	{"appID": "app-user4-000010", "original task": "6728efd1-91c8-4e77-b5f7-e3c059b2619e"}
+2024-03-01T13:29:39.813Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "New", "destination": "Pending", "event": "InitTask"}
+2024-03-01T13:29:39.814Z	INFO	cache/application.go:508	Skip the reservation stage	{"appID": "app-user4-000002"}
+2024-03-01T13:29:39.814Z	INFO	cache/application.go:412	handle app submission	{"app": "applicationID: app-user4-000006, queue: root.sandbox, partition: default, totalNumOfTasks: 1, currentState: Submitted", "clusterID": "mycluster"}
+2024-03-01T13:29:39.814Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "New", "destination": "Pending", "event": "InitTask"}
+2024-03-01T13:29:39.814Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "New", "destination": "Pending", "event": "InitTask"}
+2024-03-01T13:29:39.814Z	INFO	cache/application.go:412	handle app submission	{"app": "applicationID: app-user4-000005, queue: root.sandbox, partition: default, totalNumOfTasks: 1, currentState: Submitted", "clusterID": "mycluster"}
+2024-03-01T13:29:39.814Z	INFO	cache/application.go:412	handle app submission	{"app": "applicationID: app-user4-000007, queue: root.sandbox, partition: default, totalNumOfTasks: 1, currentState: Submitted", "clusterID": "mycluster"}
+2024-03-01T13:29:39.814Z	INFO	cache/application.go:412	handle app submission	{"app": "applicationID: app-user4-000009, queue: root.sandbox, partition: default, totalNumOfTasks: 1, currentState: Submitted", "clusterID": "mycluster"}
+2024-03-01T13:29:39.814Z	INFO	cache/application.go:508	Skip the reservation stage	{"appID": "app-user3-000010"}
+2024-03-01T13:29:39.814Z	INFO	cache/application.go:508	Skip the reservation stage	{"appID": "app-user4-000001"}
+2024-03-01T13:29:39.814Z	INFO	cache/application.go:508	Skip the reservation stage	{"appID": "app-user4-000003"}
+2024-03-01T13:29:39.814Z	INFO	cache/application.go:412	handle app submission	{"app": "applicationID: app-user4-000008, queue: root.sandbox, partition: default, totalNumOfTasks: 1, currentState: Submitted", "clusterID": "mycluster"}
+2024-03-01T13:29:39.814Z	INFO	cache/application.go:412	handle app submission	{"app": "applicationID: app-user4-000010, queue: root.sandbox, partition: default, totalNumOfTasks: 1, currentState: Submitted", "clusterID": "mycluster"}
+2024-03-01T13:29:39.814Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "New", "destination": "Pending", "event": "InitTask"}
+2024-03-01T13:29:39.814Z	INFO	cache/application.go:508	Skip the reservation stage	{"appID": "app-user4-000004"}
+2024-03-01T13:29:39.814Z	INFO	fair/parseUsers.go:35	Add application in fair manager	{"user": "user4", "applicationID": "app-user4-000010", "Duration": "75", "heap": 1}
+2024-03-01T13:29:39.814Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "Pending", "destination": "Scheduling", "event": "SubmitTask"}
+2024-03-01T13:29:39.814Z	INFO	scheduler/context.go:604	Added application to partition	{"applicationID": "app-user4-000010", "partitionName": "[mycluster]default", "requested queue": "root.sandbox", "placed queue": "root.sandbox"}
+2024-03-01T13:29:39.814Z	INFO	fair/parseUsers.go:35	Add application in fair manager	{"user": "user4", "applicationID": "app-user4-000005", "Duration": "75", "heap": 1}
+2024-03-01T13:29:39.814Z	INFO	scheduler/context.go:604	Added application to partition	{"applicationID": "app-user4-000005", "partitionName": "[mycluster]default", "requested queue": "root.sandbox", "placed queue": "root.sandbox"}
+2024-03-01T13:29:39.814Z	INFO	fair/parseUsers.go:35	Add application in fair manager	{"user": "user4", "applicationID": "app-user4-000009", "Duration": "75", "heap": 1}
+2024-03-01T13:29:39.814Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "Pending", "destination": "Scheduling", "event": "SubmitTask"}
+2024-03-01T13:29:39.814Z	INFO	callback/scheduler_callback.go:113	Accepting app	{"appID": "app-user4-000010"}
+2024-03-01T13:29:39.814Z	INFO	scheduler/context.go:604	Added application to partition	{"applicationID": "app-user4-000009", "partitionName": "[mycluster]default", "requested queue": "root.sandbox", "placed queue": "root.sandbox"}
+2024-03-01T13:29:39.814Z	INFO	callback/scheduler_callback.go:113	Accepting app	{"appID": "app-user4-000005"}
+2024-03-01T13:29:39.814Z	INFO	callback/scheduler_callback.go:113	Accepting app	{"appID": "app-user4-000009"}
+2024-03-01T13:29:39.814Z	INFO	fair/parseUsers.go:35	Add application in fair manager	{"user": "user4", "applicationID": "app-user4-000007", "Duration": "75", "heap": 1}
+2024-03-01T13:29:39.814Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "Pending", "destination": "Scheduling", "event": "SubmitTask"}
+2024-03-01T13:29:39.814Z	INFO	scheduler/context.go:604	Added application to partition	{"applicationID": "app-user4-000007", "partitionName": "[mycluster]default", "requested queue": "root.sandbox", "placed queue": "root.sandbox"}
+2024-03-01T13:29:39.814Z	INFO	fair/parseUsers.go:35	Add application in fair manager	{"user": "user4", "applicationID": "app-user4-000008", "Duration": "75", "heap": 1}
+2024-03-01T13:29:39.814Z	INFO	callback/scheduler_callback.go:113	Accepting app	{"appID": "app-user4-000007"}
+2024-03-01T13:29:39.814Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "Pending", "destination": "Scheduling", "event": "SubmitTask"}
+2024-03-01T13:29:39.814Z	INFO	scheduler/context.go:604	Added application to partition	{"applicationID": "app-user4-000008", "partitionName": "[mycluster]default", "requested queue": "root.sandbox", "placed queue": "root.sandbox"}
+2024-03-01T13:29:39.814Z	INFO	fair/parseUsers.go:35	Add application in fair manager	{"user": "user4", "applicationID": "app-user4-000006", "Duration": "75", "heap": 2}
+2024-03-01T13:29:39.814Z	INFO	scheduler/context.go:604	Added application to partition	{"applicationID": "app-user4-000006", "partitionName": "[mycluster]default", "requested queue": "root.sandbox", "placed queue": "root.sandbox"}
+2024-03-01T13:29:39.814Z	INFO	callback/scheduler_callback.go:113	Accepting app	{"appID": "app-user4-000008"}
+2024-03-01T13:29:39.814Z	INFO	objects/application_state.go:129	Application state transition	{"appID": "app-user3-000006", "source": "New", "destination": "Accepted", "event": "runApplication"}
+2024-03-01T13:29:39.814Z	INFO	callback/scheduler_callback.go:113	Accepting app	{"appID": "app-user4-000006"}
+2024-03-01T13:29:39.814Z	INFO	objects/application.go:598	ask added successfully to application	{"appID": "app-user3-000006", "ask": "8b99b08a-fd9f-4b63-acb5-f4a32a2b7702", "placeholder": false, "pendingDelta": "map[memory:2000000000 vcore:8000]"}
+2024-03-01T13:29:39.814Z	INFO	objects/application_state.go:129	Application state transition	{"appID": "app-user3-000009", "source": "New", "destination": "Accepted", "event": "runApplication"}
+2024-03-01T13:29:39.814Z	INFO	objects/application.go:598	ask added successfully to application	{"appID": "app-user3-000009", "ask": "8b66ade9-98e7-4499-9950-f90e8decbfea", "placeholder": false, "pendingDelta": "map[memory:2000000000 vcore:8000]"}
+2024-03-01T13:29:39.814Z	INFO	objects/application_state.go:129	Application state transition	{"appID": "app-user3-000007", "source": "New", "destination": "Accepted", "event": "runApplication"}
+2024-03-01T13:29:39.814Z	INFO	objects/application.go:598	ask added successfully to application	{"appID": "app-user3-000007", "ask": "1938f37c-41a8-43de-b877-6ad1332cea2a", "placeholder": false, "pendingDelta": "map[memory:2000000000 vcore:8000]"}
+2024-03-01T13:29:39.814Z	INFO	objects/application_state.go:129	Application state transition	{"appID": "app-user3-000008", "source": "New", "destination": "Accepted", "event": "runApplication"}
+2024-03-01T13:29:39.814Z	INFO	objects/application.go:598	ask added successfully to application	{"appID": "app-user3-000008", "ask": "5fc0164d-d7a8-4510-a0a4-9a1979a7d4bb", "placeholder": false, "pendingDelta": "map[memory:2000000000 vcore:8000]"}
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+2024-03-01T13:29:40.815Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "New", "destination": "Pending", "event": "InitTask"}
+2024-03-01T13:29:40.815Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "New", "destination": "Pending", "event": "InitTask"}
+2024-03-01T13:29:40.815Z	INFO	cache/application.go:508	Skip the reservation stage	{"appID": "app-user4-000006"}
+2024-03-01T13:29:40.815Z	INFO	cache/application.go:508	Skip the reservation stage	{"appID": "app-user4-000005"}
+2024-03-01T13:29:40.815Z	INFO	cache/application.go:508	Skip the reservation stage	{"appID": "app-user4-000007"}
+2024-03-01T13:29:40.815Z	INFO	cache/application.go:508	Skip the reservation stage	{"appID": "app-user4-000009"}
+2024-03-01T13:29:40.815Z	INFO	cache/application.go:508	Skip the reservation stage	{"appID": "app-user4-000008"}
+2024-03-01T13:29:40.815Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "New", "destination": "Pending", "event": "InitTask"}
+2024-03-01T13:29:40.815Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "New", "destination": "Pending", "event": "InitTask"}
+2024-03-01T13:29:40.815Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "New", "destination": "Pending", "event": "InitTask"}
+2024-03-01T13:29:40.815Z	INFO	cache/application.go:508	Skip the reservation stage	{"appID": "app-user4-000010"}
+2024-03-01T13:29:40.815Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "Pending", "destination": "Scheduling", "event": "SubmitTask"}
+2024-03-01T13:29:40.815Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "Pending", "destination": "Scheduling", "event": "SubmitTask"}
+2024-03-01T13:29:40.815Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "Pending", "destination": "Scheduling", "event": "SubmitTask"}
+2024-03-01T13:29:40.815Z	INFO	objects/application_state.go:129	Application state transition	{"appID": "app-user4-000004", "source": "New", "destination": "Accepted", "event": "runApplication"}
+2024-03-01T13:29:40.815Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "Pending", "destination": "Scheduling", "event": "SubmitTask"}
+2024-03-01T13:29:40.815Z	INFO	objects/application.go:598	ask added successfully to application	{"appID": "app-user4-000004", "ask": "1810070e-1743-43ea-9bbc-c1c186242fbb", "placeholder": false, "pendingDelta": "map[memory:1000000000 vcore:4000]"}
+2024-03-01T13:29:40.815Z	INFO	objects/application_state.go:129	Application state transition	{"appID": "app-user3-000010", "source": "New", "destination": "Accepted", "event": "runApplication"}
+2024-03-01T13:29:40.815Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "Pending", "destination": "Scheduling", "event": "SubmitTask"}
+2024-03-01T13:29:40.815Z	INFO	objects/application.go:598	ask added successfully to application	{"appID": "app-user3-000010", "ask": "5e6ca307-8d90-4e8d-bb83-6936228cfc34", "placeholder": false, "pendingDelta": "map[memory:2000000000 vcore:8000]"}
+2024-03-01T13:29:40.815Z	INFO	objects/application_state.go:129	Application state transition	{"appID": "app-user4-000002", "source": "New", "destination": "Accepted", "event": "runApplication"}
+2024-03-01T13:29:40.815Z	INFO	objects/application.go:598	ask added successfully to application	{"appID": "app-user4-000002", "ask": "6085d5c6-b7d7-4448-9671-2df6318024d9", "placeholder": false, "pendingDelta": "map[memory:1000000000 vcore:4000]"}
+2024-03-01T13:29:40.815Z	INFO	objects/application_state.go:129	Application state transition	{"appID": "app-user4-000001", "source": "New", "destination": "Accepted", "event": "runApplication"}
+2024-03-01T13:29:40.815Z	INFO	objects/application.go:598	ask added successfully to application	{"appID": "app-user4-000001", "ask": "71fe4a59-4bf8-43d8-9dbe-305deb6eb700", "placeholder": false, "pendingDelta": "map[memory:1000000000 vcore:4000]"}
+2024-03-01T13:29:40.815Z	INFO	objects/application_state.go:129	Application state transition	{"appID": "app-user4-000003", "source": "New", "destination": "Accepted", "event": "runApplication"}
+2024-03-01T13:29:40.815Z	INFO	objects/application.go:598	ask added successfully to application	{"appID": "app-user4-000003", "ask": "2a863177-d740-4911-94ff-0df7960c023b", "placeholder": false, "pendingDelta": "map[memory:1000000000 vcore:4000]"}
+2024-03-01T13:29:41.815Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "New", "destination": "Pending", "event": "InitTask"}
+2024-03-01T13:29:41.815Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "New", "destination": "Pending", "event": "InitTask"}
+2024-03-01T13:29:41.815Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "New", "destination": "Pending", "event": "InitTask"}
+2024-03-01T13:29:41.815Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "New", "destination": "Pending", "event": "InitTask"}
+2024-03-01T13:29:41.815Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "New", "destination": "Pending", "event": "InitTask"}
+2024-03-01T13:29:41.815Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "New", "destination": "Pending", "event": "InitTask"}
+2024-03-01T13:29:41.815Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "Pending", "destination": "Scheduling", "event": "SubmitTask"}
+2024-03-01T13:29:41.815Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "Pending", "destination": "Scheduling", "event": "SubmitTask"}
+2024-03-01T13:29:41.815Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "Pending", "destination": "Scheduling", "event": "SubmitTask"}
+2024-03-01T13:29:41.816Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "Pending", "destination": "Scheduling", "event": "SubmitTask"}
+2024-03-01T13:29:41.816Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "Pending", "destination": "Scheduling", "event": "SubmitTask"}
+2024-03-01T13:29:41.816Z	INFO	objects/application_state.go:129	Application state transition	{"appID": "app-user4-000007", "source": "New", "destination": "Accepted", "event": "runApplication"}
+2024-03-01T13:29:41.816Z	INFO	cache/task_state.go:372	object transition	{"object": {}, "source": "Pending", "destination": "Scheduling", "event": "SubmitTask"}
+2024-03-01T13:29:41.816Z	INFO	objects/application.go:598	ask added successfully to application	{"appID": "app-user4-000007", "ask": "056063c4-ac0a-4062-b438-dd22fb325937", "placeholder": false, "pendingDelta": "map[memory:1000000000 vcore:4000]"}
+2024-03-01T13:29:41.816Z	INFO	objects/application_state.go:129	Application state transition	{"appID": "app-user4-000005", "source": "New", "destination": "Accepted", "event": "runApplication"}
+2024-03-01T13:29:41.816Z	INFO	objects/application.go:598	ask added successfully to application	{"appID": "app-user4-000005", "ask": "59e4cf8a-401b-48a6-8391-c62412e5258d", "placeholder": false, "pendingDelta": "map[memory:1000000000 vcore:4000]"}
+2024-03-01T13:29:41.816Z	INFO	objects/application_state.go:129	Application state transition	{"appID": "app-user4-000009", "source": "New", "destination": "Accepted", "event": "runApplication"}
+2024-03-01T13:29:41.816Z	INFO	objects/application.go:598	ask added successfully to application	{"appID": "app-user4-000009", "ask": "fb300635-77dd-406d-9f0a-20d17624a6e4", "placeholder": false, "pendingDelta": "map[memory:1000000000 vcore:4000]"}
+2024-03-01T13:29:41.816Z	INFO	objects/application_state.go:129	Application state transition	{"appID": "app-user4-000008", "source": "New", "destination": "Accepted", "event": "runApplication"}
+2024-03-01T13:29:41.816Z	INFO	objects/application.go:598	ask added successfully to application	{"appID": "app-user4-000008", "ask": "5bee4398-138c-4cc5-a79d-244c3784f341", "placeholder": false, "pendingDelta": "map[memory:1000000000 vcore:4000]"}
+2024-03-01T13:29:41.816Z	INFO	objects/application_state.go:129	Application state transition	{"appID": "app-user4-000010", "source": "New", "destination": "Accepted", "event": "runApplication"}
+2024-03-01T13:29:41.816Z	INFO	objects/application.go:598	ask added successfully to application	{"appID": "app-user4-000010", "ask": "6728efd1-91c8-4e77-b5f7-e3c059b2619e", "placeholder": false, "pendingDelta": "map[memory:1000000000 vcore:4000]"}
+2024-03-01T13:29:41.816Z	INFO	objects/application_state.go:129	Application state transition	{"appID": "app-user4-000006", "source": "New", "destination": "Accepted", "event": "runApplication"}
+2024-03-01T13:29:41.816Z	INFO	objects/application.go:598	ask added successfully to application	{"appID": "app-user4-000006", "ask": "8f8e1eb4-6656-486b-8610-b0f275d4755a", "placeholder": false, "pendingDelta": "map[memory:1000000000 vcore:4000]"}
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
+Request not zero
