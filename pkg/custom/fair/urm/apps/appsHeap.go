@@ -15,7 +15,7 @@ func NewAppInfo(id string, t time.Time, d string) *AppInfo {
 	return &AppInfo{
 		ApplicationID:  id,
 		SubmissionTime: t,
-		Duration: 		d,
+		Duration:		d,
 	}
 }
 

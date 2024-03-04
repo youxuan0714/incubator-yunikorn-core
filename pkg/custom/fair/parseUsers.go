@@ -30,7 +30,9 @@ func (f *FairManager) ParseUserInApp(input *objects.Application) {
 	}
 	duration := strconv.FormatInt(int64(res.Resources["duration"]),10)
 	h := f.unscheduledApps[user]
+	auh := f.allUnscheduledApps
 	info := apps.NewAppInfo(appID, input.SubmissionTime, duration)
 	heap.Push(h, info)
+	heap.Push(auh, info)
 	log.Logger().Info("Add application in fair manager", zap.String("user", user), zap.String("applicationID", appID), zap.String("Duration", duration), zap.Int("heap", h.Len()))
 }

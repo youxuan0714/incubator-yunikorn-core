@@ -41,6 +41,34 @@ func (f *FairManager) UpdateScheduledApp(input *objects.Application) {
 	f.GetTenants().Allocate(user, appID, res)
 }
 
+func (f *FairManager) UpdateScheduledAppByHRRN(input *objects.Application) {
+	fmt.Println("Enter UpdateScheduledAppByHRRN")
+	appID, user, res := util.ParseApp(input)
+	f.AddRunningApp(appID, user, res)
+	f.scheduledApps[appID] = true
+
+	auh := f.allUnscheduledApps
+
+	// log.Logger().Info("Update scheduled app", zap.Int("heap", h.Len()))
+	bk := make([]*apps.AppInfo, 0)
+	for auh.Len() > 0 || len(f.scheduledApps) > 0 {
+		target := heap.Pop(auh).(*apps.AppInfo)
+		id := target.ApplicationID
+		if _, exist := f.scheduledApps[id]; !exist {
+			// log.Logger().Info("Delete app is not in the heap", zap.String("appid", id))
+			bk = append(bk, target)
+		} else {
+			delete(f.scheduledApps, id)
+			log.Logger().Info("Delete app", zap.String("appid", id), zap.Int("heap", auh.Len()))
+		}
+	}
+
+	for _, element := range bk {
+		heap.Push(auh, element)
+	}
+	f.GetTenants().Allocate(user, appID, res)
+}
+
 func (f *FairManager) AddNode(nodeID string, capicity *resources.Resource) {
 	f.Lock()
 	defer f.Unlock()

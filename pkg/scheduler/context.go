@@ -127,14 +127,17 @@ func (cc *ClusterContext) customCurrentschedule() bool {
 		schedulingStart := time.Now()
 		scheduled, _, tenantAppID := customutil.GetFairManager().NextAppToScheduleByHRRN()
 		if app := psc.GetApplication(tenantAppID); scheduled && app != nil {
+			req := app.GetAllAllocations()
+			fmt.Println("Request: ", req)
 			nodeID := customutil.GetLBManager().CurrentSchedule(app)
 			if nodeID == "" {
 				continue
 			}
 			if alloc := app.TrySpecifiedNode(nodeID, psc.GetNode); alloc != nil {
+				fmt.Println("ApplicationID: ", app.ApplicationID)
 				metrics.GetSchedulerMetrics().ObserveSchedulingLatency(schedulingStart)
 				_, _, res := util.ParseApp(app)
-				customutil.GetFairManager().UpdateScheduledApp(app)
+				customutil.GetFairManager().UpdateScheduledAppByHRRN(app)
 				customutil.GetFairMonitor().UpdateTheTenantMasterResource(schedulingStart, app, customutil.GetFairManager().GetDRFs, customutil.GetFairManager().GetClusterResource())
 				customutil.GetNodeUtilizationMonitor().Allocate(nodeID, schedulingStart, res.Clone())
 				if alloc.GetResult() == objects.Replaced {
