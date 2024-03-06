@@ -127,8 +127,6 @@ func (cc *ClusterContext) customCurrentschedule() bool {
 		schedulingStart := time.Now()
 		scheduled, _, tenantAppID := customutil.GetFairManager().NextAppToScheduleByHRRN()
 		if app := psc.GetApplication(tenantAppID); scheduled && app != nil {
-			req := app.GetAllAllocations()
-			fmt.Println("Request: ", req)
 			nodeID := customutil.GetLBManager().CurrentSchedule(app)
 			if nodeID == "" {
 				continue

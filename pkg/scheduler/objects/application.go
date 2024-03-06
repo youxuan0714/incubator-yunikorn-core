@@ -849,7 +849,7 @@ func (sa *Application) canReplace(request *AllocationAsk) bool {
 
 func (sa *Application) TrySpecifiedNode(requiredNode string, getNodeFn func(string) *Node) *Allocation {
 	sa.Lock()
-	sa.Unlock()
+	defer sa.Unlock()
 	sa.sortRequests(false,true)
 	if len(sa.sortedRequests) > 0 {
 		fmt.Print("TrySpecifiedNode")
